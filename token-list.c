@@ -1,7 +1,7 @@
 #include "token-list.h"
 
 /* keyword list */
-struct KEY key[KEYWORDSIZE] = {
+KEY key[KEYWORDSIZE] = {
 	{"and", 	TAND	},
 	{"array",	TARRAY	},
 	{"begin",	TBEGIN	},
@@ -30,6 +30,30 @@ struct KEY key[KEYWORDSIZE] = {
 	{"while",	TWHILE	},
 	{"write",	TWRITE  },
 	{"writeln",	TWRITELN}
+};
+
+/* symbol list */
+KEY symbol1[SYMBOL1SIZE] = {
+	{"+", 	TPLUS	},
+	{"-",	TMINUS	},
+	{"*",	TSTAR	},
+	{"=",	TEQUAL	},
+	{"<",	TLE	},
+	{">",	TGR	},
+	{"(",	TLPAREN	},
+	{")",	TRPAREN	},
+	{"[",	TLSQPAREN	},
+	{"]",	TRSQPAREN	},
+	{".",	TDOT	},
+	{",",	TCOMMA	},
+	{":",	TCOLON	},
+	{";",	TSEMI	}
+};
+KEY symbol2[SYMBOL2SIZE] = {
+	{"<>",	TNOTEQ	},
+	{"<=",	TLEEQ	},
+	{">=",	TGREQ	},
+	{":=",	TASSIGN	},
 };
 
 /* Token counter */
@@ -67,8 +91,8 @@ int main(int nc, char *np[]) {
 	}
 	end_scan();
 	/* 作成する部分:カウントした結果を出力する */
-	for(i = 0; i <= NUMOFTOKEN; i++){
-		printf("%s:%d\n", tokenstr[i], numtoken[i]);
+	for(i = 1; i <= NUMOFTOKEN; i++){
+		printf("%s\t%d\n", tokenstr[i], numtoken[i]);
 	}
 
 	return 0;

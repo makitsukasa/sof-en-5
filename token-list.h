@@ -59,13 +59,20 @@
 #define NUMOFTOKEN	49
 
 /* token-list.c */
+typedef struct KEY_ {
+	char * keyword;
+	int keytoken;
+}KEY;
 
 #define KEYWORDSIZE	28
 
-extern struct KEY {
-	char * keyword;
-	int keytoken;
-} key[KEYWORDSIZE];
+extern KEY key[KEYWORDSIZE];
+
+#define SYMBOL1SIZE 14
+#define SYMBOL2SIZE 4
+
+extern KEY symbol1[SYMBOL1SIZE];
+extern KEY symbol2[SYMBOL2SIZE];
 
 extern void error(char *mes);
 
