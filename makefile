@@ -1,5 +1,5 @@
 all:
-	gcc *.c -Wall
+	gcc *.c -Wall -std=c89 -o a.out
 
 clean:
-	rm *.o 
+	rm *.o

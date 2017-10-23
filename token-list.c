@@ -1,7 +1,7 @@
 #include "token-list.h"
 
 /* keyword list */
-KEY key[KEYWORDSIZE] = {
+KEY keyword[KEYWORDSIZE] = {
 	{"and", 	TAND	},
 	{"array",	TARRAY	},
 	{"begin",	TBEGIN	},
@@ -80,25 +80,27 @@ int main(int nc, char *np[]) {
 		printf("File %s can not open.\n", np[1]);
 		return 0;
 	}
-	/* 作成する部分：トークンカウント用の配列？を初期化する */
+	/* initialize numtoken[] */
 	for(i = 0; i <= NUMOFTOKEN; i++){
 		numtoken[i] = 0;
 	}
 
 	while((token = scan()) >= 0) {
-		/* 作成する部分：トークンをカウントする */
+		/* count token */
 		numtoken[token]++;
 	}
 	end_scan();
-	/* 作成する部分:カウントした結果を出力する */
+	/* output count */
 	for(i = 1; i <= NUMOFTOKEN; i++){
+		if(numtoken[i] <= 0) continue;
 		printf("%s\t%d\n", tokenstr[i], numtoken[i]);
 	}
 
 	return 0;
 }
 
-void error(char *mes) {
-	printf("\n ERROR: %s\n", mes);
+void error(int linenum, char *mes) {
+	fprintf(stderr, "\nline %d ERROR: %s\n", linenum, mes);
 	end_scan();
+	exit(-1);
 }

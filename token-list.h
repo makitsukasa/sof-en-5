@@ -65,16 +65,14 @@ typedef struct KEY_ {
 }KEY;
 
 #define KEYWORDSIZE	28
-
-extern KEY key[KEYWORDSIZE];
-
 #define SYMBOL1SIZE 14
 #define SYMBOL2SIZE 4
 
+extern KEY keyword[KEYWORDSIZE];
 extern KEY symbol1[SYMBOL1SIZE];
 extern KEY symbol2[SYMBOL2SIZE];
 
-extern void error(char *mes);
+extern void error(int linenum, char *mes);
 
 /* scan.c */
 extern int init_scan(char *filename);
