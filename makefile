@@ -3,3 +3,7 @@ all:
 
 clean:
 	rm *.o
+
+git:
+	git add -a
+	git push

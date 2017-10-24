@@ -42,6 +42,7 @@ int check_new_line(void){
 	return 0;
 }
 
+
 int init_scan(char *filename){
 	linenum = 0;
 	if ((fp = fopen(filename, "r")) == NULL) {
