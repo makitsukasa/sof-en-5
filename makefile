@@ -3,3 +3,7 @@ all:
 
 clean:
 	rm *.o
+
+git:
+	git commit -a -m hoge
+	git push
