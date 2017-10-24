@@ -20,6 +20,29 @@ void clear_attr(void){
 	num_attr = 0;
 }
 
+/* check new line or not and update cbuf
+ * return value :
+ * 	not new line	: 0
+ * 	\n or \r		: 1
+ * 	\n\r or \r\n	: 2 
+ */
+int check_new_line(void){
+	if(	(cbuf[0] == '\r' && cbuf[1] == '\n') ||
+		(cbuf[0] == '\n' && cbuf[1] == '\r') ){
+		/* ignore 2 characters */
+		update_cbuf();
+		update_cbuf();
+		return 2;
+	}
+	if(cbuf[0] == '\r'  || cbuf[0] == '\n'){
+		/* ignore a character */
+		update_cbuf();
+		return 1;
+	}
+	return 0;
+}
+
+
 int init_scan(char *filename){
 	linenum = 0;
 	if ((fp = fopen(filename, "r")) == NULL) {
@@ -51,15 +74,7 @@ int scan(void){
 	}
 
 	/* separator (new line) */
-	if(cbuf[0] == '\r'  || cbuf[0] == '\n'){
-		if(	(cbuf[0] == '\r' && cbuf[1] == '\n') ||
-			(cbuf[0] == '\n' && cbuf[1] == '\r') ){
-				/* ignore  another character */
-				update_cbuf();
-		}
-		/* ignore a character */
-		update_cbuf();
-
+	if(check_new_line() > 0){
 		linenum++;
 		/*printf("separator (new line)\n");*/
 		return scan();
@@ -126,9 +141,8 @@ int scan(void){
 		update_cbuf();
 
 		for(i = 0; i < MAXSTRSIZE; i++){
-			if(cbuf[0] == EOF){
-				error(linenum, "unterminated string");
-				return -1;
+			if(cbuf[0] == EOF || check_new_line() > 0){
+				error(linenum, "missing terminating ' character");
 			}
 			else if(cbuf[0] == '\''){
 				/* '' is not end */

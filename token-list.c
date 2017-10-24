@@ -100,7 +100,8 @@ int main(int nc, char *np[]) {
 }
 
 void error(int linenum, char *mes) {
-	fprintf(stderr, "\nline %d ERROR: %s\n", linenum, mes);
+	/*fprintf(stderr, "\nline %d ERROR: %s\n", linenum, mes);*/
+	printf("\nline %d ERROR: %s\n", linenum, mes);
 	end_scan();
 	exit(-1);
 }
