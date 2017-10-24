@@ -9,6 +9,7 @@ int cbuf[2];
 
 int linenum;
 
+
 void update_cbuf(void){
 	cbuf[0] = cbuf[1];
 	cbuf[1] = fgetc(fp);
