@@ -46,8 +46,7 @@ int check_new_line(void){
 int init_scan(char *filename){
 	linenum = 0;
 	if ((fp = fopen(filename, "r")) == NULL) {
-		fprintf(stderr, "\nline %d ERROR: file can not open\n", linenum);
-		exit(-1);
+		return -1;
 	}
 	update_cbuf();
 	update_cbuf();
@@ -197,7 +196,7 @@ int scan(void){
 			update_cbuf();
 		}
 		/*printf("comment/ ** / %s\n", string_attr);*/
-		return 0;
+		return scan();
 	}
 
 	/* comment {}
@@ -224,7 +223,7 @@ int scan(void){
 			update_cbuf();
 		}
 		/*printf("comment{} %s\n", string_attr);*/
-		return 0;
+		return scan();
 	}
 
 	/* symbol 

@@ -69,16 +69,16 @@ char *tokenstr[NUMOFTOKEN+1] = {
 	">=", "(", ")", "[", "]", ":=", ".", ",", ":", ";", "read","write", "break"
 };
 
-int main(int nc, char *np[]) {
+int scanner_main(int nc, char *np[]) {
 	int token, i;
 
 	if(nc < 2) {
 		printf("File name id not given.\n");
-		return 0;
+		exit(-1);
 	}
 	if(init_scan(np[1]) < 0) {
 		printf("File %s can not open.\n", np[1]);
-		return 0;
+		exit(-1);
 	}
 	/* initialize numtoken[] */
 	for(i = 0; i <= NUMOFTOKEN; i++){
