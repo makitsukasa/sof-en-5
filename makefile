@@ -11,6 +11,7 @@ clean:
 	rm *.out
 
 gitcommit:
+	git add -A
 	git commit -a -m hoge
 	
 gitpush:
