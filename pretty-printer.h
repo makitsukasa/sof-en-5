@@ -34,9 +34,8 @@
 #define SCONDSTAT			 75	/* serial		TIF SEXPR TTHEN SSTAT SCONDSTAT_5                        */
 #define SCONDSTAT_5			 76	/* zero or one	SCONDSTAT_5_1                                            */
 #define SCONDSTAT_5_1		 77	/* serial		TELSE SSTAT                                              */
-/* iter stat includes exit stat */
-#define SITERSTAT			 78	/* serial		TWHILE SSTAT TDO SSTAT SITERSTAT_1 SSTAT                 */
-#define SITERSTAT_1			 79	/* zero or one	TBREAK                                                   */
+#define SITERSTAT			 78	/* serial		TWHILE SSTAT TDO SSTAT                                   */
+#define SEXITSTAT			 79	/* serial	    TBREAK                                                   */
 #define SCALLSTAT			 80	/* serial		TCALL SPROCEDURENAME SCALLSTAT_3                         */
 #define SCALLSTAT_3			 81	/* zero or one	SCALLSTAT_3_1                                            */
 #define SCALLSTAT_3_1		 82	/* serial		TLPAREN SEXPRS TRPAREN                                   */
@@ -88,8 +87,8 @@
 
 #define NUMOFSYNTAX			127
 
-#define SELEMOP_SERIAL			1
-#define SELEMOP_PARALLEL		2
+#define SELEMOP_ALL_OF			1
+#define SELEMOP_ONE_OF  		2
 #define SELEMOP_ZERO_OR_MORE	3
 #define SELEMOP_ZERO_OR_ONE		4
 #define SELEMOP_SINGLE_TOKEN	5
