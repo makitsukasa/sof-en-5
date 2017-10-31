@@ -18,6 +18,6 @@ gitcommit:
 	git commit -a -m hoge
 	
 gitpush:
-	make gitcommit
+	-make gitcommit
 	git push
 	
