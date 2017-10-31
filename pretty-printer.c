@@ -8,59 +8,122 @@
 #define SELEMOP_SINGLE_TOKEN	5
 #endif
 
-/* const */ SyntaxElem syntaxElems[NUMOFSYNTAX];
+#define PARSERESULT_MATCH		1
+#define PARSERESULT_EMPTY		2
+#define PARSERESULT_NOTMATCH	0
+
+/* const */ SyntaxElem syntaxElems[NUMOFSYNTAX + 1];
 
 int token;
 
-int parse(int sElemIt) {
-	int i;
+int parse(int sElemIt, int depth) {
+	int i, j;
 	SyntaxElem sElem = syntaxElems[sElemIt];
 
-	if(sElem.op == SELEMOP_SINGLE_TOKEN){
-		if(token == sElemIt){
-			token = scan();
-			return 1;
-		}
-		return 0;
-	}
+	for(i = 0; i < depth; i++) printf("\t");
+	printf("parse %s start\n", SYNTAXDIC[sElemIt]);
 
 	switch(sElem.op){
+	int retVal;
+
+	/* check 1. to meet SINGLE TOKEN */
+	case SELEMOP_SINGLE_TOKEN:
+		if(token == sElemIt){
+			for(i = 0; i < depth; i++) printf("\t");
+			printf("parse %s end SINGLE MATCH sElemIt:%d(%s)\n", SYNTAXDIC[sElemIt], token, SYNTAXDIC[token]);
+			token = scan();
+			return PARSERESULT_MATCH;
+		}
+		for(i = 0; i < depth; i++) printf("\t");
+		printf("parse %s end SINGLE NOTMATCH sElemIt:%d(%s)\n", SYNTAXDIC[sElemIt], token, SYNTAXDIC[token]);
+		return PARSERESULT_NOTMATCH;
+
+	/* check 2. to meet ALL OF the conditions */
 	case SELEMOP_ALL_OF:
+		retVal = PARSERESULT_EMPTY;
 		for(i = 0; i < sElem.childrenNum; i++){
-			if(parse(sElem.children[i]) == 0){
-				return 0;
+			switch(parse(sElem.children[i], depth + 1)){
+			case PARSERESULT_NOTMATCH:
+				for(j = 0; j < depth; j++) printf("\t");
+				printf("parse %s end ALL NOTMATCH\n", SYNTAXDIC[sElemIt]);
+				return PARSERESULT_NOTMATCH;
+
+			case PARSERESULT_EMPTY:
+				for(j = 0; j < depth; j++) printf("\t");
+				printf("parse %s end ALL EMPTY ...\n", SYNTAXDIC[sElemIt]);
+				break;
+
+			case PARSERESULT_MATCH:
+				retVal = PARSERESULT_MATCH;
 			}
 		}
-		return 1;
+		for(i = 0; i < depth; i++) printf("\t");
+		if(retVal == PARSERESULT_EMPTY)
+			printf("parse %s end ALL EMPTY\n", SYNTAXDIC[sElemIt]);
+		else printf("parse %s end ALL MATCH\n", SYNTAXDIC[sElemIt]);
+		return retVal;
 
+	/* check 3. to meet ONE OF the conditions */
 	case SELEMOP_ONE_OF:
+		retVal = PARSERESULT_NOTMATCH;
 		for(i = 0; i < sElem.childrenNum; i++){
-			if(parse(sElem.children[i]) == 1){
-				return 1;
+			switch(parse(sElem.children[i], depth + 1)){
+			case PARSERESULT_MATCH:
+				for(j = 0; j < depth; j++) printf("\t");
+				printf("parse %s end ONE MATCH\n", SYNTAXDIC[sElemIt]);
+				return PARSERESULT_MATCH;
+
+			case PARSERESULT_EMPTY:
+				for(j = 0; j < depth; j++) printf("\t");
+				printf("parse %s end ONE EMPTY ...\n", SYNTAXDIC[sElemIt]);
+				retVal = PARSERESULT_EMPTY;
 			}
 		}
-		return 0;
+		for(i = 0; i < depth; i++) printf("\t");
+		if(retVal == PARSERESULT_EMPTY)
+			printf("parse %s end ONE EMPTY\n", SYNTAXDIC[sElemIt]);
+		else printf("parse %s end ONE MATCH\n", SYNTAXDIC[sElemIt]);
+		return retVal;
 
+	/* check 4. to meet the condition ZERO OR MORE times */
 	case SELEMOP_ZERO_OR_MORE:
-		while(parse(sElem.children[0]));
-		return 1;
+		retVal = PARSERESULT_EMPTY;
+		while(parse(sElem.children[0], depth + 1)){
+			retVal = PARSERESULT_MATCH;
+		}
+		for(i = 0; i < depth; i++) printf("\t");
+		if(retVal == PARSERESULT_EMPTY)
+			printf("parse %s end 0M EMPTY\n", SYNTAXDIC[sElemIt]);
+		else printf("parse %s end 0M MATCH\n", SYNTAXDIC[sElemIt]);
+		return retVal;
 
+	/* check 5. to meet the condition ZERO OR ONE time */
 	case SELEMOP_ZERO_OR_ONE:
-		parse(sElem.children[0]);
-		return 1;
+		if(parse(sElem.children[0], depth + 1) == PARSERESULT_MATCH)
+			retVal = PARSERESULT_MATCH;
+		else retVal = PARSERESULT_EMPTY;
+		for(i = 0; i < depth; i++) printf("\t");
+		if(retVal == PARSERESULT_EMPTY)
+			printf("parse %s end 01 EMPTY\n", SYNTAXDIC[sElemIt]);
+		else printf("parse %s end 01 MATCH\n", SYNTAXDIC[sElemIt]);
+		return retVal;
 
 	default:
-		return 0;
+		printf("SELEMOP missing\n");
+		exit(-1);
 	}
 }
 
-int parse_init(void) {
+void parse_init(void) {
 	int i;
+	token = scan();
+
 	for(i = 0; i < NUMOFSYNTAX; i++){
-		SyntaxElem hoge = {SELEMOP_SINGLE_TOKEN,	0, {}};
+		SyntaxElem hoge = {SELEMOP_SINGLE_TOKEN, 0, {}};
 		syntaxElems[i] = hoge;
 	}
 
+	/*
 	SyntaxElem sElem_TNAME				= {SELEMOP_SINGLE_TOKEN,	0, {}};
 	SyntaxElem sElem_TPROGRAM			= {SELEMOP_SINGLE_TOKEN,	0, {}};
 	SyntaxElem sElem_TVAR				= {SELEMOP_SINGLE_TOKEN,	0, {}};
@@ -110,14 +173,15 @@ int parse_init(void) {
 	SyntaxElem sElem_TREAD				= {SELEMOP_SINGLE_TOKEN,	0, {}};
 	SyntaxElem sElem_TWRITE				= {SELEMOP_SINGLE_TOKEN,	0, {}};
 	SyntaxElem sElem_TBREAK				= {SELEMOP_SINGLE_TOKEN,	0, {}};
-
+	*/
 	SyntaxElem sElem_SPROGRAM			= {SELEMOP_ALL_OF,			5, {TPROGRAM, TNAME, TSEMI, SBLOCK, TDOT}};
+	SyntaxElem sElem_SBLOCK				= {SELEMOP_ALL_OF,			2, {SBLOCK_1, SCOMPSTAT}};
 	SyntaxElem sElem_SBLOCK_1			= {SELEMOP_ZERO_OR_MORE,	1, {SBLOCK_1_1}};
 	SyntaxElem sElem_SBLOCK_1_1			= {SELEMOP_ONE_OF,			2, {SVARDEC, SSUBPROGDEC}};
 	SyntaxElem sElem_SVARDEC			= {SELEMOP_ALL_OF,			6, {TVAR, SVARNAMES, TCOLON, STYPE, TSEMI, SVARDEC_6}};
 	SyntaxElem sElem_SVARDEC_6			= {SELEMOP_ZERO_OR_MORE,	1, {SVARDEC_6_1}};
 	SyntaxElem sElem_SVARDEC_6_1		= {SELEMOP_ALL_OF,			4, {SVARNAMES, TCOLON, STYPE, TSEMI}};
-	SyntaxElem sElem_SVARNAMES			= {SELEMOP_ALL_OF,			1, {SVARNAME, SVARNAMES_1}};
+	SyntaxElem sElem_SVARNAMES			= {SELEMOP_ALL_OF,			2, {SVARNAME, SVARNAMES_1}};
 	SyntaxElem sElem_SVARNAMES_1		= {SELEMOP_ZERO_OR_MORE, 	1, {SVARNAMES_1_1}};
 	SyntaxElem sElem_SVARNAMES_1_1		= {SELEMOP_ALL_OF,			2, {TCOMMA, SVARNAME}};
 	SyntaxElem sElem_SVARNAME			= {SELEMOP_ALL_OF,	       	1, {TNAME}};
@@ -131,9 +195,9 @@ int parse_init(void) {
 	SyntaxElem sElem_SFORMPARAM			= {SELEMOP_ALL_OF,	       	6, {TLPAREN, SVARNAMES, TCOLON, STYPE, SFORMPARAM_5, TRPAREN}};
 	SyntaxElem sElem_SFORMPARAM_5		= {SELEMOP_ZERO_OR_MORE,	1, {SFORMPARAM_5_1}};
 	SyntaxElem sElem_SFORMPARAM_5_1		= {SELEMOP_ALL_OF,	       	4, {TSEMI, SVARNAMES, TCOLON, STYPE}};
-	SyntaxElem sElem_SCOMPSTAT			= {SELEMOP_ALL_OF,	       	1, {TBEGIN, SSTAT, SCOMPSTAT_3, TEND}};
+	SyntaxElem sElem_SCOMPSTAT			= {SELEMOP_ALL_OF,	       	4, {TBEGIN, SSTAT, SCOMPSTAT_3, TEND}};
 	SyntaxElem sElem_SCOMPSTAT_3		= {SELEMOP_ZERO_OR_MORE,	1, {SCOMPSTAT_3_1}};
-	SyntaxElem sElem_SCOMPSTAT_3_1		= {SELEMOP_ALL_OF,	       	1, {TSEMI, SSTAT}};
+	SyntaxElem sElem_SCOMPSTAT_3_1		= {SELEMOP_ALL_OF,	       	2, {TSEMI, SSTAT}};
 	SyntaxElem sElem_SSTAT				= {SELEMOP_ONE_OF,		    10,{SASSIGNSTAT, SCONDSTAT, SITERSTAT, SEXITSTAT, SCALLSTAT, SRETSTAT, SINSTAT, SOUTSTAT, SCOMPSTAT, SEMPTYSTAT}};
 	SyntaxElem sElem_SCONDSTAT			= {SELEMOP_ALL_OF,	       	5, {TIF, SEXPR, TTHEN, SSTAT, SCONDSTAT_5}};
 	SyntaxElem sElem_SCONDSTAT_5		= {SELEMOP_ZERO_OR_ONE,	   	1, {SCONDSTAT_5_1}};
@@ -180,7 +244,7 @@ int parse_init(void) {
 	SyntaxElem sElem_SOUTSTAT			= {SELEMOP_ALL_OF,	       	2, {SOUTSTAT_1, SOUTSTAT_2}};
 	SyntaxElem sElem_SOUTSTAT_1			= {SELEMOP_ONE_OF,		   	2, {TWRITE, TWRITELN}};
 	SyntaxElem sElem_SOUTSTAT_2			= {SELEMOP_ZERO_OR_ONE,	   	1, {SOUTSTAT_2_1}};
-	SyntaxElem sElem_SOUTSTAT_2_1		= {SELEMOP_ALL_OF,	       	3, {TLPAREN, SOUTFORM, SOUTSTAT_2_1_3}};
+	SyntaxElem sElem_SOUTSTAT_2_1		= {SELEMOP_ALL_OF,	       	4, {TLPAREN, SOUTFORM, SOUTSTAT_2_1_3, TRPAREN}};
 	SyntaxElem sElem_SOUTSTAT_2_1_3		= {SELEMOP_ZERO_OR_MORE,	1, {SOUTSTAT_2_1_3_1}};
 	SyntaxElem sElem_SOUTSTAT_2_1_3_1	= {SELEMOP_ALL_OF,	       	2, {TCOMMA, SOUTFORM}};
 	SyntaxElem sElem_SOUTFORM			= {SELEMOP_ONE_OF,		   	2, {SOUTFORM_1, TSTRING}};
@@ -188,7 +252,7 @@ int parse_init(void) {
 	SyntaxElem sElem_SOUTFORM_1_2		= {SELEMOP_ZERO_OR_ONE,		1, {SOUTFORM_1_2_1}};
 	SyntaxElem sElem_SOUTFORM_1_2_1		= {SELEMOP_ALL_OF,			2, {TCOLON, TNUMBER}};
 	SyntaxElem sElem_SEMPTYSTAT			= {SELEMOP_SINGLE_TOKEN,	0, {}};
-
+	/*
 	syntaxElems[TNAME]				= sElem_TNAME;
 	syntaxElems[TPROGRAM]			= sElem_TPROGRAM;
 	syntaxElems[TVAR]				= sElem_TVAR;
@@ -238,8 +302,9 @@ int parse_init(void) {
 	syntaxElems[TREAD]				= sElem_TREAD;
 	syntaxElems[TWRITE]				= sElem_TWRITE;
 	syntaxElems[TBREAK]				= sElem_TBREAK;
-
+	*/
 	syntaxElems[SPROGRAM]			= sElem_SPROGRAM;
+	syntaxElems[SBLOCK]				= sElem_SBLOCK;
 	syntaxElems[SBLOCK_1]			= sElem_SBLOCK_1;
 	syntaxElems[SBLOCK_1_1]			= sElem_SBLOCK_1_1;
 	syntaxElems[SVARDEC]			= sElem_SVARDEC;
@@ -316,11 +381,24 @@ int parse_init(void) {
 	syntaxElems[SOUTFORM_1_2]		= sElem_SOUTFORM_1_2;
 	syntaxElems[SOUTFORM_1_2_1]		= sElem_SOUTFORM_1_2_1;
 	syntaxElems[SEMPTYSTAT]			= sElem_SEMPTYSTAT;
-
-	return 0;
 }
 
-int main(void) {
+int main(int nc, char *np[]) {
+
+	if(nc < 2) {
+		printf("File name id not given.\n");
+		exit(-1);
+	}
+
+	if(init_scan(np[1]) < 0) {
+		printf("File %s can not open.\n", np[1]);
+		exit(-1);
+	}
+
 	parse_init();
+
+	printf("%d\n", parse(SPROGRAM, 0));
+
 	return 0;
 }
+

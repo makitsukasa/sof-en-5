@@ -1,12 +1,14 @@
 all: a.out
 
 a.out: *.c *.h
-	#gcc *.c -Wall -std=c89 -o a.out -Wno-unused-variable
-	gcc *.c -Wall -std=c89 -o a.out
+	@#gcc *.c -Wall -std=c89 -o a.out -Wno-unused-variable
+	@gcc *.c -Wall -std=c89 -o a.out
+
+ARG = in.mpl
 
 run:
-	make all
-	./a.out
+	@make all
+	@./a.out ${ARG}
 
 clean:
 	rm *.out
@@ -16,6 +18,6 @@ gitcommit:
 	git commit -a -m hoge
 	
 gitpush:
-	git commit -a -m hoge
+	make gitcommit
 	git push
 	
