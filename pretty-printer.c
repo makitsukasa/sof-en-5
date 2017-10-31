@@ -1,25 +1,66 @@
 #include "pretty-printer.h"
 
 #if 0
-#define SELEMOP_ALL_OF,	1, {			1
-#define SELEMOP_ONE_OF,		1, {		2
-#define SELEMOP_ZERO_OR_MORE,	1, {	3
-#define SELEMOP_ZERO_OR_ONE,	1, {		4
-#define SELEMOP_SINGLE_TOKEN,	1, {	5
+#define SELEMOP_ALL_OF			1
+#define SELEMOP_ONE_OF			2
+#define SELEMOP_ZERO_OR_MORE	3
+#define SELEMOP_ZERO_OR_ONE		4
+#define SELEMOP_SINGLE_TOKEN	5
 #endif
 
-SyntaxElem syntaxElems[NUMOFSYNTAX];
+/* const */ SyntaxElem syntaxElems[NUMOFSYNTAX];
+
+int token;
 
 int parse(int sElemIt) {
-	if(syntaxElems[sElemIt].op == SELEMOP_SINGLE_TOKEN){
-		if()
+	int i;
+	SyntaxElem sElem = syntaxElems[sElemIt];
+
+	if(sElem.op == SELEMOP_SINGLE_TOKEN){
+		if(token == sElemIt){
+			token = scan();
+			return 1;
+		}
+		return 0;
 	}
-	switch(op){
-		
+
+	switch(sElem.op){
+	case SELEMOP_ALL_OF:
+		for(i = 0; i < sElem.childrenNum; i++){
+			if(parse(sElem.children[i]) == 0){
+				return 0;
+			}
+		}
+		return 1;
+
+	case SELEMOP_ONE_OF:
+		for(i = 0; i < sElem.childrenNum; i++){
+			if(parse(sElem.children[i]) == 1){
+				return 1;
+			}
+		}
+		return 0;
+
+	case SELEMOP_ZERO_OR_MORE:
+		while(parse(sElem.children[0]));
+		return 1;
+
+	case SELEMOP_ZERO_OR_ONE:
+		parse(sElem.children[0]);
+		return 1;
+
+	default:
+		return 0;
 	}
 }
 
 int parse_init(void) {
+	int i;
+	for(i = 0; i < NUMOFSYNTAX; i++){
+		SyntaxElem hoge = {SELEMOP_SINGLE_TOKEN,	0, {}};
+		syntaxElems[i] = hoge;
+	}
+
 	SyntaxElem sElem_TNAME				= {SELEMOP_SINGLE_TOKEN,	0, {}};
 	SyntaxElem sElem_TPROGRAM			= {SELEMOP_SINGLE_TOKEN,	0, {}};
 	SyntaxElem sElem_TVAR				= {SELEMOP_SINGLE_TOKEN,	0, {}};
@@ -143,8 +184,8 @@ int parse_init(void) {
 	SyntaxElem sElem_SOUTSTAT_2_1_3		= {SELEMOP_ZERO_OR_MORE,	1, {SOUTSTAT_2_1_3_1}};
 	SyntaxElem sElem_SOUTSTAT_2_1_3_1	= {SELEMOP_ALL_OF,	       	2, {TCOMMA, SOUTFORM}};
 	SyntaxElem sElem_SOUTFORM			= {SELEMOP_ONE_OF,		   	2, {SOUTFORM_1, TSTRING}};
-	SyntaxElem sElem_SOUTFORM_1			= {SELEMOP_ALL_OF,	       	2, {SEXPR, SOUTFORM_1_2}};
-	SyntaxElem sElem_SOUTFORM_1_2		= {SELEMOP_ZERO_OR_ONE,	   	1, {SOUTFORM_1_2_1}};
+	SyntaxElem sElem_SOUTFORM_1			= {SELEMOP_ALL_OF,	 		2, {SEXPR, SOUTFORM_1_2}};
+	SyntaxElem sElem_SOUTFORM_1_2		= {SELEMOP_ZERO_OR_ONE,		1, {SOUTFORM_1_2_1}};
 	SyntaxElem sElem_SOUTFORM_1_2_1		= {SELEMOP_ALL_OF,			2, {TCOLON, TNUMBER}};
 	SyntaxElem sElem_SEMPTYSTAT			= {SELEMOP_SINGLE_TOKEN,	0, {}};
 

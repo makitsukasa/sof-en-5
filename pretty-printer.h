@@ -88,7 +88,7 @@
 #define NUMOFSYNTAX			127
 
 #define SELEMOP_ALL_OF			1
-#define SELEMOP_ONE_OF  		2
+#define SELEMOP_ONE_OF			2
 #define SELEMOP_ZERO_OR_MORE	3
 #define SELEMOP_ZERO_OR_ONE		4
 #define SELEMOP_SINGLE_TOKEN	5
