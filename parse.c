@@ -21,6 +21,7 @@ int parse(int sElemIt, int depth){
 	/* check 1. to meet SINGLE TOKEN */
 	case SELEMOP_SINGLE_TOKEN:
 		if(sElemIt == SEMPTYSTAT){
+			for(i = 0; i < depth; i++) printf("\t");
 			printf("parse %s end SINGLE EMPTY sElemIt:%d(%s)\n", SYNTAXDIC[sElemIt], token, SYNTAXDIC[token]);
 			return PARSERESULT_EMPTY;
 		}
@@ -83,7 +84,7 @@ int parse(int sElemIt, int depth){
 		for(i = 0; i < depth; i++) printf("\t");
 		if(retVal == PARSERESULT_EMPTY)
 			printf("parse %s end ONE EMPTY\n", SYNTAXDIC[sElemIt]);
-		else printf("parse %s end ONE MATCH\n", SYNTAXDIC[sElemIt]);
+		else printf("parse %s end ONE NOTMATCH\n", SYNTAXDIC[sElemIt]);
 		return retVal;
 
 	/* check 4. to meet the condition ZERO OR MORE times */
@@ -203,7 +204,7 @@ void parse_init(void) {
 	SyntaxElem sElem_SCONDSTAT			= {SELEMOP_ALL_OF,	       	5, {TIF, SEXPR, TTHEN, SSTAT, SCONDSTAT_5}};
 	SyntaxElem sElem_SCONDSTAT_5		= {SELEMOP_ZERO_OR_ONE,	   	1, {SCONDSTAT_5_1}};
 	SyntaxElem sElem_SCONDSTAT_5_1		= {SELEMOP_ALL_OF,	       	2, {TELSE, SSTAT}};
-	SyntaxElem sElem_SITERSTAT			= {SELEMOP_ALL_OF,	       	4, {TWHILE, SSTAT, TDO, SSTAT}};
+	SyntaxElem sElem_SITERSTAT			= {SELEMOP_ALL_OF,	       	4, {TWHILE, SEXPR, TDO, SSTAT}};
 	SyntaxElem sElem_SEXITSTAT			= {SELEMOP_ALL_OF,		   	1, {TBREAK}};
 	SyntaxElem sElem_SCALLSTAT			= {SELEMOP_ALL_OF,	       	3, {TCALL, SPROCEDURENAME, SCALLSTAT_3}};
 	SyntaxElem sElem_SCALLSTAT_3		= {SELEMOP_ZERO_OR_ONE,	   	1, {SCALLSTAT_3_1}};
@@ -220,7 +221,7 @@ void parse_init(void) {
 	SyntaxElem sElem_SEXPR				= {SELEMOP_ALL_OF,	       	2, {SSIMPLEEXPR, SEXPR_2}};
 	SyntaxElem sElem_SEXPR_2			= {SELEMOP_ZERO_OR_MORE,	1, {SEXPR_2_1}};
 	SyntaxElem sElem_SEXPR_2_1			= {SELEMOP_ALL_OF,	       	2, {SRELATOP, SSIMPLEEXPR}};
-	SyntaxElem sElem_SSIMPLEEXPR		= {SELEMOP_ALL_OF,	       	1, {SSIMPLEEXPR_1, STERM, SSIMPLEEXPR_3}};
+	SyntaxElem sElem_SSIMPLEEXPR		= {SELEMOP_ALL_OF,	       	3, {SSIMPLEEXPR_1, STERM, SSIMPLEEXPR_3}};
 	SyntaxElem sElem_SSIMPLEEXPR_1		= {SELEMOP_ZERO_OR_ONE,	   	1, {SSIMPLEEXPR_1_1}};
 	SyntaxElem sElem_SSIMPLEEXPR_1_1	= {SELEMOP_ONE_OF,		   	2, {TPLUS, TMINUS}};
 	SyntaxElem sElem_SSIMPLEEXPR_3		= {SELEMOP_ZERO_OR_MORE,	1, {SSIMPLEEXPR_3_1}};
