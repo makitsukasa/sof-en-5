@@ -4,7 +4,7 @@
 #define PARSERESULT_EMPTY		2
 #define PARSERESULT_NOTMATCH	0
 
-#define DEBUG_PRINT_PARSER	0
+#define DEBUG_PRINT_PARSER	1
 
 /* const */ SyntaxElem syntaxElems[NUMOFSYNTAX + 1];
 
