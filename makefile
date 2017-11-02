@@ -20,4 +20,7 @@ gitcommit:
 gitpush:
 	-make gitcommit
 	git push
+
+gitpull:
+	git pull origin master
 	
