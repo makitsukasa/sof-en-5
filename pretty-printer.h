@@ -111,5 +111,5 @@ typedef struct SyntaxTreeNode_{
 extern const char* SYNTAXDIC[NUMOFSYNTAX + 1];
 
 /* parse.c */
-extern int parse(int sElemIt, int depth);
+extern int parse_without_parse(int sElemIt, int depth);
 extern void init_parse(void);

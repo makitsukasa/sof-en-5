@@ -41,7 +41,7 @@ int main(int nc, char *np[]) {
 
 	init_parse();
 
-	result = parse(SPROGRAM, 0);
+	result = parse_without_tree(SPROGRAM, 0);
 
 	if(result) printf("\nyes\n");
 	else printf("\nno\n");
