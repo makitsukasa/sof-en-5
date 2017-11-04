@@ -6,8 +6,7 @@ a.out: *.c *.h
 
 ARG = in.mpl
 
-run:
-	@make all
+run: a.out
 	@./a.out ${ARG}
 
 clean:

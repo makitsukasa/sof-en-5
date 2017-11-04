@@ -25,7 +25,7 @@ void clear_attr(void){
  * return value :
  * 	not new line	: 0
  * 	\n or \r		: 1
- * 	\n\r or \r\n	: 2 
+ * 	\n\r or \r\n	: 2
  */
 int check_new_line(void){
 	if(	(cbuf[0] == '\r' && cbuf[1] == '\n') ||
@@ -55,7 +55,10 @@ int init_scan(char *filename){
 }
 
 int scan(void){
+	int i;
+
 	clear_attr();
+
 	if(linenum <= 0){
 		linenum = 1;
 	}
@@ -85,7 +88,6 @@ int scan(void){
 	 * end		: !(alpha or num)
 	 */
 	if(isalpha(cbuf[0])){
-		int i;
 		for(i = 0; isalnum(cbuf[0]) && i < MAXSTRSIZE; i++){
 			string_attr[i] = cbuf[0];
 			update_cbuf();
@@ -110,7 +112,6 @@ int scan(void){
 	 * end		: !digit
 	 */
 	if(isdigit(cbuf[0])){
-		int i;
 		for(i = 0; isdigit(cbuf[0]) && i < MAXSTRSIZE; i++){
 			string_attr[i] = cbuf[0];
 			update_cbuf();
@@ -134,8 +135,6 @@ int scan(void){
 	 * end		: ' ( '' is not end )
 	 */
 	if(cbuf[0] == '\''){
-		int i;
-
 		/* ignore a character ( ' ) */
 		update_cbuf();
 
@@ -175,8 +174,6 @@ int scan(void){
 	 * end		: * /
 	 */
 	if(cbuf[0] == '/' && cbuf[1] == '*'){
-		int i;
-
 		/* ignore 2 characters ( / and * ) */
 		update_cbuf();
 		update_cbuf();
@@ -205,7 +202,6 @@ int scan(void){
 	 * end		: }
 	 */
 	if(cbuf[0] == '{'){
-		int i;
 		/* ignore a character ( { ) */
 		update_cbuf();
 		for(i = 0; i < MAXSTRSIZE; i++){
@@ -232,10 +228,11 @@ int scan(void){
 	 * check lists in the oder
 	 * 2 lists (symbol1, symbol2) are defined in token-list.h
 	 */
-	int i;
 	for(i = 0; i < SYMBOL2SIZE; i++){
 		if(	cbuf[0] == symbol2[i].keyword[0] &&
 			cbuf[1] == symbol2[i].keyword[1]){
+			string_attr[0] = cbuf[0];
+			string_attr[1] = cbuf[1];
 			update_cbuf();
 			update_cbuf();
 			return symbol2[i].keytoken;
@@ -243,6 +240,7 @@ int scan(void){
 	}
 	for(i = 0; i < SYMBOL1SIZE; i++){
 		if(cbuf[0] == symbol1[i].keyword[0]){
+			string_attr[0] = cbuf[0];
 			update_cbuf();
 			return symbol1[i].keytoken;
 		}
