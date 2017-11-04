@@ -23,8 +23,6 @@ const char* SYNTAXDIC[NUMOFSYNTAX + 1] = {
 	"SOUTFORM", "SOUTFORM_1", "SOUTFORM_1_2", "SOUTFORM_1_2_1", "SEMPTYSTAT", 
 };
 
-
-
 int main(int nc, char *np[]) {
 
 	int result;
@@ -40,11 +38,19 @@ int main(int nc, char *np[]) {
 	}
 
 	init_parse();
-
+/*
 	result = parse_without_tree(SPROGRAM, 0);
+*/
+	
+	SyntaxTreeNode *node_SPROGRAM = malloc_tree_node();
+
+	result = parse(SPROGRAM, node_SPROGRAM);
 
 	if(result) printf("\nyes\n");
 	else printf("\nno\n");
+
+	print_tree(node_SPROGRAM);
+
 
 	return 0;
 }

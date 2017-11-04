@@ -96,6 +96,7 @@ typedef struct SyntaxElem_{
 typedef struct SyntaxTreeNode_{
 	int syntaxElemIt;
 	char string_attr[MAXSTRSIZE];
+	int is_head_of_line;
 	int indent_depth;
 	int iter_depth;
 	struct SyntaxTreeNode_ *next;
@@ -111,5 +112,11 @@ typedef struct SyntaxTreeNode_{
 extern const char* SYNTAXDIC[NUMOFSYNTAX + 1];
 
 /* parse.c */
-extern int parse_without_parse(int sElemIt, int depth);
+extern int parse_without_tree(int sElemIt, int depth);
+extern int parse(int sElemIt, SyntaxTreeNode *node);
 extern void init_parse(void);
+
+/* syntax-tree.c */
+extern void print_tree(SyntaxTreeNode* node);
+extern void free_tree(SyntaxTreeNode* node);
+extern SyntaxTreeNode* malloc_tree_node();
