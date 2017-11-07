@@ -99,7 +99,8 @@ typedef struct SyntaxTreeNode_{
 	int is_head_of_line;
 	int indent_depth;
 	int iter_depth;
-	struct SyntaxTreeNode_ *next;
+	int parse_result;
+	struct SyntaxTreeNode_ *brother;
 	struct SyntaxTreeNode_ *child;
 } SyntaxTreeNode;
 

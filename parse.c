@@ -175,7 +175,7 @@ int parse_without_tree(int sElemIt, int depth){
 	return 0;
 }
 
-int parse(int sElemIt, SyntaxTreeNode *node){
+SyntaxTreeNode* parse(int sElemIt){
 	int i;
 	SyntaxElem sElem = syntaxElems[sElemIt];
 
@@ -190,6 +190,21 @@ int parse(int sElemIt, SyntaxTreeNode *node){
 		printf(" >>>\n");
 	}
 	#endif
+
+	this = malloc_tree_node();
+	this->syntaxElemIt = sElemIt;
+	/*
+	typedef struct SyntaxTreeNode_{
+		int syntaxElemIt;
+		char string_attr[MAXSTRSIZE];
+		int is_head_of_line;
+		int indent_depth;
+		int iter_depth;
+		int parse_result;
+		struct SyntaxTreeNode_ *brother;
+		struct SyntaxTreeNode_ *child;
+	} SyntaxTreeNode;
+	*/
 
 	switch(sElem.op){
 	int retVal;
@@ -219,8 +234,10 @@ int parse(int sElemIt, SyntaxTreeNode *node){
 						SYNTAXDIC[sElemIt], token, SYNTAXDIC[token]);
 			}
 			#endif
+			this->string_attr = string_attr;
+			this->parse_result = PARSERESULT_MATCH;
 			token = scan();
-			return PARSERESULT_MATCH;
+			return this;
 		}
 		else {
 			#if DEBUG_PRINT_PARSER
@@ -228,14 +245,16 @@ int parse(int sElemIt, SyntaxTreeNode *node){
 			printf("parse %s end SINGLE NOTMATCH sElemIt:%d(%s)\n",
 					SYNTAXDIC[sElemIt], token, SYNTAXDIC[token]);
 			#endif
-			return PARSERESULT_NOTMATCH;
+			this->parse_result = PARSERESULT_NOTMATCH;
+			return this;
 		}
 
 	/* check 2. to meet ALL OF the conditions */
 	case SELEMOP_ALL_OF:
 		retVal = PARSERESULT_EMPTY;
 		for(i = 0; i < sElem.childrenNum; i++){
-			switch(parse(sElem.children[i], malloc_tree_node(0, "", 0, 0, 0, NULL, NULL))){
+			SyntaxTreeNode child = malloc_tree_node(0, "", 0, 0, 0, NULL, NULL);
+			switch(parse(sElem.children[i], child)){
 
 			/* one of children is not match : NOT MATCH */
 			case PARSERESULT_NOTMATCH:
@@ -243,7 +262,8 @@ int parse(int sElemIt, SyntaxTreeNode *node){
 				for(j = 0; j < node->indent_depth; j++) printf("\t");
 				printf("parse %s end ALL %s NOTMATCH\n", SYNTAXDIC[sElemIt], SYNTAXDIC[sElem.children[i]]);
 				#endif
-				return PARSERESULT_NOTMATCH;
+				this->parse_result = PARSERESULT_NOTMATCH;
+				return this;
 
 			/* one of children is empty : continue */
 			case PARSERESULT_EMPTY:
@@ -277,7 +297,8 @@ int parse(int sElemIt, SyntaxTreeNode *node){
 			printf("parse %s end ALL EMPTY\n", SYNTAXDIC[sElemIt]);
 		else printf("parse %s end ALL MATCH\n", SYNTAXDIC[sElemIt]);
 		#endif
-		return retVal;
+		this->parse_result = retVal;
+		return this;
 
 	/* check 3. to meet ONE OF the conditions */
 	case SELEMOP_ONE_OF:
@@ -293,7 +314,8 @@ int parse(int sElemIt, SyntaxTreeNode *node){
 				#endif
 				
 				node->child = malloc_tree_node(0, "", 0, 0, 0, NULL, NULL);
-				return PARSERESULT_MATCH;
+				this->parse_result = PARSERESULT_MATCH;
+				return this;
 
 			/* one of children is empty : schedule return MATCH and continue */
 			case PARSERESULT_EMPTY:
@@ -313,14 +335,16 @@ int parse(int sElemIt, SyntaxTreeNode *node){
 			printf("parse %s end ONE EMPTY\n", SYNTAXDIC[sElemIt]);
 		else printf("parse %s end ONE NOTMATCH\n", SYNTAXDIC[sElemIt]);
 		#endif
-		return retVal;
+		this->parse_result = retVal;
+		return this;
 
 	/* check 4. to meet the condition ZERO OR MORE times */
 	case SELEMOP_ZERO_OR_MORE:
 		retVal = PARSERESULT_EMPTY;
 		/* match 1 or more time : return MATCH */
 		/* other : return EMPTY */
-		while(parse(sElem.children[0], malloc_tree_node(0, "", 0, 0, 0, NULL, NULL))){
+		while(1){
+			parse(sElem.children[0], malloc_tree_node(0, "", 0, 0, 0, NULL, NULL))
 			retVal = PARSERESULT_MATCH;
 			if(node->child == NULL){
 				node->child = malloc_tree_node(0, "", 0, 0, 0, NULL, NULL);
@@ -337,7 +361,8 @@ int parse(int sElemIt, SyntaxTreeNode *node){
 			printf("parse %s end 0M EMPTY\n", SYNTAXDIC[sElemIt]);
 		else printf("parse %s end 0M MATCH\n", SYNTAXDIC[sElemIt]);
 		#endif
-		return retVal;
+		this->parse_result = retVal;
+		return this;
 
 	/* check 5. to meet the condition ZERO OR ONE time */
 	case SELEMOP_ZERO_OR_ONE:
@@ -354,7 +379,8 @@ int parse(int sElemIt, SyntaxTreeNode *node){
 			printf("parse %s end 01 EMPTY\n", SYNTAXDIC[sElemIt]);
 		else printf("parse %s end 01 MATCH\n", SYNTAXDIC[sElemIt]);
 		#endif
-		return retVal;
+		this->parse_result = retVal;
+		return this;
 	}
 
 	/* nobody can come here just for debug */

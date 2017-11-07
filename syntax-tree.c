@@ -15,7 +15,7 @@ void print_tree(SyntaxTreeNode* node){
 	}
 
 	if(node->syntaxElemIt <= NUMOFTOKEN){
-		printf("%s", string_attr);
+		printf("%s", node->string_attr);
 	}
 
 	if(node->syntaxElemIt == TSEMI || node->syntaxElemIt == TBEGIN){
@@ -39,27 +39,22 @@ void free_tree(SyntaxTreeNode* node){
 }
 
 /*
-malloc_tree_node(0, "", 0, 0, 0, NULL, NULL);
+malloc_tree_node(0, "", 0, 0, 0);
 */
-SyntaxTreeNode* malloc_tree_node(
-		int syntaxElemIt_,
-		char *string_attr_,
-		int is_head_of_line_,
-		int indent_depth_,
-		int iter_depth_){
-
+SyntaxTreeNode* malloc_tree_node(){
 	SyntaxTreeNode *p = malloc(sizeof(SyntaxTreeNode));
 
 	if(p == NULL){
-		printf("malloc dekinakatta\n");
+		printf("error i could not malloc\n");
 		exit(-1);
 	}
-
+/*
 	p->syntaxElemIt = syntaxElemIt_;
 	strcpy(p->string_attr, string_attr_);
 	p->is_head_of_line = is_head_of_line_;
 	p->indent_depth = indent_depth_;
 	p->iter_depth = iter_depth_;
+*/
 	p->next = NULL;
 	p->child = NULL;
 

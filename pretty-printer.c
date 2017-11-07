@@ -44,13 +44,14 @@ int main(int nc, char *np[]) {
 	
 	SyntaxTreeNode *node_SPROGRAM = malloc_tree_node();
 
-	result = parse(SPROGRAM, node_SPROGRAM);
+	node_SPROGRAM = parse(SPROGRAM);
 
 	if(result) printf("\nyes\n");
 	else printf("\nno\n");
 
 	print_tree(node_SPROGRAM);
 
+	free_tree(node_SPROGRAM);
 
 	return 0;
 }
