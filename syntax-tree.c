@@ -3,6 +3,8 @@
 void print_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
+	/*if(node->parse_result == PARSERESULT_NOTMATCH) return;*/
+
 	if(node->syntaxElemIt == TEND){
 		node->is_head_of_line = 1;
 	}
@@ -21,19 +23,19 @@ void print_tree(SyntaxTreeNode* node){
 	if(node->syntaxElemIt == TSEMI || node->syntaxElemIt == TBEGIN){
 		printf("\n");
 	}
-	else{
+	else if(node->syntaxElemIt <= NUMOFTOKEN){
 		printf(" ");
 	}
 
 	print_tree(node->child);
-	print_tree(node->next);
+	print_tree(node->brother);
 }
 
 void free_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
 	free_tree(node->child);
-	free_tree(node->next);
+	free_tree(node->brother);
 
 	free(node);
 }
@@ -55,7 +57,7 @@ SyntaxTreeNode* malloc_tree_node(){
 	p->indent_depth = indent_depth_;
 	p->iter_depth = iter_depth_;
 */
-	p->next = NULL;
+	p->brother = NULL;
 	p->child = NULL;
 
 	return p;

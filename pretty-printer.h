@@ -100,8 +100,8 @@ typedef struct SyntaxTreeNode_{
 	int indent_depth;
 	int iter_depth;
 	int parse_result;
-	struct SyntaxTreeNode_ *brother;
-	struct SyntaxTreeNode_ *child;
+	struct SyntaxTreeNode_* brother;
+	struct SyntaxTreeNode_* child;
 } SyntaxTreeNode;
 
 #define SELEMOP_ALL_OF			1
@@ -113,8 +113,11 @@ typedef struct SyntaxTreeNode_{
 extern const char* SYNTAXDIC[NUMOFSYNTAX + 1];
 
 /* parse.c */
+#define PARSERESULT_MATCH		1
+#define PARSERESULT_EMPTY		2
+#define PARSERESULT_NOTMATCH	0
 extern int parse_without_tree(int sElemIt, int depth);
-extern int parse(int sElemIt, SyntaxTreeNode *node);
+extern SyntaxTreeNode* parse(int sElemIt, int is_head_of_line, int indent_depth, int iter_depth);
 extern void init_parse(void);
 
 /* syntax-tree.c */

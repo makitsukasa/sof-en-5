@@ -25,8 +25,6 @@ const char* SYNTAXDIC[NUMOFSYNTAX + 1] = {
 
 int main(int nc, char *np[]) {
 
-	int result;
-
 	if(nc < 2) {
 		printf("File name id not given.\n");
 		exit(-1);
@@ -44,12 +42,13 @@ int main(int nc, char *np[]) {
 	
 	SyntaxTreeNode *node_SPROGRAM = malloc_tree_node();
 
-	node_SPROGRAM = parse(SPROGRAM);
+	node_SPROGRAM = parse(SPROGRAM, 0, 0, 0);
 
-	if(result) printf("\nyes\n");
+	if(node_SPROGRAM->parse_result) printf("\nyes\n");
 	else printf("\nno\n");
 
 	print_tree(node_SPROGRAM);
+	printf("\n");
 
 	free_tree(node_SPROGRAM);
 
