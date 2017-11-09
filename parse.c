@@ -240,7 +240,8 @@ SyntaxTreeNode* parse(int sElemIt, int is_head_of_line, int indent_depth, int it
 	case SELEMOP_ALL_OF:
 		for(i = 0; i < sElem.childrenNum; i++){
 			SyntaxTreeNode* child
-				 = parse(sElem.children[i], this->is_head_of_line, this->indent_depth, this->iter_depth);
+				 = parse(sElem.children[i], this->is_head_of_line,
+				 		this->indent_depth + is_indent(this->syntaxElemIt, i), this->iter_depth);
 
 			if(this->child == NULL){
 				this->child = child;
@@ -380,6 +381,17 @@ SyntaxTreeNode* parse(int sElemIt, int is_head_of_line, int indent_depth, int it
 	}
 
 	/* nobody can come here just for debug */
+	return 0;
+}
+
+int is_indent(int parentSyntaxElemIt, int childIt){
+	if(parentSyntaxElemIt == SPROGRAM && childIt == 3)
+		return 1;
+
+	if(parentSyntaxElemIt == SCOMPSTAT && 
+		(childIt == 1 || childIt == 2))
+			return 1;
+
 	return 0;
 }
 

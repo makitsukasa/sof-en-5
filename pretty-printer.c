@@ -47,6 +47,7 @@ int main(int nc, char *np[]) {
 	if(node_SPROGRAM->parse_result) printf("\nyes\n");
 	else printf("\nno\n");
 
+	debug_tree(node_SPROGRAM);
 	print_tree(node_SPROGRAM);
 	printf("\n");
 

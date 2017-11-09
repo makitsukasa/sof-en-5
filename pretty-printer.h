@@ -118,9 +118,11 @@ extern const char* SYNTAXDIC[NUMOFSYNTAX + 1];
 #define PARSERESULT_NOTMATCH	0
 extern int parse_without_tree(int sElemIt, int depth);
 extern SyntaxTreeNode* parse(int sElemIt, int is_head_of_line, int indent_depth, int iter_depth);
+extern int is_indent(int parentSyntaxElemIt, int childIt);
 extern void init_parse(void);
 
 /* syntax-tree.c */
+extern void debug_tree(SyntaxTreeNode* node);
 extern void print_tree(SyntaxTreeNode* node);
 extern void free_tree(SyntaxTreeNode* node);
 extern SyntaxTreeNode* malloc_tree_node();

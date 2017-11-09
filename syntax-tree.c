@@ -1,16 +1,30 @@
 #include "pretty-printer.h"
 
+void debug_tree(SyntaxTreeNode* node){
+	if(node == NULL) return;
+
+	printf("%20s ", SYNTAXDIC[node->syntaxElemIt]);
+	printf("n%d ", node->is_head_of_line);
+	printf("d%d ", node->indent_depth);
+	printf("w%d ", node->iter_depth);
+	printf("%s\n", node->parse_result ? "T" : "F");
+
+	debug_tree(node->child);
+	debug_tree(node->brother);
+}
+
 void print_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
-	/*if(node->parse_result == PARSERESULT_NOTMATCH) return;*/
+	if(node->parse_result == PARSERESULT_NOTMATCH) return;
 
-	if(node->syntaxElemIt == TEND){
+	if(node->syntaxElemIt == TEND || node->syntaxElemIt == TELSE){
 		node->is_head_of_line = 1;
 	}
 
 	if(node->is_head_of_line){
 		int i;
+		printf("\n");
 		for(i = 0; i < node->indent_depth; i++){
 			printf("\t");
 		}
@@ -21,7 +35,7 @@ void print_tree(SyntaxTreeNode* node){
 	}
 
 	if(node->syntaxElemIt == TSEMI || node->syntaxElemIt == TBEGIN){
-		printf("\n");
+		node->brother->is_head_of_line = 1;
 	}
 	else if(node->syntaxElemIt <= NUMOFTOKEN){
 		printf(" ");
