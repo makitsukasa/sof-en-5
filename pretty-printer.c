@@ -23,6 +23,92 @@ const char* SYNTAXDIC[NUMOFSYNTAX + 1] = {
 	"SOUTFORM", "SOUTFORM_1", "SOUTFORM_1_2", "SOUTFORM_1_2_1", "SEMPTYSTAT", 
 };
 
+void debug_tree(SyntaxTreeNode* node){
+	if(node == NULL) return;
+	/*if(node->parse_result != PARSERESULT_MATCH) return;*/
+
+	printf("%16s ", SYNTAXDIC[node->syntaxElemIt]);
+	printf("n%d ", node->is_head_of_line);
+	printf("d%d ", node->indent_depth);
+	printf("w%d ", node->iter_depth);
+	printf("%s ", node->parse_result == PARSERESULT_MATCH ? "T" : 
+				node->parse_result == PARSERESULT_NOTMATCH ? "F" : "E");
+	printf("%s ", node->string_attr);
+	printf("\n");
+
+	debug_tree(node->child);
+	debug_tree(node->brother);
+}
+
+void print_tree(SyntaxTreeNode* node){
+	if(node == NULL) return;
+
+	if(node->syntaxElemIt == TEND || node->syntaxElemIt == TELSE){
+		node->is_head_of_line = 1;
+	}
+
+	if(node->parse_result == PARSERESULT_MATCH){
+		if(node->is_head_of_line){
+			int i;
+			printf("\n");
+			for(i = 0; i < node->indent_depth; i++){
+				printf("\t");
+			}
+		}
+
+		if(!node->is_head_of_line && node->syntaxElemIt <= NUMOFTOKEN){
+			printf(" ");
+		}
+
+		if(node->syntaxElemIt == TSTRING){
+			printf("\'%s\'", node->string_attr);
+		}
+		else if(node->syntaxElemIt <= NUMOFTOKEN){
+			printf("%s", node->string_attr);
+		}
+
+		if(node->syntaxElemIt == TSEMI || node->syntaxElemIt == TBEGIN){
+			node->brother->is_head_of_line = 1;
+		}
+	}
+
+	print_tree(node->child);
+	print_tree(node->brother);
+}
+
+void free_tree(SyntaxTreeNode* node){
+	if(node == NULL) return;
+
+	free_tree(node->child);
+	free_tree(node->brother);
+
+	free(node);
+}
+
+/*
+malloc_tree_node(0, "", 0, 0, 0);
+*/
+SyntaxTreeNode* malloc_tree_node(){
+	SyntaxTreeNode *p = malloc(sizeof(SyntaxTreeNode));
+
+	if(p == NULL){
+		printf("error i could not malloc\n");
+		exit(-1);
+	}
+/*
+	p->syntaxElemIt = syntaxElemIt_;
+	strcpy(p->string_attr, string_attr_);
+	p->is_head_of_line = is_head_of_line_;
+	p->indent_depth = indent_depth_;
+	p->iter_depth = iter_depth_;
+*/
+	p->brother = NULL;
+	p->child = NULL;
+
+	return p;
+}
+
+
 int main(int nc, char *np[]) {
 
 	if(nc < 2) {
@@ -44,10 +130,11 @@ int main(int nc, char *np[]) {
 
 	node_SPROGRAM = parse(SPROGRAM, 0, 0, 0);
 
+/*
 	if(node_SPROGRAM->parse_result) printf("\nyes\n");
 	else printf("\nno\n");
-
-	debug_tree(node_SPROGRAM);
+*/
+	/*debug_tree(node_SPROGRAM);*/
 	print_tree(node_SPROGRAM);
 	printf("\n");
 

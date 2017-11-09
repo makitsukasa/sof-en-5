@@ -384,10 +384,11 @@ SyntaxTreeNode* parse(int sElemIt, int is_head_of_line, int indent_depth, int it
 	return 0;
 }
 
-int is_indent(int parentSyntaxElemIt, int childIt){
-	if(parentSyntaxElemIt == SPROGRAM && childIt == 3)
-		return 1;
+void indent(SyntaxTreeNode* node){
+	
+}
 
+int is_indent(int parentSyntaxElemIt, int childIt){
 	if(parentSyntaxElemIt == SCOMPSTAT && 
 		(childIt == 1 || childIt == 2))
 			return 1;
