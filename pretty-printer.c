@@ -94,6 +94,10 @@ void print_tree(SyntaxTreeNode* node){
 		}
 		is_head_of_line = 0;
 	}
+	else if(node->sElemIt == TSEMI || node->sElemIt == TCOMMA ||
+			node->sElemIt == TDOT || node->sElemIt == TLPAREN){
+		/* not print " " */
+	}
 	else{
 		printf(" ");
 	}
@@ -128,7 +132,7 @@ int main(int nc, char *np[]) {
 
 	SyntaxTreeNode *node_SPROGRAM = parse(SPROGRAM, 0);
 
-	/*debug_tree(node_SPROGRAM);*/
+	debug_tree(node_SPROGRAM);
 
 	if(node_SPROGRAM->parse_result == PARSERESULT_MATCH){
 		print_tree(node_SPROGRAM);

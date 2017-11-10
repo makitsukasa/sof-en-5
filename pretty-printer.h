@@ -120,6 +120,5 @@ extern void print_tree(SyntaxTreeNode* node);
 #define PARSERESULT_MATCH		1
 #define PARSERESULT_EMPTY		2
 #define PARSERESULT_NOTMATCH	0
-extern int is_indent(int parentSyntaxElemIt, int childIt);
 extern void init_parse(void);
 extern SyntaxTreeNode* parse(int sElemIt, int indent_depth);
