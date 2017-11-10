@@ -46,8 +46,8 @@ SyntaxTreeNode* parse(int sElemIt, int indent_depth){
 	/* check 2. to meet ALL OF the conditions */
 	case SELEMOP_ALL_OF:
 		for(i = 0; i < sElem.childrenNum; i++){
-			SyntaxTreeNode* child
-				 = parse(sElem.children[i], indent_depth + is_indent(sElemIt, i));
+			int indent = indent_depth + is_indent(sElemIt, i);
+			SyntaxTreeNode* child = parse(sElem.children[i], indent);
 
 			if(this->child == NULL){
 				this->child = child;
@@ -80,8 +80,8 @@ SyntaxTreeNode* parse(int sElemIt, int indent_depth){
 	/* check 3. to meet ONE OF the conditions */
 	case SELEMOP_ONE_OF:
 		for(i = 0; i < sElem.childrenNum; i++){
-			SyntaxTreeNode* child
-				 = parse(sElem.children[i], indent_depth + is_indent(sElemIt, i));
+			int indent = indent_depth + is_indent(sElemIt, i);
+			SyntaxTreeNode* child = parse(sElem.children[i], indent);
 
 			if(this->child == NULL){
 				this->child = child;
@@ -115,8 +115,8 @@ SyntaxTreeNode* parse(int sElemIt, int indent_depth){
 		/* other : return EMPTY */
 		this->parse_result = PARSERESULT_EMPTY;
 		while(1){
-			SyntaxTreeNode* child
-				 = parse(sElem.children[0], indent_depth + is_indent(sElemIt, 0));
+			int indent = indent_depth + is_indent(sElemIt, 0);
+			SyntaxTreeNode* child = parse(sElem.children[0], indent);
 			if(!child->parse_result){
 				break;
 			}
