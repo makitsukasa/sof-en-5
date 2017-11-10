@@ -94,9 +94,8 @@ typedef struct SyntaxElem_{
 } SyntaxElem;
 
 typedef struct SyntaxTreeNode_{
-	int syntaxElemIt;
+	int sElemIt;
 	char string_attr[MAXSTRSIZE];
-	int is_head_of_line;
 	int indent_depth;
 	int iter_depth;
 	int parse_result;
@@ -122,9 +121,9 @@ extern SyntaxTreeNode* malloc_tree_node();
 #define PARSERESULT_EMPTY		2
 #define PARSERESULT_NOTMATCH	0
 extern int parse_without_tree(int sElemIt, int depth);
-extern SyntaxTreeNode* parse(int sElemIt, int is_head_of_line, int indent_depth, int iter_depth);
+extern SyntaxTreeNode* parse(int sElemIt, int indent_depth);
 extern int is_indent(int parentSyntaxElemIt, int childIt);
 extern void init_parse(void);
 
 /* preformat.c */
-
+extern void preformat_tree(SyntaxTreeNode* node);

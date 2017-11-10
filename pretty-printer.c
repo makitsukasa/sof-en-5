@@ -23,58 +23,6 @@ const char* SYNTAXDIC[NUMOFSYNTAX + 1] = {
 	"SOUTFORM", "SOUTFORM_1", "SOUTFORM_1_2", "SOUTFORM_1_2_1", "SEMPTYSTAT", 
 };
 
-void debug_tree(SyntaxTreeNode* node){
-	if(node == NULL) return;
-	/*if(node->parse_result != PARSERESULT_MATCH) return;*/
-
-	printf("%16s ", SYNTAXDIC[node->syntaxElemIt]);
-	printf("n%d ", node->is_head_of_line);
-	printf("d%d ", node->indent_depth);
-	printf("w%d ", node->iter_depth);
-	printf("%s ", node->parse_result == PARSERESULT_MATCH ? "T" : 
-				node->parse_result == PARSERESULT_NOTMATCH ? "F" : "E");
-	printf("%s ", node->string_attr);
-	printf("\n");
-
-	debug_tree(node->child);
-	debug_tree(node->brother);
-}
-
-void print_tree(SyntaxTreeNode* node){
-	if(node == NULL) return;
-
-	if(node->syntaxElemIt == TEND || node->syntaxElemIt == TELSE){
-		node->is_head_of_line = 1;
-	}
-
-	if(node->parse_result == PARSERESULT_MATCH){
-		if(node->is_head_of_line){
-			int i;
-			printf("\n");
-			for(i = 0; i < node->indent_depth; i++){
-				printf("\t");
-			}
-		}
-
-		if(!node->is_head_of_line && node->syntaxElemIt <= NUMOFTOKEN){
-			printf(" ");
-		}
-
-		if(node->syntaxElemIt == TSTRING){
-			printf("\'%s\'", node->string_attr);
-		}
-		else if(node->syntaxElemIt <= NUMOFTOKEN){
-			printf("%s", node->string_attr);
-		}
-
-		if(node->syntaxElemIt == TSEMI || node->syntaxElemIt == TBEGIN){
-			node->brother->is_head_of_line = 1;
-		}
-	}
-
-	print_tree(node->child);
-	print_tree(node->brother);
-}
 
 void free_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
@@ -128,13 +76,14 @@ int main(int nc, char *np[]) {
 	
 	SyntaxTreeNode *node_SPROGRAM = malloc_tree_node();
 
-	node_SPROGRAM = parse(SPROGRAM, 0, 0, 0);
+	node_SPROGRAM = parse(SPROGRAM, 0);
 
 /*
 	if(node_SPROGRAM->parse_result) printf("\nyes\n");
 	else printf("\nno\n");
 */
-	/*debug_tree(node_SPROGRAM);*/
+	debug_tree(node_SPROGRAM);
+
 	print_tree(node_SPROGRAM);
 	printf("\n");
 
