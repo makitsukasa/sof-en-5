@@ -5,142 +5,13 @@
 int token;
 
 int is_indent(int parentSyntaxElemIt, int childIt){
+	if(parentSyntaxElemIt == SBLOCK && childIt == 0)
+		return 1;
+
 	if(parentSyntaxElemIt == SCOMPSTAT && 
 		(childIt == 1 || childIt == 2))
 			return 1;
 
-	return 0;
-}
-
-SyntaxTreeNode* parse(int sElemIt, int indent_depth){
-	int i;
-	SyntaxElem sElem = syntaxElems[sElemIt];
-
-	SyntaxTreeNode* this = malloc_tree_node();
-	this->sElemIt = sElemIt;
-	this->indent_depth = indent_depth;
-
-	switch(sElem.op){
-	SyntaxTreeNode* newest_child = NULL;
-
-	/* check 1. to meet TERMINATOR */
-	case SELEMOP_TERMINATOR:
-		/* empry stat	: return empty */
-		if(sElemIt == SEMPTYSTAT){
-			this->parse_result = PARSERESULT_EMPTY;
-			return this;
-		}
-		/* other		: compare token and elem */
-		else if(token == sElemIt){
-			this->parse_result = PARSERESULT_MATCH;
-			this->sElemIt = sElemIt;
-			strcpy(this->string_attr, string_attr);
-			token = scan();
-			return this;
-		}
-		else {
-			this->parse_result = PARSERESULT_NOTMATCH;
-			return this;
-		}
-
-	/* check 2. to meet ALL OF the conditions */
-	case SELEMOP_ALL_OF:
-		for(i = 0; i < sElem.childrenNum; i++){
-			int indent = indent_depth + is_indent(sElemIt, i);
-			SyntaxTreeNode* child = parse(sElem.children[i], indent);
-
-			if(this->child == NULL){
-				this->child = child;
-				newest_child = this->child;
-			}
-			else{
-				newest_child->brother = child;
-				newest_child = newest_child->brother;
-			}
-
-			switch(child->parse_result){
-
-			/* one of children is not match : NOT MATCH */
-			case PARSERESULT_NOTMATCH:
-				this->parse_result = PARSERESULT_NOTMATCH;
-				return this;
-
-			/* one of children is empty : continue */
-			case PARSERESULT_EMPTY:
-				break;
-
-			/* one of children is match : schedule return MATCH and continue */
-			case PARSERESULT_MATCH:
-				this->parse_result = PARSERESULT_MATCH;
-				break;
-			}
-		}
-		return this;
-
-	/* check 3. to meet ONE OF the conditions */
-	case SELEMOP_ONE_OF:
-		for(i = 0; i < sElem.childrenNum; i++){
-			int indent = indent_depth + is_indent(sElemIt, i);
-			SyntaxTreeNode* child = parse(sElem.children[i], indent);
-
-			if(this->child == NULL){
-				this->child = child;
-				newest_child = this->child;
-			}
-			else{
-				newest_child->brother = child;
-				newest_child = newest_child->brother;
-			}
-
-			switch(child->parse_result){
-
-			/* one of children is match : MATCH */
-			case PARSERESULT_MATCH:				
-				this->parse_result = PARSERESULT_MATCH;
-				return this;
-
-			/* one of children is empty : schedule return MATCH and continue */
-			case PARSERESULT_EMPTY:
-				this->parse_result = PARSERESULT_EMPTY;
-				break;
-
-			/* one of children is not match : continue */
-			}
-		}
-		return this;
-
-	/* check 4. to meet the condition ZERO OR MORE times */
-	case SELEMOP_ZERO_OR_MORE:
-		/* match 1 or more time : return MATCH */
-		/* other : return EMPTY */
-		this->parse_result = PARSERESULT_EMPTY;
-		while(1){
-			int indent = indent_depth + is_indent(sElemIt, 0);
-			SyntaxTreeNode* child = parse(sElem.children[0], indent);
-			if(this->child == NULL){
-				this->child = child;
-				newest_child = this->child;
-			}
-			else{
-				newest_child->brother = child;
-				newest_child = newest_child->brother;
-			}
-			if(!child->parse_result){
-				break;
-			}
-			this->parse_result = PARSERESULT_MATCH;
-		}
-		return this;
-
-	/* check 5. to meet the condition ZERO OR ONE time */
-	case SELEMOP_ZERO_OR_ONE:
-		this->child = parse(sElem.children[0], indent_depth + is_indent(sElemIt, 0));
-		if(this->child->parse_result) this->parse_result = PARSERESULT_MATCH;
-		else this->parse_result = PARSERESULT_EMPTY;
-		return this;
-	}
-
-	/* nobody can come here just for debug */
 	return 0;
 }
 
@@ -237,7 +108,7 @@ void init_parse(void) {
 	SyntaxElem sElem_SCALLSTAT			= {SELEMOP_ALL_OF,			3, {TCALL, SPROCEDURENAME, SCALLSTAT_3}};
 	SyntaxElem sElem_SCALLSTAT_3		= {SELEMOP_ZERO_OR_ONE,		1, {SCALLSTAT_3_1}};
 	SyntaxElem sElem_SCALLSTAT_3_1		= {SELEMOP_ALL_OF,			3, {TLPAREN, SEXPRS, TRPAREN}};
-	SyntaxElem sElem_SEXPRS				= {SELEMOP_ALL_OF,			1, {SEXPR, SEXPRS_2}};
+	SyntaxElem sElem_SEXPRS				= {SELEMOP_ALL_OF,			2, {SEXPR, SEXPRS_2}};
 	SyntaxElem sElem_SEXPRS_2			= {SELEMOP_ZERO_OR_MORE,	1, {SEXPRS_2_1}};
 	SyntaxElem sElem_SEXPRS_2_1			= {SELEMOP_ALL_OF,			2, {TCOMMA, SEXPR}};
 	SyntaxElem sElem_SRETSTAT			= {SELEMOP_ALL_OF,			1, {TRETURN}};
@@ -411,4 +282,136 @@ void init_parse(void) {
 	syntaxElems[SOUTFORM_1_2]		= sElem_SOUTFORM_1_2;
 	syntaxElems[SOUTFORM_1_2_1]		= sElem_SOUTFORM_1_2_1;
 	syntaxElems[SEMPTYSTAT]			= sElem_SEMPTYSTAT;
+}
+
+SyntaxTreeNode* parse(int sElemIt, int indent_depth){
+	int i;
+	SyntaxElem sElem = syntaxElems[sElemIt];
+
+	SyntaxTreeNode* this = malloc_tree_node();
+	this->sElemIt = sElemIt;
+	this->indent_depth = indent_depth;
+
+	switch(sElem.op){
+	SyntaxTreeNode* newest_child = NULL;
+
+	/* check 1. to meet TERMINATOR */
+	case SELEMOP_TERMINATOR:
+		/* empry stat	: return empty */
+		if(sElemIt == SEMPTYSTAT){
+			this->parse_result = PARSERESULT_EMPTY;
+			return this;
+		}
+		/* other		: compare token and elem */
+		else if(token == sElemIt){
+			this->parse_result = PARSERESULT_MATCH;
+			this->sElemIt = sElemIt;
+			strcpy(this->string_attr, string_attr);
+			token = scan();
+			return this;
+		}
+		else {
+			this->parse_result = PARSERESULT_NOTMATCH;
+			return this;
+		}
+
+	/* check 2. to meet ALL OF the conditions */
+	case SELEMOP_ALL_OF:
+		for(i = 0; i < sElem.childrenNum; i++){
+			int indent = indent_depth + is_indent(sElemIt, i);
+			SyntaxTreeNode* child = parse(sElem.children[i], indent);
+
+			if(this->child == NULL){
+				this->child = child;
+				newest_child = this->child;
+			}
+			else{
+				newest_child->brother = child;
+				newest_child = newest_child->brother;
+			}
+
+			switch(child->parse_result){
+
+			/* one of children is not match : NOT MATCH */
+			case PARSERESULT_NOTMATCH:
+				this->parse_result = PARSERESULT_NOTMATCH;
+				return this;
+
+			/* one of children is empty : continue */
+			case PARSERESULT_EMPTY:
+				break;
+
+			/* one of children is match : schedule return MATCH and continue */
+			case PARSERESULT_MATCH:
+				this->parse_result = PARSERESULT_MATCH;
+				break;
+			}
+		}
+		return this;
+
+	/* check 3. to meet ONE OF the conditions */
+	case SELEMOP_ONE_OF:
+		for(i = 0; i < sElem.childrenNum; i++){
+			int indent = indent_depth + is_indent(sElemIt, i);
+			SyntaxTreeNode* child = parse(sElem.children[i], indent);
+
+			if(this->child == NULL){
+				this->child = child;
+				newest_child = this->child;
+			}
+			else{
+				newest_child->brother = child;
+				newest_child = newest_child->brother;
+			}
+
+			switch(child->parse_result){
+
+			/* one of children is match : MATCH */
+			case PARSERESULT_MATCH:				
+				this->parse_result = PARSERESULT_MATCH;
+				return this;
+
+			/* one of children is empty : schedule return MATCH and continue */
+			case PARSERESULT_EMPTY:
+				this->parse_result = PARSERESULT_EMPTY;
+				break;
+
+			/* one of children is not match : continue */
+			}
+		}
+		return this;
+
+	/* check 4. to meet the condition ZERO OR MORE times */
+	case SELEMOP_ZERO_OR_MORE:
+		/* match 1 or more time : return MATCH */
+		/* other : return EMPTY */
+		this->parse_result = PARSERESULT_EMPTY;
+		while(1){
+			int indent = indent_depth + is_indent(sElemIt, 0);
+			SyntaxTreeNode* child = parse(sElem.children[0], indent);
+			if(this->child == NULL){
+				this->child = child;
+				newest_child = this->child;
+			}
+			else{
+				newest_child->brother = child;
+				newest_child = newest_child->brother;
+			}
+			if(!child->parse_result){
+				break;
+			}
+			this->parse_result = PARSERESULT_MATCH;
+		}
+		return this;
+
+	/* check 5. to meet the condition ZERO OR ONE time */
+	case SELEMOP_ZERO_OR_ONE:
+		this->child = parse(sElem.children[0], indent_depth + is_indent(sElemIt, 0));
+		if(this->child->parse_result) this->parse_result = PARSERESULT_MATCH;
+		else this->parse_result = PARSERESULT_EMPTY;
+		return this;
+	}
+
+	/* nobody can come here just for debug */
+	return 0;
 }

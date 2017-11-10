@@ -49,7 +49,7 @@ void free_tree(SyntaxTreeNode* node){
 	free(node);
 	node = NULL;
 }
-/*
+
 void debug_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
@@ -64,7 +64,7 @@ void debug_tree(SyntaxTreeNode* node){
 	debug_tree(node->child);
 	debug_tree(node->brother);
 }
-*/
+
 void print_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
@@ -127,9 +127,13 @@ int main(int nc, char *np[]) {
 	init_parse();
 
 	SyntaxTreeNode *node_SPROGRAM = parse(SPROGRAM, 0);
-	
-	print_tree(node_SPROGRAM);
-	printf("\n");
+
+	/*debug_tree(node_SPROGRAM);*/
+
+	if(node_SPROGRAM->parse_result == PARSERESULT_MATCH){
+		print_tree(node_SPROGRAM);
+		printf("\n");
+	}
 
 	free_tree(node_SPROGRAM);
 

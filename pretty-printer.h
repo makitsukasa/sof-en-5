@@ -111,19 +111,15 @@ typedef struct SyntaxTreeNode_{
 
 extern const char* SYNTAXDIC[NUMOFSYNTAX + 1];
 
+extern SyntaxTreeNode* malloc_tree_node();
+extern void free_tree(SyntaxTreeNode* node);
 extern void debug_tree(SyntaxTreeNode* node);
 extern void print_tree(SyntaxTreeNode* node);
-extern void free_tree(SyntaxTreeNode* node);
-extern SyntaxTreeNode* malloc_tree_node();
 
 /* parse.c */
 #define PARSERESULT_MATCH		1
 #define PARSERESULT_EMPTY		2
 #define PARSERESULT_NOTMATCH	0
-extern int parse_without_tree(int sElemIt, int depth);
-extern SyntaxTreeNode* parse(int sElemIt, int indent_depth);
 extern int is_indent(int parentSyntaxElemIt, int childIt);
 extern void init_parse(void);
-
-/* preformat.c */
-extern void preformat_tree(SyntaxTreeNode* node);
+extern SyntaxTreeNode* parse(int sElemIt, int indent_depth);
