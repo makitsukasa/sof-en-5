@@ -24,7 +24,6 @@ const char* SYNTAXDIC[NUMOFSYNTAX + 1] = {
 };
 
 int is_head_of_line;
-int malloc_counter;
 
 /*
 malloc_tree_node(0, "", 0, 0, 0);
@@ -35,8 +34,6 @@ SyntaxTreeNode* malloc_tree_node(){
 		printf("error i could not malloc\n");
 		exit(-1);
 	}
-	malloc_counter++;
-
 	p->brother = NULL;
 	p->child = NULL;
 
@@ -50,12 +47,11 @@ void free_tree(SyntaxTreeNode* node){
 	free_tree(node->brother);
 
 	free(node);
-	malloc_counter++;
+	node = NULL;
 }
-
+/*
 void debug_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
-	/*if(node->parse_result != PARSERESULT_MATCH) return;*/
 
 	printf("%16s ", SYNTAXDIC[node->sElemIt]);
 	printf("d%d ", node->indent_depth);
@@ -68,7 +64,7 @@ void debug_tree(SyntaxTreeNode* node){
 	debug_tree(node->child);
 	debug_tree(node->brother);
 }
-
+*/
 void print_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
@@ -117,11 +113,7 @@ void print_tree(SyntaxTreeNode* node){
 	print_tree(node->brother);
 }
 
-
-
-
 int main(int nc, char *np[]) {
-
 	if(nc < 2) {
 		printf("File name id not given.\n");
 		exit(-1);
@@ -134,22 +126,12 @@ int main(int nc, char *np[]) {
 
 	init_parse();
 
-	malloc_counter = 0;
-
-	SyntaxTreeNode *node_SPROGRAM = malloc_tree_node();
-
-	node_SPROGRAM = parse(SPROGRAM, 0);
-
-	printf("malloc %d\n", malloc_counter);
-
+	SyntaxTreeNode *node_SPROGRAM = parse(SPROGRAM, 0);
+	
 	print_tree(node_SPROGRAM);
 	printf("\n");
 
-	malloc_counter = 0;
-
 	free_tree(node_SPROGRAM);
-
-	printf("free %d\n", malloc_counter);
 
 	return 0;
 }

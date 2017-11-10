@@ -11,9 +11,9 @@
 #define SVARDEC				 54	/* all of		TVAR SVARNAMES TCOLON STYPE TSEMI SVARDEC_6              */
 #define SVARDEC_6			 55	/* zero or more	SVARDEC_6_1                                              */
 #define SVARDEC_6_1			 56	/* all of		SVARNAMES TCOLON STYPE TSEMI                             */
-#define SVARNAMES			 57	/* all of		SVARNAME SVARNAMES_1                                     */
-#define SVARNAMES_1			 58	/* zero or more	SVARNAMES_1_1                                            */
-#define SVARNAMES_1_1		 59	/* all of		TCOMMA SVARNAME                                          */
+#define SVARNAMES			 57	/* all of		SVARNAME SVARNAMES_2                                     */
+#define SVARNAMES_2			 58	/* zero or more	SVARNAMES_2_1                                            */
+#define SVARNAMES_2_1		 59	/* all of		TCOMMA SVARNAME                                          */
 #define SVARNAME			 60	/* all of		TNAME                                                    */
 #define STYPE				 61	/* one of		SSTDTYPE SARRTYPE                                        */
 #define SSTDTYPE			 62	/* one of		TINTEGER TBOOLEAN TCHAR                                  */

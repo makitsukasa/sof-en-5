@@ -117,9 +117,6 @@ SyntaxTreeNode* parse(int sElemIt, int indent_depth){
 		while(1){
 			int indent = indent_depth + is_indent(sElemIt, 0);
 			SyntaxTreeNode* child = parse(sElem.children[0], indent);
-			if(!child->parse_result){
-				break;
-			}
 			if(this->child == NULL){
 				this->child = child;
 				newest_child = this->child;
@@ -127,6 +124,9 @@ SyntaxTreeNode* parse(int sElemIt, int indent_depth){
 			else{
 				newest_child->brother = child;
 				newest_child = newest_child->brother;
+			}
+			if(!child->parse_result){
+				break;
 			}
 			this->parse_result = PARSERESULT_MATCH;
 		}
@@ -211,9 +211,9 @@ void init_parse(void) {
 	SyntaxElem sElem_SVARDEC			= {SELEMOP_ALL_OF,			6, {TVAR, SVARNAMES, TCOLON, STYPE, TSEMI, SVARDEC_6}};
 	SyntaxElem sElem_SVARDEC_6			= {SELEMOP_ZERO_OR_MORE,	1, {SVARDEC_6_1}};
 	SyntaxElem sElem_SVARDEC_6_1		= {SELEMOP_ALL_OF,			4, {SVARNAMES, TCOLON, STYPE, TSEMI}};
-	SyntaxElem sElem_SVARNAMES			= {SELEMOP_ALL_OF,			2, {SVARNAME, SVARNAMES_1}};
-	SyntaxElem sElem_SVARNAMES_1		= {SELEMOP_ZERO_OR_MORE,	1, {SVARNAMES_1_1}};
-	SyntaxElem sElem_SVARNAMES_1_1		= {SELEMOP_ALL_OF,			2, {TCOMMA, SVARNAME}};
+	SyntaxElem sElem_SVARNAMES			= {SELEMOP_ALL_OF,			2, {SVARNAME, SVARNAMES_2}};
+	SyntaxElem sElem_SVARNAMES_2		= {SELEMOP_ZERO_OR_MORE,	1, {SVARNAMES_2_1}};
+	SyntaxElem sElem_SVARNAMES_2_1		= {SELEMOP_ALL_OF,			2, {TCOMMA, SVARNAME}};
 	SyntaxElem sElem_SVARNAME			= {SELEMOP_ALL_OF,			1, {TNAME}};
 	SyntaxElem sElem_STYPE				= {SELEMOP_ONE_OF,			2, {SSTDTYPE, SARRTYPE}};
 	SyntaxElem sElem_SSTDTYPE			= {SELEMOP_ONE_OF,			3, {TINTEGER, TBOOLEAN, TCHAR}};
@@ -341,8 +341,8 @@ void init_parse(void) {
 	syntaxElems[SVARDEC_6]			= sElem_SVARDEC_6;
 	syntaxElems[SVARDEC_6_1]		= sElem_SVARDEC_6_1;
 	syntaxElems[SVARNAMES]			= sElem_SVARNAMES;
-	syntaxElems[SVARNAMES_1]		= sElem_SVARNAMES_1;
-	syntaxElems[SVARNAMES_1_1]		= sElem_SVARNAMES_1_1;
+	syntaxElems[SVARNAMES_2]		= sElem_SVARNAMES_2;
+	syntaxElems[SVARNAMES_2_1]		= sElem_SVARNAMES_2_1;
 	syntaxElems[SVARNAME]			= sElem_SVARNAME;
 	syntaxElems[STYPE]				= sElem_STYPE;
 	syntaxElems[SSTDTYPE]			= sElem_SSTDTYPE;
