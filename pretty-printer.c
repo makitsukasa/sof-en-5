@@ -23,6 +23,24 @@ const char* SYNTAXDIC[NUMOFSYNTAX + 1] = {
 	"SOUTFORM", "SOUTFORM_1", "SOUTFORM_1_2", "SOUTFORM_1_2_1", "SEMPTYSTAT", 
 };
 
+int malloc_counter;
+
+/*
+malloc_tree_node(0, "", 0, 0, 0);
+*/
+SyntaxTreeNode* malloc_tree_node(){
+	SyntaxTreeNode *p = malloc(sizeof(SyntaxTreeNode));
+	if(p == NULL){
+		printf("error i could not malloc\n");
+		exit(-1);
+	}
+	malloc_counter++;
+
+	p->brother = NULL;
+	p->child = NULL;
+
+	return p;
+}
 
 void free_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
@@ -31,31 +49,8 @@ void free_tree(SyntaxTreeNode* node){
 	free_tree(node->brother);
 
 	free(node);
+	malloc_counter++;
 }
-
-/*
-malloc_tree_node(0, "", 0, 0, 0);
-*/
-SyntaxTreeNode* malloc_tree_node(){
-	SyntaxTreeNode *p = malloc(sizeof(SyntaxTreeNode));
-
-	if(p == NULL){
-		printf("error i could not malloc\n");
-		exit(-1);
-	}
-/*
-	p->syntaxElemIt = syntaxElemIt_;
-	strcpy(p->string_attr, string_attr_);
-	p->is_head_of_line = is_head_of_line_;
-	p->indent_depth = indent_depth_;
-	p->iter_depth = iter_depth_;
-*/
-	p->brother = NULL;
-	p->child = NULL;
-
-	return p;
-}
-
 
 int main(int nc, char *np[]) {
 
@@ -70,24 +65,23 @@ int main(int nc, char *np[]) {
 	}
 
 	init_parse();
-/*
-	result = parse_without_tree(SPROGRAM, 0);
-*/
-	
+
+	malloc_counter = 0;
+
 	SyntaxTreeNode *node_SPROGRAM = malloc_tree_node();
 
 	node_SPROGRAM = parse(SPROGRAM, 0);
 
-/*
-	if(node_SPROGRAM->parse_result) printf("\nyes\n");
-	else printf("\nno\n");
-*/
-	debug_tree(node_SPROGRAM);
+	printf("malloc %d\n", malloc_counter);
 
 	print_tree(node_SPROGRAM);
 	printf("\n");
 
+	malloc_counter = 0;
+
 	free_tree(node_SPROGRAM);
+
+	printf("free %d\n", malloc_counter);
 
 	return 0;
 }
