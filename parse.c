@@ -433,5 +433,5 @@ SyntaxTreeNode* parse(int sElemIt, int indent_depth){
 	}
 
 	/* nobody can come here just for debug */
-	return 0;
+	return NULL;
 }

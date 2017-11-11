@@ -53,11 +53,14 @@ void free_tree(SyntaxTreeNode* node){
 void debug_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
+	printf("%8p ", node);
 	printf("%16s ", SYNTAXDIC[node->sElemIt]);
 	printf("d%d ", node->indent_depth);
 	printf("w%d ", node->iter_depth);
 	printf("%s ", node->parse_result == PARSERESULT_MATCH ? "T" : 
 				node->parse_result == PARSERESULT_NOTMATCH ? "F" : "E");
+	printf("c%9p ", node->child);
+	printf("b%9p ", node->brother);
 	printf("%s ", node->string_attr);
 	printf("\n");
 
