@@ -4,24 +4,24 @@
 
 int token;
 
-int is_indent(int parentSyntaxElemIt, int childIt){
-	if(parentSyntaxElemIt == SBLOCK && childIt == 0)
+int is_indent(int parentSyntaxElemIt, int child_it){
+	if(parentSyntaxElemIt == SBLOCK && child_it == 0)
 		return 1;
 
-	if(parentSyntaxElemIt == SSUBPROGDEC && childIt == 4)
+	if(parentSyntaxElemIt == SSUBPROGDEC && child_it == 4)
 		return 1;
 
 	if(parentSyntaxElemIt == SCOMPSTAT && 
-		(childIt == 1 || childIt == 2))
+		(child_it == 1 || child_it == 2))
 			return 1;
 
 	return 0;
 }
 
-SyntaxTreeNode* add_child(SyntaxTreeNode* this, SyntaxTreeNode* youngest_child, int childIt){
-	int indent = this->indent_depth + is_indent(this->s_elem_it, childIt);
+SyntaxTreeNode* add_child(SyntaxTreeNode* this, SyntaxTreeNode* youngest_child, int child_it){
+	int indent = this->indent_depth + is_indent(this->s_elem_it, child_it);
 	SyntaxTreeNode* newborn
-		= parse(s_elems[this->s_elem_it].children[childIt], indent);
+		= parse(s_elems[this->s_elem_it].children[child_it], indent);
 
 	if(youngest_child == NULL){
 		this->child = newborn;
