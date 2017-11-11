@@ -98,6 +98,7 @@ typedef struct SyntaxTreeNode_{
 	char string_attr[MAXSTRSIZE];
 	int indent_depth;
 	int iter_depth;
+	int line_num;
 	int parse_result;
 	struct SyntaxTreeNode_* brother;
 	struct SyntaxTreeNode_* child;
@@ -118,7 +119,8 @@ extern void print_tree(SyntaxTreeNode* node);
 
 /* parse.c */
 #define PARSERESULT_MATCH		1
+#define PARSERESULT_DIFFERENCE	0
 #define PARSERESULT_EMPTY		2
-#define PARSERESULT_NOTMATCH	0
+#define PARSERESULT_ACCIDENT	3
 extern void init_parse(void);
 extern SyntaxTreeNode* parse(int s_elem_it, int indent_depth);

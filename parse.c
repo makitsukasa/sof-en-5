@@ -1,17 +1,17 @@
 #include "pretty-printer.h"
 
-/* const */ SyntaxElem s_elems[NUMOFSYNTAX + 1];
+/* const */ SyntaxElem s_elem_array[NUMOFSYNTAX + 1];
 
 int token;
 
-int is_indent(int parentSyntaxElemIt, int child_it){
-	if(parentSyntaxElemIt == SBLOCK && child_it == 0)
+int is_indent(int parent_s_elem_it, int child_it){
+	if(parent_s_elem_it == SBLOCK && child_it == 0)
 		return 1;
 
-	if(parentSyntaxElemIt == SSUBPROGDEC && child_it == 4)
+	if(parent_s_elem_it == SSUBPROGDEC && child_it == 4)
 		return 1;
 
-	if(parentSyntaxElemIt == SCOMPSTAT && 
+	if(parent_s_elem_it == SCOMPSTAT && 
 		(child_it == 1 || child_it == 2))
 			return 1;
 
@@ -22,7 +22,7 @@ int is_indent(int parentSyntaxElemIt, int child_it){
 SyntaxTreeNode* add_child(SyntaxTreeNode* this, SyntaxTreeNode* youngest_child, int child_it){
 	int indent = this->indent_depth + is_indent(this->s_elem_it, child_it);
 	SyntaxTreeNode* newborn
-		= parse(s_elems[this->s_elem_it].children[child_it], indent);
+		= parse(s_elem_array[this->s_elem_it].children[child_it], indent);
 
 	if(youngest_child == NULL){
 		this->child = newborn;
@@ -39,7 +39,7 @@ void init_parse(void) {
 
 	for(i = 0; i < NUMOFSYNTAX; i++){
 		SyntaxElem hoge = {SELEMOP_TERMINATOR, 0, {}};
-		s_elems[i] = hoge;
+		s_elem_array[i] = hoge;
 	}
 
 	/*
@@ -172,134 +172,134 @@ void init_parse(void) {
 	SyntaxElem s_elem_SOUTFORM_0_1_0	= {SELEMOP_ALL_OF,			2, {TCOLON, TNUMBER}};
 	SyntaxElem s_elem_SEMPTYSTAT		= {SELEMOP_TERMINATOR,		0, {}};
 	/*
-	s_elems[TNAME]				= s_elem_TNAME;
-	s_elems[TPROGRAM]			= s_elem_TPROGRAM;
-	s_elems[TVAR]				= s_elem_TVAR;
-	s_elems[TARRAY]				= s_elem_TARRAY;
-	s_elems[TOF]				= s_elem_TOF;
-	s_elems[TBEGIN]				= s_elem_TBEGIN;
-	s_elems[TEND]				= s_elem_TEND;
-	s_elems[TIF]				= s_elem_TIF;
-	s_elems[TTHEN]				= s_elem_TTHEN;
-	s_elems[TELSE]				= s_elem_TELSE;
-	s_elems[TPROCEDURE]			= s_elem_TPROCEDURE;
-	s_elems[TRETURN]			= s_elem_TRETURN;
-	s_elems[TCALL]				= s_elem_TCALL;
-	s_elems[TWHILE]				= s_elem_TWHILE;
-	s_elems[TDO]				= s_elem_TDO;
-	s_elems[TNOT]				= s_elem_TNOT;
-	s_elems[TOR]				= s_elem_TOR;
-	s_elems[TDIV]				= s_elem_TDIV;
-	s_elems[TAND]				= s_elem_TAND;
-	s_elems[TCHAR]				= s_elem_TCHAR;
-	s_elems[TINTEGER]			= s_elem_TINTEGER;
-	s_elems[TBOOLEAN]			= s_elem_TBOOLEAN;
-	s_elems[TREADLN]			= s_elem_TREADLN;
-	s_elems[TWRITELN]			= s_elem_TWRITELN;
-	s_elems[TTRUE]				= s_elem_TTRUE;
-	s_elems[TFALSE]				= s_elem_TFALSE;
-	s_elems[TNUMBER]			= s_elem_TNUMBER;
-	s_elems[TSTRING]			= s_elem_TSTRING;
-	s_elems[TPLUS]				= s_elem_TPLUS;
-	s_elems[TMINUS]				= s_elem_TMINUS;
-	s_elems[TSTAR]				= s_elem_TSTAR;
-	s_elems[TEQUAL]				= s_elem_TEQUAL;
-	s_elems[TNOTEQ]				= s_elem_TNOTEQ;
-	s_elems[TLE]				= s_elem_TLE;
-	s_elems[TLEEQ]				= s_elem_TLEEQ;
-	s_elems[TGR]				= s_elem_TGR;
-	s_elems[TGREQ]				= s_elem_TGREQ;
-	s_elems[TLPAREN]			= s_elem_TLPAREN;
-	s_elems[TRPAREN]			= s_elem_TRPAREN;
-	s_elems[TLSQPAREN]			= s_elem_TLSQPAREN;
-	s_elems[TRSQPAREN]			= s_elem_TRSQPAREN;
-	s_elems[TASSIGN]			= s_elem_TASSIGN;
-	s_elems[TDOT]				= s_elem_TDOT;
-	s_elems[TCOMMA]				= s_elem_TCOMMA;
-	s_elems[TCOLON]				= s_elem_TCOLON;
-	s_elems[TSEMI]				= s_elem_TSEMI;
-	s_elems[TREAD]				= s_elem_TREAD;
-	s_elems[TWRITE]				= s_elem_TWRITE;
-	s_elems[TBREAK]				= s_elem_TBREAK;
+	s_elem_array[TNAME]				= s_elem_TNAME;
+	s_elem_array[TPROGRAM]			= s_elem_TPROGRAM;
+	s_elem_array[TVAR]				= s_elem_TVAR;
+	s_elem_array[TARRAY]				= s_elem_TARRAY;
+	s_elem_array[TOF]				= s_elem_TOF;
+	s_elem_array[TBEGIN]				= s_elem_TBEGIN;
+	s_elem_array[TEND]				= s_elem_TEND;
+	s_elem_array[TIF]				= s_elem_TIF;
+	s_elem_array[TTHEN]				= s_elem_TTHEN;
+	s_elem_array[TELSE]				= s_elem_TELSE;
+	s_elem_array[TPROCEDURE]			= s_elem_TPROCEDURE;
+	s_elem_array[TRETURN]			= s_elem_TRETURN;
+	s_elem_array[TCALL]				= s_elem_TCALL;
+	s_elem_array[TWHILE]				= s_elem_TWHILE;
+	s_elem_array[TDO]				= s_elem_TDO;
+	s_elem_array[TNOT]				= s_elem_TNOT;
+	s_elem_array[TOR]				= s_elem_TOR;
+	s_elem_array[TDIV]				= s_elem_TDIV;
+	s_elem_array[TAND]				= s_elem_TAND;
+	s_elem_array[TCHAR]				= s_elem_TCHAR;
+	s_elem_array[TINTEGER]			= s_elem_TINTEGER;
+	s_elem_array[TBOOLEAN]			= s_elem_TBOOLEAN;
+	s_elem_array[TREADLN]			= s_elem_TREADLN;
+	s_elem_array[TWRITELN]			= s_elem_TWRITELN;
+	s_elem_array[TTRUE]				= s_elem_TTRUE;
+	s_elem_array[TFALSE]				= s_elem_TFALSE;
+	s_elem_array[TNUMBER]			= s_elem_TNUMBER;
+	s_elem_array[TSTRING]			= s_elem_TSTRING;
+	s_elem_array[TPLUS]				= s_elem_TPLUS;
+	s_elem_array[TMINUS]				= s_elem_TMINUS;
+	s_elem_array[TSTAR]				= s_elem_TSTAR;
+	s_elem_array[TEQUAL]				= s_elem_TEQUAL;
+	s_elem_array[TNOTEQ]				= s_elem_TNOTEQ;
+	s_elem_array[TLE]				= s_elem_TLE;
+	s_elem_array[TLEEQ]				= s_elem_TLEEQ;
+	s_elem_array[TGR]				= s_elem_TGR;
+	s_elem_array[TGREQ]				= s_elem_TGREQ;
+	s_elem_array[TLPAREN]			= s_elem_TLPAREN;
+	s_elem_array[TRPAREN]			= s_elem_TRPAREN;
+	s_elem_array[TLSQPAREN]			= s_elem_TLSQPAREN;
+	s_elem_array[TRSQPAREN]			= s_elem_TRSQPAREN;
+	s_elem_array[TASSIGN]			= s_elem_TASSIGN;
+	s_elem_array[TDOT]				= s_elem_TDOT;
+	s_elem_array[TCOMMA]				= s_elem_TCOMMA;
+	s_elem_array[TCOLON]				= s_elem_TCOLON;
+	s_elem_array[TSEMI]				= s_elem_TSEMI;
+	s_elem_array[TREAD]				= s_elem_TREAD;
+	s_elem_array[TWRITE]				= s_elem_TWRITE;
+	s_elem_array[TBREAK]				= s_elem_TBREAK;
 	*/
-	s_elems[SPROGRAM]			= s_elem_SPROGRAM;
-	s_elems[SBLOCK]				= s_elem_SBLOCK;
-	s_elems[SBLOCK_0]			= s_elem_SBLOCK_0;
-	s_elems[SBLOCK_0_0]			= s_elem_SBLOCK_0_0;
-	s_elems[SVARDEC]			= s_elem_SVARDEC;
-	s_elems[SVARDEC_5]			= s_elem_SVARDEC_5;
-	s_elems[SVARDEC_5_0]		= s_elem_SVARDEC_5_0;
-	s_elems[SVARNAMES]			= s_elem_SVARNAMES;
-	s_elems[SVARNAMES_1]		= s_elem_SVARNAMES_1;
-	s_elems[SVARNAMES_1_0]		= s_elem_SVARNAMES_1_0;
-	s_elems[SVARNAME]			= s_elem_SVARNAME;
-	s_elems[STYPE]				= s_elem_STYPE;
-	s_elems[SSTDTYPE]			= s_elem_SSTDTYPE;
-	s_elems[SARRTYPE]			= s_elem_SARRTYPE;
-	s_elems[SSUBPROGDEC]		= s_elem_SSUBPROGDEC;
-	s_elems[SSUBPROGDEC_2]		= s_elem_SSUBPROGDEC_2;
-	s_elems[SSUBPROGDEC_4]		= s_elem_SSUBPROGDEC_4;
-	s_elems[SPROCEDURENAME]		= s_elem_SPROCEDURENAME;
-	s_elems[SFORMPARAM]			= s_elem_SFORMPARAM;
-	s_elems[SFORMPARAM_4]		= s_elem_SFORMPARAM_4;
-	s_elems[SFORMPARAM_4_0]		= s_elem_SFORMPARAM_4_0;
-	s_elems[SCOMPSTAT]			= s_elem_SCOMPSTAT;
-	s_elems[SCOMPSTAT_2]		= s_elem_SCOMPSTAT_2;
-	s_elems[SCOMPSTAT_2_0]		= s_elem_SCOMPSTAT_2_0;
-	s_elems[SSTAT]				= s_elem_SSTAT;
-	s_elems[SCONDSTAT]			= s_elem_SCONDSTAT;
-	s_elems[SCONDSTAT_4]		= s_elem_SCONDSTAT_4;
-	s_elems[SCONDSTAT_4_0]		= s_elem_SCONDSTAT_4_0;
-	s_elems[SITERSTAT]			= s_elem_SITERSTAT;
-	s_elems[SEXITSTAT]			= s_elem_SEXITSTAT;
-	s_elems[SCALLSTAT]			= s_elem_SCALLSTAT;
-	s_elems[SCALLSTAT_2]		= s_elem_SCALLSTAT_2;
-	s_elems[SCALLSTAT_2_0]		= s_elem_SCALLSTAT_2_0;
-	s_elems[SEXPRS]				= s_elem_SEXPRS;
-	s_elems[SEXPRS_1]			= s_elem_SEXPRS_1;
-	s_elems[SEXPRS_1_0]			= s_elem_SEXPRS_1_0;
-	s_elems[SRETSTAT]			= s_elem_SRETSTAT;
-	s_elems[SASSIGNSTAT]		= s_elem_SASSIGNSTAT;
-	s_elems[SLEFTPART]			= s_elem_SLEFTPART;
-	s_elems[SVAR]				= s_elem_SVAR;
-	s_elems[SVAR_1]				= s_elem_SVAR_1;
-	s_elems[SVAR_1_0]			= s_elem_SVAR_1_0;
-	s_elems[SEXPR]				= s_elem_SEXPR;
-	s_elems[SEXPR_1]			= s_elem_SEXPR_1;
-	s_elems[SEXPR_1_0]			= s_elem_SEXPR_1_0;
-	s_elems[SSIMPLEEXPR]		= s_elem_SSIMPLEEXPR;
-	s_elems[SSIMPLEEXPR_0]		= s_elem_SSIMPLEEXPR_0;
-	s_elems[SSIMPLEEXPR_0_0]	= s_elem_SSIMPLEEXPR_0_0;
-	s_elems[SSIMPLEEXPR_2]		= s_elem_SSIMPLEEXPR_2;
-	s_elems[SSIMPLEEXPR_2_0]	= s_elem_SSIMPLEEXPR_2_0;
-	s_elems[STERM]				= s_elem_STERM;
-	s_elems[STERM_1]			= s_elem_STERM_1;
-	s_elems[STERM_1_0]			= s_elem_STERM_1_0;
-	s_elems[SFACTOR]			= s_elem_SFACTOR;
-	s_elems[SFACTOR_2]			= s_elem_SFACTOR_2;
-	s_elems[SFACTOR_3]			= s_elem_SFACTOR_3;
-	s_elems[SFACTOR_4]			= s_elem_SFACTOR_4;
-	s_elems[SCONST]				= s_elem_SCONST;
-	s_elems[SMULOP]				= s_elem_SMULOP;
-	s_elems[SADDOP]				= s_elem_SADDOP;
-	s_elems[SRELATOP]			= s_elem_SRELATOP;
-	s_elems[SINSTAT]			= s_elem_SINSTAT;
-	s_elems[SINSTAT_0]			= s_elem_SINSTAT_0;
-	s_elems[SINSTAT_1]			= s_elem_SINSTAT_1;
-	s_elems[SINSTAT_1_0]		= s_elem_SINSTAT_1_0;
-	s_elems[SINSTAT_1_0_2]		= s_elem_SINSTAT_1_0_2;
-	s_elems[SINSTAT_1_0_2_0]	= s_elem_SINSTAT_1_0_2_0;
-	s_elems[SOUTSTAT]			= s_elem_SOUTSTAT;
-	s_elems[SOUTSTAT_0]			= s_elem_SOUTSTAT_0;
-	s_elems[SOUTSTAT_1]			= s_elem_SOUTSTAT_1;
-	s_elems[SOUTSTAT_1_0]		= s_elem_SOUTSTAT_1_0;
-	s_elems[SOUTSTAT_1_0_2]		= s_elem_SOUTSTAT_1_0_2;
-	s_elems[SOUTSTAT_1_0_2_0]	= s_elem_SOUTSTAT_1_0_2_0;
-	s_elems[SOUTFORM]			= s_elem_SOUTFORM;
-	s_elems[SOUTFORM_0]			= s_elem_SOUTFORM_0;
-	s_elems[SOUTFORM_0_1]		= s_elem_SOUTFORM_0_1;
-	s_elems[SOUTFORM_0_1_0]		= s_elem_SOUTFORM_0_1_0;
-	s_elems[SEMPTYSTAT]			= s_elem_SEMPTYSTAT;
+	s_elem_array[SPROGRAM]			= s_elem_SPROGRAM;
+	s_elem_array[SBLOCK]				= s_elem_SBLOCK;
+	s_elem_array[SBLOCK_0]			= s_elem_SBLOCK_0;
+	s_elem_array[SBLOCK_0_0]			= s_elem_SBLOCK_0_0;
+	s_elem_array[SVARDEC]			= s_elem_SVARDEC;
+	s_elem_array[SVARDEC_5]			= s_elem_SVARDEC_5;
+	s_elem_array[SVARDEC_5_0]		= s_elem_SVARDEC_5_0;
+	s_elem_array[SVARNAMES]			= s_elem_SVARNAMES;
+	s_elem_array[SVARNAMES_1]		= s_elem_SVARNAMES_1;
+	s_elem_array[SVARNAMES_1_0]		= s_elem_SVARNAMES_1_0;
+	s_elem_array[SVARNAME]			= s_elem_SVARNAME;
+	s_elem_array[STYPE]				= s_elem_STYPE;
+	s_elem_array[SSTDTYPE]			= s_elem_SSTDTYPE;
+	s_elem_array[SARRTYPE]			= s_elem_SARRTYPE;
+	s_elem_array[SSUBPROGDEC]		= s_elem_SSUBPROGDEC;
+	s_elem_array[SSUBPROGDEC_2]		= s_elem_SSUBPROGDEC_2;
+	s_elem_array[SSUBPROGDEC_4]		= s_elem_SSUBPROGDEC_4;
+	s_elem_array[SPROCEDURENAME]		= s_elem_SPROCEDURENAME;
+	s_elem_array[SFORMPARAM]			= s_elem_SFORMPARAM;
+	s_elem_array[SFORMPARAM_4]		= s_elem_SFORMPARAM_4;
+	s_elem_array[SFORMPARAM_4_0]		= s_elem_SFORMPARAM_4_0;
+	s_elem_array[SCOMPSTAT]			= s_elem_SCOMPSTAT;
+	s_elem_array[SCOMPSTAT_2]		= s_elem_SCOMPSTAT_2;
+	s_elem_array[SCOMPSTAT_2_0]		= s_elem_SCOMPSTAT_2_0;
+	s_elem_array[SSTAT]				= s_elem_SSTAT;
+	s_elem_array[SCONDSTAT]			= s_elem_SCONDSTAT;
+	s_elem_array[SCONDSTAT_4]		= s_elem_SCONDSTAT_4;
+	s_elem_array[SCONDSTAT_4_0]		= s_elem_SCONDSTAT_4_0;
+	s_elem_array[SITERSTAT]			= s_elem_SITERSTAT;
+	s_elem_array[SEXITSTAT]			= s_elem_SEXITSTAT;
+	s_elem_array[SCALLSTAT]			= s_elem_SCALLSTAT;
+	s_elem_array[SCALLSTAT_2]		= s_elem_SCALLSTAT_2;
+	s_elem_array[SCALLSTAT_2_0]		= s_elem_SCALLSTAT_2_0;
+	s_elem_array[SEXPRS]				= s_elem_SEXPRS;
+	s_elem_array[SEXPRS_1]			= s_elem_SEXPRS_1;
+	s_elem_array[SEXPRS_1_0]			= s_elem_SEXPRS_1_0;
+	s_elem_array[SRETSTAT]			= s_elem_SRETSTAT;
+	s_elem_array[SASSIGNSTAT]		= s_elem_SASSIGNSTAT;
+	s_elem_array[SLEFTPART]			= s_elem_SLEFTPART;
+	s_elem_array[SVAR]				= s_elem_SVAR;
+	s_elem_array[SVAR_1]				= s_elem_SVAR_1;
+	s_elem_array[SVAR_1_0]			= s_elem_SVAR_1_0;
+	s_elem_array[SEXPR]				= s_elem_SEXPR;
+	s_elem_array[SEXPR_1]			= s_elem_SEXPR_1;
+	s_elem_array[SEXPR_1_0]			= s_elem_SEXPR_1_0;
+	s_elem_array[SSIMPLEEXPR]		= s_elem_SSIMPLEEXPR;
+	s_elem_array[SSIMPLEEXPR_0]		= s_elem_SSIMPLEEXPR_0;
+	s_elem_array[SSIMPLEEXPR_0_0]	= s_elem_SSIMPLEEXPR_0_0;
+	s_elem_array[SSIMPLEEXPR_2]		= s_elem_SSIMPLEEXPR_2;
+	s_elem_array[SSIMPLEEXPR_2_0]	= s_elem_SSIMPLEEXPR_2_0;
+	s_elem_array[STERM]				= s_elem_STERM;
+	s_elem_array[STERM_1]			= s_elem_STERM_1;
+	s_elem_array[STERM_1_0]			= s_elem_STERM_1_0;
+	s_elem_array[SFACTOR]			= s_elem_SFACTOR;
+	s_elem_array[SFACTOR_2]			= s_elem_SFACTOR_2;
+	s_elem_array[SFACTOR_3]			= s_elem_SFACTOR_3;
+	s_elem_array[SFACTOR_4]			= s_elem_SFACTOR_4;
+	s_elem_array[SCONST]				= s_elem_SCONST;
+	s_elem_array[SMULOP]				= s_elem_SMULOP;
+	s_elem_array[SADDOP]				= s_elem_SADDOP;
+	s_elem_array[SRELATOP]			= s_elem_SRELATOP;
+	s_elem_array[SINSTAT]			= s_elem_SINSTAT;
+	s_elem_array[SINSTAT_0]			= s_elem_SINSTAT_0;
+	s_elem_array[SINSTAT_1]			= s_elem_SINSTAT_1;
+	s_elem_array[SINSTAT_1_0]		= s_elem_SINSTAT_1_0;
+	s_elem_array[SINSTAT_1_0_2]		= s_elem_SINSTAT_1_0_2;
+	s_elem_array[SINSTAT_1_0_2_0]	= s_elem_SINSTAT_1_0_2_0;
+	s_elem_array[SOUTSTAT]			= s_elem_SOUTSTAT;
+	s_elem_array[SOUTSTAT_0]			= s_elem_SOUTSTAT_0;
+	s_elem_array[SOUTSTAT_1]			= s_elem_SOUTSTAT_1;
+	s_elem_array[SOUTSTAT_1_0]		= s_elem_SOUTSTAT_1_0;
+	s_elem_array[SOUTSTAT_1_0_2]		= s_elem_SOUTSTAT_1_0_2;
+	s_elem_array[SOUTSTAT_1_0_2_0]	= s_elem_SOUTSTAT_1_0_2_0;
+	s_elem_array[SOUTFORM]			= s_elem_SOUTFORM;
+	s_elem_array[SOUTFORM_0]			= s_elem_SOUTFORM_0;
+	s_elem_array[SOUTFORM_0_1]		= s_elem_SOUTFORM_0_1;
+	s_elem_array[SOUTFORM_0_1_0]		= s_elem_SOUTFORM_0_1_0;
+	s_elem_array[SEMPTYSTAT]			= s_elem_SEMPTYSTAT;
 }
 
 SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
@@ -309,7 +309,7 @@ SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
 	this->s_elem_it = s_elem_it;
 	this->indent_depth = indent_depth;
 
-	switch(s_elems[this->s_elem_it].op){
+	switch(s_elem_array[this->s_elem_it].op){
 
 	/* check 1. to meet TERMINATOR */
 	case SELEMOP_TERMINATOR:
@@ -322,26 +322,39 @@ SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
 		else if(token == s_elem_it){
 			this->parse_result = PARSERESULT_MATCH;
 			this->s_elem_it = s_elem_it;
+			this->line_num = line_num;
 			strcpy(this->string_attr, string_attr);
 			token = scan();
 			return this;
 		}
 		else{
-			this->parse_result = PARSERESULT_NOTMATCH;
+			this->parse_result = PARSERESULT_DIFFERENCE;
 			return this;
 		}
 
 	/* check 2. to meet ALL OF the conditions */
 	case SELEMOP_ALL_OF:
-		for(i = 0; i < s_elems[this->s_elem_it].children_num; i++){
+		for(i = 0; i < s_elem_array[this->s_elem_it].children_num; i++){
 			youngest_child = add_child(this, youngest_child, i);
 
 			switch(youngest_child->parse_result){
 
-			/* one of children is not matched : NOT MATCH */
-			case PARSERESULT_NOTMATCH:
-				this->parse_result = PARSERESULT_NOTMATCH;
+			/* one of children is accident : return ACCIDENT */
+			case PARSERESULT_ACCIDENT:
+				this->parse_result = PARSERESULT_ACCIDENT;
 				return this;
+
+			/* one of children is not matched */
+			case PARSERESULT_DIFFERENCE:
+				if(this->child == youngest_child){
+					this->parse_result = PARSERESULT_DIFFERENCE;
+					return this;	
+				}
+				else{
+					this->parse_result = PARSERESULT_ACCIDENT;
+					/*youngest_child->parse_result = PARSERESULT_ACCIDENT;*/
+					return this;
+				}
 
 			/* one of children is matched : schedule return MATCH and continue */
 			case PARSERESULT_MATCH:
@@ -359,10 +372,15 @@ SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
 
 	/* check 3. to meet ONE OF the conditions */
 	case SELEMOP_ONE_OF:
-		for(i = 0; i < s_elems[this->s_elem_it].children_num; i++){
+		for(i = 0; i < s_elem_array[this->s_elem_it].children_num; i++){
 			youngest_child = add_child(this, youngest_child, i);
 
 			switch(youngest_child->parse_result){
+
+			/* one of children is accident : return ACCIDENT */
+			case PARSERESULT_ACCIDENT:
+				this->parse_result = PARSERESULT_ACCIDENT;
+				return this;
 
 			/* one of children is matched : MATCH */
 			case PARSERESULT_MATCH:				
@@ -376,7 +394,7 @@ SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
 
 			/* one of children is not matched : continue */
 			/*
-			case PARSERESULT_NOTMATCH:
+			case PARSERESULT_DIFFERENCE:
 				break;
 			*/
 			}
@@ -391,6 +409,10 @@ SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
 		while(1){
 			youngest_child = add_child(this, youngest_child, 0);
 
+			if(youngest_child->parse_result == PARSERESULT_ACCIDENT){
+				this->parse_result = PARSERESULT_ACCIDENT;
+				break;
+			}
 			if(youngest_child->parse_result != PARSERESULT_MATCH){
 				break;
 			}
@@ -404,7 +426,10 @@ SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
 		youngest_child = add_child(this, youngest_child, 0);
 
 		/* match 1 time : MATCH */
-		if(youngest_child->parse_result == PARSERESULT_MATCH){
+		if(youngest_child->parse_result == PARSERESULT_ACCIDENT){
+			this->parse_result = PARSERESULT_ACCIDENT;
+		}
+		else if(youngest_child->parse_result == PARSERESULT_MATCH){
 			this->parse_result = PARSERESULT_MATCH;
 		}
 		/* match 0 time : EMPTY */

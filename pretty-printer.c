@@ -46,16 +46,18 @@ void free_tree(SyntaxTreeNode* node){
 	free(node);
 	node = NULL;
 }
-/*
+
 void debug_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
-	printf("%8p ", node);
+	printf("%9p ", node);
 	printf("%16s ", SYNTAXDIC[node->s_elem_it]);
+	printf("l%d ", node->line_num);
 	printf("d%d ", node->indent_depth);
 	printf("w%d ", node->iter_depth);
 	printf("%s ", node->parse_result == PARSERESULT_MATCH ? "T" : 
-				node->parse_result == PARSERESULT_NOTMATCH ? "F" : "E");
+				node->parse_result == PARSERESULT_DIFFERENCE ? "F" :
+				node->parse_result == PARSERESULT_EMPTY ? "E" : "A");
 	printf("c%9p ", node->child);
 	printf("b%9p ", node->brother);
 	printf("%s ", node->string_attr);
@@ -64,7 +66,53 @@ void debug_tree(SyntaxTreeNode* node){
 	debug_tree(node->child);
 	debug_tree(node->brother);
 }
-*/
+
+int find_error_tree(SyntaxTreeNode* node){
+	if(node == NULL) return PARSERESULT_EMPTY;
+
+	if(node->parse_result == PARSERESULT_ACCIDENT){
+		if(find_error_tree(node->child) == PARSERESULT_ACCIDENT){
+			printf("%9p ", node);
+			printf("%16s ", SYNTAXDIC[node->s_elem_it]);
+			printf("l%d ", node->line_num);
+			printf("d%d ", node->indent_depth);
+			printf("w%d ", node->iter_depth);
+			printf("%s ", node->parse_result == PARSERESULT_MATCH ? "T" : 
+						node->parse_result == PARSERESULT_DIFFERENCE ? "F" :
+						node->parse_result == PARSERESULT_EMPTY ? "E" : "A");
+			printf("c%9p ", node->child);
+			printf("b%9p ", node->brother);
+			printf("%s ", node->string_attr);
+			printf("'S CHILD");
+			printf("\n");
+			return PARSERESULT_ACCIDENT;
+		}
+	}
+
+	if(find_error_tree(node->brother) == PARSERESULT_ACCIDENT){
+		return PARSERESULT_ACCIDENT;
+	}
+
+	if(node->s_elem_it <= NUMOFTOKEN && node->parse_result == PARSERESULT_DIFFERENCE){
+		printf("%9p ", node);
+		printf("%16s ", SYNTAXDIC[node->s_elem_it]);
+		printf("l%d ", node->line_num);
+		printf("d%d ", node->indent_depth);
+		printf("w%d ", node->iter_depth);
+		printf("%s ", node->parse_result == PARSERESULT_MATCH ? "T" : 
+					node->parse_result == PARSERESULT_DIFFERENCE ? "F" :
+					node->parse_result == PARSERESULT_EMPTY ? "E" : "A");
+		printf("c%9p ", node->child);
+		printf("b%9p ", node->brother);
+		printf("%s ", node->string_attr);
+		printf("HERE");
+		printf("\n");
+		return PARSERESULT_ACCIDENT;
+	}
+
+	return PARSERESULT_EMPTY;
+}
+
 void print_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
@@ -133,10 +181,15 @@ int main(int nc, char *np[]) {
 	SyntaxTreeNode *node_SPROGRAM = parse(SPROGRAM, 0);
 
 	/*debug_tree(node_SPROGRAM);*/
-
+	
 	if(node_SPROGRAM->parse_result == PARSERESULT_MATCH){
 		print_tree(node_SPROGRAM);
 		printf("\n");
+	}
+	else{
+		printf("\nstatus:\n");
+		find_error_tree(node_SPROGRAM);
+		printf("syntax error\n");
 	}
 
 	free_tree(node_SPROGRAM);

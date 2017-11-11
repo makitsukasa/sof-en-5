@@ -7,8 +7,7 @@ char string_attr[MAXSTRSIZE];
 FILE *fp;
 int cbuf[2];
 
-int linenum;
-
+int line_num;
 
 void update_cbuf(void){
 	cbuf[0] = cbuf[1];
@@ -44,7 +43,7 @@ int check_new_line(void){
 }
 
 int init_scan(char *filename){
-	linenum = 0;
+	line_num = 0;
 	if ((fp = fopen(filename, "r")) == NULL) {
 		return -1;
 	}
@@ -59,8 +58,8 @@ int scan(void){
 
 	clear_attr();
 
-	if(linenum <= 0){
-		linenum = 1;
+	if(line_num <= 0){
+		line_num = 1;
 	}
 
 	if(cbuf[0] == EOF){
@@ -77,7 +76,7 @@ int scan(void){
 
 	/* separator (new line) */
 	if(check_new_line() > 0){
-		linenum++;
+		line_num++;
 		/*printf("separator (new line)\n");*/
 		return scan();
 	}
@@ -93,7 +92,7 @@ int scan(void){
 			update_cbuf();
 		}
 		if(i >= MAXSTRSIZE){
-			error(linenum, "too long token (name)");
+			error(line_num, "too long token (name)");
 			return -1;
 		}
 		for(i = 0; i < KEYWORDSIZE; i++){
@@ -117,12 +116,12 @@ int scan(void){
 			update_cbuf();
 		}
 		if(i > 5){
-			error(linenum, "too long token (digit)");
+			error(line_num, "too long token (digit)");
 			return -1;
 		}
 		num_attr = atoi(string_attr);
 		if(num_attr > 32767){
-			error(linenum, "too big digit");
+			error(line_num, "too big digit");
 			return -1;
 		}
 		/*printf("digit %d\n", num_attr);*/
@@ -140,7 +139,7 @@ int scan(void){
 
 		for(i = 0; i < MAXSTRSIZE; i++){
 			if(cbuf[0] == EOF || check_new_line() > 0){
-				error(linenum, "missing terminating ' character");
+				error(line_num, "missing terminating ' character");
 			}
 			else if(cbuf[0] == '\''){
 				/* '' is not end */
@@ -161,7 +160,7 @@ int scan(void){
 			update_cbuf();
 		}
 		if(i >= MAXSTRSIZE){
-			error(linenum, "too long token (string)");
+			error(line_num, "too long token (string)");
 			return -1;
 		}
 		/*printf("string %s\n", string_attr);*/
@@ -180,7 +179,7 @@ int scan(void){
 
 		for(i = 0; i < MAXSTRSIZE; i++){
 			if(cbuf[0] == EOF){
-				error(linenum, "unterminated comment");
+				error(line_num, "unterminated comment");
 				return -1;
 			}
 			else if(cbuf[0] == '*' && cbuf[1] == '/'){
@@ -206,7 +205,7 @@ int scan(void){
 		update_cbuf();
 		for(i = 0; i < MAXSTRSIZE; i++){
 			if(cbuf[0] == EOF){
-				error(linenum, "unterminated comment");
+				error(line_num, "unterminated comment");
 				return -1;
 			}
 			else 
@@ -245,12 +244,12 @@ int scan(void){
 			return symbol1[i].keytoken;
 		}
 	}
-	error(linenum, "unknown symbol");
+	error(line_num, "unknown symbol");
 	return -1;
 }
 
-int get_linenum(void){
-	return linenum;
+int get_line_num(void){
+	return line_num;
 }
 
 void end_scan(void){
