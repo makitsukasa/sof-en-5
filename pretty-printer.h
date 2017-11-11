@@ -89,12 +89,12 @@
 
 typedef struct SyntaxElem_{
 	int op;
-	int childrenNum;
+	int children_num;
 	int children[20];
 } SyntaxElem;
 
 typedef struct SyntaxTreeNode_{
-	int sElemIt;
+	int s_elem_it;
 	char string_attr[MAXSTRSIZE];
 	int indent_depth;
 	int iter_depth;
@@ -121,4 +121,4 @@ extern void print_tree(SyntaxTreeNode* node);
 #define PARSERESULT_EMPTY		2
 #define PARSERESULT_NOTMATCH	0
 extern void init_parse(void);
-extern SyntaxTreeNode* parse(int sElemIt, int indent_depth);
+extern SyntaxTreeNode* parse(int s_elem_it, int indent_depth);

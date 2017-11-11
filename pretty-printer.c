@@ -54,7 +54,7 @@ void debug_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
 	printf("%8p ", node);
-	printf("%16s ", SYNTAXDIC[node->sElemIt]);
+	printf("%16s ", SYNTAXDIC[node->s_elem_it]);
 	printf("d%d ", node->indent_depth);
 	printf("w%d ", node->iter_depth);
 	printf("%s ", node->parse_result == PARSERESULT_MATCH ? "T" : 
@@ -71,7 +71,7 @@ void debug_tree(SyntaxTreeNode* node){
 void print_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
-	if(node->sElemIt == TPROGRAM) {
+	if(node->s_elem_it == TPROGRAM) {
 		printf("%s", node->string_attr);
 		is_head_of_line = 0;
 		print_tree(node->child);
@@ -79,13 +79,13 @@ void print_tree(SyntaxTreeNode* node){
 		return;
 	}
 
-	if(node->parse_result != PARSERESULT_MATCH || node->sElemIt > NUMOFTOKEN){
+	if(node->parse_result != PARSERESULT_MATCH || node->s_elem_it > NUMOFTOKEN){
 		print_tree(node->child);
 		print_tree(node->brother);
 		return;
 	}
 
-	if(node->sElemIt == TEND || node->sElemIt == TELSE){
+	if(node->s_elem_it == TEND || node->s_elem_it == TELSE){
 		is_head_of_line = 1;
 	}
 
@@ -97,22 +97,22 @@ void print_tree(SyntaxTreeNode* node){
 		}
 		is_head_of_line = 0;
 	}
-	else if(node->sElemIt == TSEMI || node->sElemIt == TCOMMA ||
-			node->sElemIt == TDOT || node->sElemIt == TLPAREN){
+	else if(node->s_elem_it == TSEMI || node->s_elem_it == TCOMMA ||
+			node->s_elem_it == TDOT || node->s_elem_it == TLPAREN){
 		/* not print " " */
 	}
 	else{
 		printf(" ");
 	}
 
-	if(node->sElemIt == TSTRING){
+	if(node->s_elem_it == TSTRING){
 		printf("'%s'", node->string_attr);
 	}
 	else{
 		printf("%s", node->string_attr);
 	}
 
-	if(node->sElemIt == TSEMI || node->sElemIt == TBEGIN || node->sElemIt == TDO){
+	if(node->s_elem_it == TSEMI || node->s_elem_it == TBEGIN || node->s_elem_it == TDO){
 		is_head_of_line = 1;
 	}
 
