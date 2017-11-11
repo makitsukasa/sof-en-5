@@ -7,7 +7,7 @@ const char* SYNTAXDIC[NUMOFSYNTAX + 1] = {
 	"INTEGER", "STRING", "+", "-", "*", "=", "<>", "<", "<=", ">", ">=",
 	"(", ")", "[", "]", ":=", ".", ",", ":", ";", "read", "write", "break",
 	"SPROGRAM", "SBLOCK", "SBLOCK_1", "SBLOCK_1_1", "SVARDEC", "SVARDEC_6",
-	"SVARDEC_6_1", "SVARNAMES", "SVARNAMES_1", "SVARNAMES_1_1", "SVARNAME",
+	"SVARDEC_6_1", "SVARNAMES", "SVARNAMES_2", "SVARNAMES_2_1", "SVARNAME",
 	"STYPE", "SSTDTYPE", "SARRTYPE", "SSUBPROGDEC", "SSUBPROGDEC_3",
 	"SSUBPROGDEC_5", "SPROCEDURENAME", "SFORMPARAM", "SFORMPARAM_5",
 	"SFORMPARAM_5_1", "SCOMPSTAT", "SCOMPSTAT_3", "SCOMPSTAT_3_1", "SSTAT",
@@ -49,7 +49,7 @@ void free_tree(SyntaxTreeNode* node){
 	free(node);
 	node = NULL;
 }
-
+/*
 void debug_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
@@ -67,7 +67,7 @@ void debug_tree(SyntaxTreeNode* node){
 	debug_tree(node->child);
 	debug_tree(node->brother);
 }
-
+*/
 void print_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
@@ -135,7 +135,7 @@ int main(int nc, char *np[]) {
 
 	SyntaxTreeNode *node_SPROGRAM = parse(SPROGRAM, 0);
 
-	debug_tree(node_SPROGRAM);
+	/*debug_tree(node_SPROGRAM);*/
 
 	if(node_SPROGRAM->parse_result == PARSERESULT_MATCH){
 		print_tree(node_SPROGRAM);

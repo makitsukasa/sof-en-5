@@ -8,6 +8,9 @@ int is_indent(int parentSyntaxElemIt, int childIt){
 	if(parentSyntaxElemIt == SBLOCK && childIt == 0)
 		return 1;
 
+	if(parentSyntaxElemIt == SSUBPROGDEC && childIt == 4)
+		return 1;
+
 	if(parentSyntaxElemIt == SCOMPSTAT && 
 		(childIt == 1 || childIt == 2))
 			return 1;
@@ -301,15 +304,12 @@ void init_parse(void) {
 SyntaxTreeNode* parse(int sElemIt, int indent_depth){
 	int i;
 	SyntaxElem sElem = sElems[sElemIt];
-
+	SyntaxTreeNode* youngest_child = NULL;
 	SyntaxTreeNode* this = malloc_tree_node();
 	this->sElemIt = sElemIt;
 	this->indent_depth = indent_depth;
 
 	switch(sElem.op){
-	SyntaxTreeNode* youngest_child = NULL;
-	SyntaxTreeNode* newest_child = NULL;
-
 	/* check 1. to meet TERMINATOR */
 	case SELEMOP_TERMINATOR:
 		/* empry stat	: return empty */
@@ -401,8 +401,6 @@ SyntaxTreeNode* parse(int sElemIt, int indent_depth){
 		/* match 1 or more time : return MATCH */
 		/* other : return EMPTY */
 		this->parse_result = PARSERESULT_EMPTY;
-		youngest_child = NULL;
-		newest_child = NULL;
 		while(1){
 			int indent = this->indent_depth + is_indent(this->sElemIt, 0);
 			SyntaxTreeNode* newborn

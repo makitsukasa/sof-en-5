@@ -1,7 +1,7 @@
 all: a.out
 
 a.out: *.c *.h
-	@gcc *.c -Wall -std=c89 -o a.out
+	@gcc *.c -Wall -Wextra -std=c89 -o a.out
 
 ARG = in.mpl
 
