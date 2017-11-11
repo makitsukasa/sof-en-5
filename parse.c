@@ -357,17 +357,7 @@ SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
 	/* check 3. to meet ONE OF the conditions */
 	case SELEMOP_ONE_OF:
 		for(i = 0; i < sElem.children_num; i++){
-			int indent = this->indent_depth + is_indent(this->s_elem_it, i);
-			SyntaxTreeNode* newborn
-				= parse(s_elems[this->s_elem_it].children[i], indent);
-
-			if(youngest_child == NULL){
-				this->child = newborn;
-			}
-			else{
-				youngest_child->brother = newborn;
-			}
-			youngest_child = newborn;
+			youngest_child = add_child(this, youngest_child, i);
 
 			switch(youngest_child->parse_result){
 
@@ -392,17 +382,7 @@ SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
 		/* other : return EMPTY */
 		this->parse_result = PARSERESULT_EMPTY;
 		while(1){
-			int indent = this->indent_depth + is_indent(this->s_elem_it, 0);
-			SyntaxTreeNode* newborn
-				= parse(s_elems[this->s_elem_it].children[0], indent);
-
-			if(youngest_child == NULL){
-				this->child = newborn;
-			}
-			else{
-				youngest_child->brother = newborn;
-			}
-			youngest_child = newborn;
+			youngest_child = add_child(this, youngest_child, 0);
 
 			if(youngest_child->parse_result != PARSERESULT_MATCH){
 				break;
@@ -414,9 +394,13 @@ SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
 
 	/* check 5. to meet the condition ZERO OR ONE time */
 	case SELEMOP_ZERO_OR_ONE:
-		this->child = parse(sElem.children[0], indent_depth + is_indent(s_elem_it, 0));
-		if(this->child->parse_result) this->parse_result = PARSERESULT_MATCH;
-		else this->parse_result = PARSERESULT_EMPTY;
+		youngest_child = add_child(this, youngest_child, 0);
+
+		if(youngest_child->parse_result == PARSERESULT_MATCH)
+			this->parse_result = PARSERESULT_MATCH;
+		else
+			this->parse_result = PARSERESULT_EMPTY;
+
 		return this;
 	}
 
