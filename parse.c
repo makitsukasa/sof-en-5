@@ -333,17 +333,7 @@ SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
 	/* check 2. to meet ALL OF the conditions */
 	case SELEMOP_ALL_OF:
 		for(i = 0; i < sElem.children_num; i++){
-			int indent = this->indent_depth + is_indent(this->s_elem_it, i);
-			SyntaxTreeNode* newborn
-				= parse(s_elems[this->s_elem_it].children[i], indent);
-
-			if(youngest_child == NULL){
-				this->child = newborn;
-			}
-			else{
-				youngest_child->brother = newborn;
-			}
-			youngest_child = newborn;
+			youngest_child = add_child(this, youngest_child, i);
 
 			switch(youngest_child->parse_result){
 
