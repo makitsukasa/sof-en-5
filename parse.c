@@ -18,6 +18,7 @@ int is_indent(int parentSyntaxElemIt, int child_it){
 	return 0;
 }
 
+/* returns added child */
 SyntaxTreeNode* add_child(SyntaxTreeNode* this, SyntaxTreeNode* youngest_child, int child_it){
 	int indent = this->indent_depth + is_indent(this->s_elem_it, child_it);
 	SyntaxTreeNode* newborn
@@ -93,82 +94,82 @@ void init_parse(void) {
 	SyntaxElem s_elem_TBREAK			= {SELEMOP_TERMINATOR,		0, {}};
 	*/
 	SyntaxElem s_elem_SPROGRAM			= {SELEMOP_ALL_OF,			5, {TPROGRAM, TNAME, TSEMI, SBLOCK, TDOT}};
-	SyntaxElem s_elem_SBLOCK			= {SELEMOP_ALL_OF,			2, {SBLOCK_1, SCOMPSTAT}};
-	SyntaxElem s_elem_SBLOCK_1			= {SELEMOP_ZERO_OR_MORE,	1, {SBLOCK_1_1}};
-	SyntaxElem s_elem_SBLOCK_1_1		= {SELEMOP_ONE_OF,			2, {SVARDEC, SSUBPROGDEC}};
-	SyntaxElem s_elem_SVARDEC			= {SELEMOP_ALL_OF,			6, {TVAR, SVARNAMES, TCOLON, STYPE, TSEMI, SVARDEC_6}};
-	SyntaxElem s_elem_SVARDEC_6			= {SELEMOP_ZERO_OR_MORE,	1, {SVARDEC_6_1}};
-	SyntaxElem s_elem_SVARDEC_6_1		= {SELEMOP_ALL_OF,			4, {SVARNAMES, TCOLON, STYPE, TSEMI}};
-	SyntaxElem s_elem_SVARNAMES			= {SELEMOP_ALL_OF,			2, {SVARNAME, SVARNAMES_2}};
-	SyntaxElem s_elem_SVARNAMES_2		= {SELEMOP_ZERO_OR_MORE,	1, {SVARNAMES_2_1}};
-	SyntaxElem s_elem_SVARNAMES_2_1		= {SELEMOP_ALL_OF,			2, {TCOMMA, SVARNAME}};
+	SyntaxElem s_elem_SBLOCK			= {SELEMOP_ALL_OF,			2, {SBLOCK_0, SCOMPSTAT}};
+	SyntaxElem s_elem_SBLOCK_0			= {SELEMOP_ZERO_OR_MORE,	1, {SBLOCK_0_0}};
+	SyntaxElem s_elem_SBLOCK_0_0		= {SELEMOP_ONE_OF,			2, {SVARDEC, SSUBPROGDEC}};
+	SyntaxElem s_elem_SVARDEC			= {SELEMOP_ALL_OF,			6, {TVAR, SVARNAMES, TCOLON, STYPE, TSEMI, SVARDEC_5}};
+	SyntaxElem s_elem_SVARDEC_5			= {SELEMOP_ZERO_OR_MORE,	1, {SVARDEC_5_0}};
+	SyntaxElem s_elem_SVARDEC_5_0		= {SELEMOP_ALL_OF,			4, {SVARNAMES, TCOLON, STYPE, TSEMI}};
+	SyntaxElem s_elem_SVARNAMES			= {SELEMOP_ALL_OF,			2, {SVARNAME, SVARNAMES_1}};
+	SyntaxElem s_elem_SVARNAMES_1		= {SELEMOP_ZERO_OR_MORE,	1, {SVARNAMES_1_0}};
+	SyntaxElem s_elem_SVARNAMES_1_0		= {SELEMOP_ALL_OF,			2, {TCOMMA, SVARNAME}};
 	SyntaxElem s_elem_SVARNAME			= {SELEMOP_ALL_OF,			1, {TNAME}};
 	SyntaxElem s_elem_STYPE				= {SELEMOP_ONE_OF,			2, {SSTDTYPE, SARRTYPE}};
 	SyntaxElem s_elem_SSTDTYPE			= {SELEMOP_ONE_OF,			3, {TINTEGER, TBOOLEAN, TCHAR}};
 	SyntaxElem s_elem_SARRTYPE			= {SELEMOP_ALL_OF,			6, {TARRAY, TLSQPAREN, TNUMBER, TRSQPAREN, TOF, SSTDTYPE}};
-	SyntaxElem s_elem_SSUBPROGDEC		= {SELEMOP_ALL_OF,			7, {TPROCEDURE, SPROCEDURENAME, SSUBPROGDEC_3, TSEMI, SSUBPROGDEC_5, SCOMPSTAT, TSEMI}};
-	SyntaxElem s_elem_SSUBPROGDEC_3		= {SELEMOP_ZERO_OR_ONE,		1, {SFORMPARAM}};
-	SyntaxElem s_elem_SSUBPROGDEC_5		= {SELEMOP_ZERO_OR_ONE,		1, {SVARDEC}};
+	SyntaxElem s_elem_SSUBPROGDEC		= {SELEMOP_ALL_OF,			7, {TPROCEDURE, SPROCEDURENAME, SSUBPROGDEC_2, TSEMI, SSUBPROGDEC_4, SCOMPSTAT, TSEMI}};
+	SyntaxElem s_elem_SSUBPROGDEC_2		= {SELEMOP_ZERO_OR_ONE,		1, {SFORMPARAM}};
+	SyntaxElem s_elem_SSUBPROGDEC_4		= {SELEMOP_ZERO_OR_ONE,		1, {SVARDEC}};
 	SyntaxElem s_elem_SPROCEDURENAME	= {SELEMOP_ALL_OF,			1, {TNAME}};
-	SyntaxElem s_elem_SFORMPARAM		= {SELEMOP_ALL_OF,			6, {TLPAREN, SVARNAMES, TCOLON, STYPE, SFORMPARAM_5, TRPAREN}};
-	SyntaxElem s_elem_SFORMPARAM_5		= {SELEMOP_ZERO_OR_MORE,	1, {SFORMPARAM_5_1}};
-	SyntaxElem s_elem_SFORMPARAM_5_1	= {SELEMOP_ALL_OF,			4, {TSEMI, SVARNAMES, TCOLON, STYPE}};
-	SyntaxElem s_elem_SCOMPSTAT			= {SELEMOP_ALL_OF,			4, {TBEGIN, SSTAT, SCOMPSTAT_3, TEND}};
-	SyntaxElem s_elem_SCOMPSTAT_3		= {SELEMOP_ZERO_OR_MORE,	1, {SCOMPSTAT_3_1}};
-	SyntaxElem s_elem_SCOMPSTAT_3_1		= {SELEMOP_ALL_OF,			2, {TSEMI, SSTAT}};
+	SyntaxElem s_elem_SFORMPARAM		= {SELEMOP_ALL_OF,			6, {TLPAREN, SVARNAMES, TCOLON, STYPE, SFORMPARAM_4, TRPAREN}};
+	SyntaxElem s_elem_SFORMPARAM_4		= {SELEMOP_ZERO_OR_MORE,	1, {SFORMPARAM_4_0}};
+	SyntaxElem s_elem_SFORMPARAM_4_0	= {SELEMOP_ALL_OF,			4, {TSEMI, SVARNAMES, TCOLON, STYPE}};
+	SyntaxElem s_elem_SCOMPSTAT			= {SELEMOP_ALL_OF,			4, {TBEGIN, SSTAT, SCOMPSTAT_2, TEND}};
+	SyntaxElem s_elem_SCOMPSTAT_2		= {SELEMOP_ZERO_OR_MORE,	1, {SCOMPSTAT_2_0}};
+	SyntaxElem s_elem_SCOMPSTAT_2_0		= {SELEMOP_ALL_OF,			2, {TSEMI, SSTAT}};
 	SyntaxElem s_elem_SSTAT				= {SELEMOP_ONE_OF,			10, {SASSIGNSTAT, SCONDSTAT, SITERSTAT, SEXITSTAT, SCALLSTAT, SRETSTAT, SINSTAT, SOUTSTAT, SCOMPSTAT, SEMPTYSTAT}};
-	SyntaxElem s_elem_SCONDSTAT			= {SELEMOP_ALL_OF,			5, {TIF, SEXPR, TTHEN, SSTAT, SCONDSTAT_5}};
-	SyntaxElem s_elem_SCONDSTAT_5		= {SELEMOP_ZERO_OR_ONE,		1, {SCONDSTAT_5_1}};
-	SyntaxElem s_elem_SCONDSTAT_5_1		= {SELEMOP_ALL_OF,			2, {TELSE, SSTAT}};
+	SyntaxElem s_elem_SCONDSTAT			= {SELEMOP_ALL_OF,			5, {TIF, SEXPR, TTHEN, SSTAT, SCONDSTAT_4}};
+	SyntaxElem s_elem_SCONDSTAT_4		= {SELEMOP_ZERO_OR_ONE,		1, {SCONDSTAT_4_0}};
+	SyntaxElem s_elem_SCONDSTAT_4_0		= {SELEMOP_ALL_OF,			2, {TELSE, SSTAT}};
 	SyntaxElem s_elem_SITERSTAT			= {SELEMOP_ALL_OF,			4, {TWHILE, SEXPR, TDO, SSTAT}};
 	SyntaxElem s_elem_SEXITSTAT			= {SELEMOP_ALL_OF,			1, {TBREAK}};
-	SyntaxElem s_elem_SCALLSTAT			= {SELEMOP_ALL_OF,			3, {TCALL, SPROCEDURENAME, SCALLSTAT_3}};
-	SyntaxElem s_elem_SCALLSTAT_3		= {SELEMOP_ZERO_OR_ONE,		1, {SCALLSTAT_3_1}};
-	SyntaxElem s_elem_SCALLSTAT_3_1		= {SELEMOP_ALL_OF,			3, {TLPAREN, SEXPRS, TRPAREN}};
-	SyntaxElem s_elem_SEXPRS			= {SELEMOP_ALL_OF,			2, {SEXPR, SEXPRS_2}};
-	SyntaxElem s_elem_SEXPRS_2			= {SELEMOP_ZERO_OR_MORE,	1, {SEXPRS_2_1}};
-	SyntaxElem s_elem_SEXPRS_2_1		= {SELEMOP_ALL_OF,			2, {TCOMMA, SEXPR}};
+	SyntaxElem s_elem_SCALLSTAT			= {SELEMOP_ALL_OF,			3, {TCALL, SPROCEDURENAME, SCALLSTAT_2}};
+	SyntaxElem s_elem_SCALLSTAT_2		= {SELEMOP_ZERO_OR_ONE,		1, {SCALLSTAT_2_0}};
+	SyntaxElem s_elem_SCALLSTAT_2_0		= {SELEMOP_ALL_OF,			3, {TLPAREN, SEXPRS, TRPAREN}};
+	SyntaxElem s_elem_SEXPRS			= {SELEMOP_ALL_OF,			2, {SEXPR, SEXPRS_1}};
+	SyntaxElem s_elem_SEXPRS_1			= {SELEMOP_ZERO_OR_MORE,	1, {SEXPRS_1_0}};
+	SyntaxElem s_elem_SEXPRS_1_0		= {SELEMOP_ALL_OF,			2, {TCOMMA, SEXPR}};
 	SyntaxElem s_elem_SRETSTAT			= {SELEMOP_ALL_OF,			1, {TRETURN}};
 	SyntaxElem s_elem_SASSIGNSTAT		= {SELEMOP_ALL_OF,			3, {SLEFTPART, TASSIGN, SEXPR}};
 	SyntaxElem s_elem_SLEFTPART			= {SELEMOP_ALL_OF,			1, {SVAR}};
-	SyntaxElem s_elem_SVAR				= {SELEMOP_ALL_OF,			2, {SVARNAME, SVAR_2}};
-	SyntaxElem s_elem_SVAR_2			= {SELEMOP_ZERO_OR_ONE,		1, {SVAR_2_1}};
-	SyntaxElem s_elem_SVAR_2_1			= {SELEMOP_ALL_OF,			3, {TLSQPAREN, SEXPR, TRSQPAREN}};
-	SyntaxElem s_elem_SEXPR				= {SELEMOP_ALL_OF,			2, {SSIMPLEEXPR, SEXPR_2}};
-	SyntaxElem s_elem_SEXPR_2			= {SELEMOP_ZERO_OR_MORE,	1, {SEXPR_2_1}};
-	SyntaxElem s_elem_SEXPR_2_1			= {SELEMOP_ALL_OF,			2, {SRELATOP, SSIMPLEEXPR}};
-	SyntaxElem s_elem_SSIMPLEEXPR		= {SELEMOP_ALL_OF,			3, {SSIMPLEEXPR_1, STERM, SSIMPLEEXPR_3}};
-	SyntaxElem s_elem_SSIMPLEEXPR_1		= {SELEMOP_ZERO_OR_ONE,		1, {SSIMPLEEXPR_1_1}};
-	SyntaxElem s_elem_SSIMPLEEXPR_1_1	= {SELEMOP_ONE_OF,			2, {TPLUS, TMINUS}};
-	SyntaxElem s_elem_SSIMPLEEXPR_3		= {SELEMOP_ZERO_OR_MORE,	1, {SSIMPLEEXPR_3_1}};
-	SyntaxElem s_elem_SSIMPLEEXPR_3_1	= {SELEMOP_ALL_OF,			2, {SADDOP, STERM}};
-	SyntaxElem s_elem_STERM				= {SELEMOP_ALL_OF,			2, {SFACTOR, STERM_2}};
-	SyntaxElem s_elem_STERM_2			= {SELEMOP_ZERO_OR_MORE,	1, {STERM_2_1}};
-	SyntaxElem s_elem_STERM_2_1			= {SELEMOP_ALL_OF,			2, {SMULOP, SFACTOR}};
-	SyntaxElem s_elem_SFACTOR			= {SELEMOP_ONE_OF,			5, {SVAR, SCONST, SFACTOR_3, SFACTOR_4, SFACTOR_5}};
-	SyntaxElem s_elem_SFACTOR_3			= {SELEMOP_ALL_OF,			3, {TLPAREN, SEXPR, TRPAREN}};
-	SyntaxElem s_elem_SFACTOR_4			= {SELEMOP_ALL_OF,			2, {TNOT, SFACTOR}};
-	SyntaxElem s_elem_SFACTOR_5			= {SELEMOP_ALL_OF,			4, {SSTDTYPE, TLPAREN, SEXPR, TRPAREN}};
+	SyntaxElem s_elem_SVAR				= {SELEMOP_ALL_OF,			2, {SVARNAME, SVAR_1}};
+	SyntaxElem s_elem_SVAR_1			= {SELEMOP_ZERO_OR_ONE,		1, {SVAR_1_0}};
+	SyntaxElem s_elem_SVAR_1_0			= {SELEMOP_ALL_OF,			3, {TLSQPAREN, SEXPR, TRSQPAREN}};
+	SyntaxElem s_elem_SEXPR				= {SELEMOP_ALL_OF,			2, {SSIMPLEEXPR, SEXPR_1}};
+	SyntaxElem s_elem_SEXPR_1			= {SELEMOP_ZERO_OR_MORE,	1, {SEXPR_1_0}};
+	SyntaxElem s_elem_SEXPR_1_0			= {SELEMOP_ALL_OF,			2, {SRELATOP, SSIMPLEEXPR}};
+	SyntaxElem s_elem_SSIMPLEEXPR		= {SELEMOP_ALL_OF,			3, {SSIMPLEEXPR_0, STERM, SSIMPLEEXPR_2}};
+	SyntaxElem s_elem_SSIMPLEEXPR_0		= {SELEMOP_ZERO_OR_ONE,		1, {SSIMPLEEXPR_0_0}};
+	SyntaxElem s_elem_SSIMPLEEXPR_0_0	= {SELEMOP_ONE_OF,			2, {TPLUS, TMINUS}};
+	SyntaxElem s_elem_SSIMPLEEXPR_2		= {SELEMOP_ZERO_OR_MORE,	1, {SSIMPLEEXPR_2_0}};
+	SyntaxElem s_elem_SSIMPLEEXPR_2_0	= {SELEMOP_ALL_OF,			2, {SADDOP, STERM}};
+	SyntaxElem s_elem_STERM				= {SELEMOP_ALL_OF,			2, {SFACTOR, STERM_1}};
+	SyntaxElem s_elem_STERM_1			= {SELEMOP_ZERO_OR_MORE,	1, {STERM_1_0}};
+	SyntaxElem s_elem_STERM_1_0			= {SELEMOP_ALL_OF,			2, {SMULOP, SFACTOR}};
+	SyntaxElem s_elem_SFACTOR			= {SELEMOP_ONE_OF,			5, {SVAR, SCONST, SFACTOR_2, SFACTOR_3, SFACTOR_4}};
+	SyntaxElem s_elem_SFACTOR_2			= {SELEMOP_ALL_OF,			3, {TLPAREN, SEXPR, TRPAREN}};
+	SyntaxElem s_elem_SFACTOR_3			= {SELEMOP_ALL_OF,			2, {TNOT, SFACTOR}};
+	SyntaxElem s_elem_SFACTOR_4			= {SELEMOP_ALL_OF,			4, {SSTDTYPE, TLPAREN, SEXPR, TRPAREN}};
 	SyntaxElem s_elem_SCONST			= {SELEMOP_ONE_OF,			4, {TNUMBER, TFALSE, TTRUE, TSTRING}};
 	SyntaxElem s_elem_SMULOP			= {SELEMOP_ONE_OF,			3, {TSTAR, TDIV, TAND}};
 	SyntaxElem s_elem_SADDOP			= {SELEMOP_ONE_OF,			3, {TPLUS, TMINUS, TOR}};
 	SyntaxElem s_elem_SRELATOP			= {SELEMOP_ONE_OF,			6, {TEQUAL, TNOTEQ, TLE, TLEEQ, TGR, TGREQ}};
-	SyntaxElem s_elem_SINSTAT			= {SELEMOP_ALL_OF,			2, {SINSTAT_1, SINSTAT_2}};
-	SyntaxElem s_elem_SINSTAT_1			= {SELEMOP_ONE_OF,			2, {TREAD, TREADLN}};
-	SyntaxElem s_elem_SINSTAT_2			= {SELEMOP_ZERO_OR_ONE,		1, {SINSTAT_2_1}};
-	SyntaxElem s_elem_SINSTAT_2_1		= {SELEMOP_ALL_OF,			4, {TLPAREN, SVAR, SINSTAT_2_1_3, TRPAREN}};
-	SyntaxElem s_elem_SINSTAT_2_1_3		= {SELEMOP_ZERO_OR_MORE,	1, {SINSTAT_2_1_3_1}};
-	SyntaxElem s_elem_SINSTAT_2_1_3_1	= {SELEMOP_ALL_OF,			2, {TCOMMA, SVAR}};
-	SyntaxElem s_elem_SOUTSTAT			= {SELEMOP_ALL_OF,			2, {SOUTSTAT_1, SOUTSTAT_2}};
-	SyntaxElem s_elem_SOUTSTAT_1		= {SELEMOP_ONE_OF,			2, {TWRITE, TWRITELN}};
-	SyntaxElem s_elem_SOUTSTAT_2		= {SELEMOP_ZERO_OR_ONE,		1, {SOUTSTAT_2_1}};
-	SyntaxElem s_elem_SOUTSTAT_2_1		= {SELEMOP_ALL_OF,			4, {TLPAREN, SOUTFORM, SOUTSTAT_2_1_3, TRPAREN}};
-	SyntaxElem s_elem_SOUTSTAT_2_1_3	= {SELEMOP_ZERO_OR_MORE,	1, {SOUTSTAT_2_1_3_1}};
-	SyntaxElem s_elem_SOUTSTAT_2_1_3_1	= {SELEMOP_ALL_OF,			2, {TCOMMA, SOUTFORM}};
-	SyntaxElem s_elem_SOUTFORM			= {SELEMOP_ONE_OF,			2, {SOUTFORM_1, TSTRING}};
-	SyntaxElem s_elem_SOUTFORM_1		= {SELEMOP_ALL_OF,			2, {SEXPR, SOUTFORM_1_2}};
-	SyntaxElem s_elem_SOUTFORM_1_2		= {SELEMOP_ZERO_OR_ONE,		1, {SOUTFORM_1_2_1}};
-	SyntaxElem s_elem_SOUTFORM_1_2_1	= {SELEMOP_ALL_OF,			2, {TCOLON, TNUMBER}};
+	SyntaxElem s_elem_SINSTAT			= {SELEMOP_ALL_OF,			2, {SINSTAT_0, SINSTAT_1}};
+	SyntaxElem s_elem_SINSTAT_0			= {SELEMOP_ONE_OF,			2, {TREAD, TREADLN}};
+	SyntaxElem s_elem_SINSTAT_1			= {SELEMOP_ZERO_OR_ONE,		1, {SINSTAT_1_0}};
+	SyntaxElem s_elem_SINSTAT_1_0		= {SELEMOP_ALL_OF,			4, {TLPAREN, SVAR, SINSTAT_1_0_2, TRPAREN}};
+	SyntaxElem s_elem_SINSTAT_1_0_2		= {SELEMOP_ZERO_OR_MORE,	1, {SINSTAT_1_0_2_0}};
+	SyntaxElem s_elem_SINSTAT_1_0_2_0	= {SELEMOP_ALL_OF,			2, {TCOMMA, SVAR}};
+	SyntaxElem s_elem_SOUTSTAT			= {SELEMOP_ALL_OF,			2, {SOUTSTAT_0, SOUTSTAT_1}};
+	SyntaxElem s_elem_SOUTSTAT_0		= {SELEMOP_ONE_OF,			2, {TWRITE, TWRITELN}};
+	SyntaxElem s_elem_SOUTSTAT_1		= {SELEMOP_ZERO_OR_ONE,		1, {SOUTSTAT_1_0}};
+	SyntaxElem s_elem_SOUTSTAT_1_0		= {SELEMOP_ALL_OF,			4, {TLPAREN, SOUTFORM, SOUTSTAT_1_0_2, TRPAREN}};
+	SyntaxElem s_elem_SOUTSTAT_1_0_2	= {SELEMOP_ZERO_OR_MORE,	1, {SOUTSTAT_1_0_2_0}};
+	SyntaxElem s_elem_SOUTSTAT_1_0_2_0	= {SELEMOP_ALL_OF,			2, {TCOMMA, SOUTFORM}};
+	SyntaxElem s_elem_SOUTFORM			= {SELEMOP_ONE_OF,			2, {SOUTFORM_0, TSTRING}};
+	SyntaxElem s_elem_SOUTFORM_0		= {SELEMOP_ALL_OF,			2, {SEXPR, SOUTFORM_0_1}};
+	SyntaxElem s_elem_SOUTFORM_0_1		= {SELEMOP_ZERO_OR_ONE,		1, {SOUTFORM_0_1_0}};
+	SyntaxElem s_elem_SOUTFORM_0_1_0	= {SELEMOP_ALL_OF,			2, {TCOLON, TNUMBER}};
 	SyntaxElem s_elem_SEMPTYSTAT		= {SELEMOP_TERMINATOR,		0, {}};
 	/*
 	s_elems[TNAME]				= s_elem_TNAME;
@@ -223,93 +224,93 @@ void init_parse(void) {
 	*/
 	s_elems[SPROGRAM]			= s_elem_SPROGRAM;
 	s_elems[SBLOCK]				= s_elem_SBLOCK;
-	s_elems[SBLOCK_1]			= s_elem_SBLOCK_1;
-	s_elems[SBLOCK_1_1]			= s_elem_SBLOCK_1_1;
+	s_elems[SBLOCK_0]			= s_elem_SBLOCK_0;
+	s_elems[SBLOCK_0_0]			= s_elem_SBLOCK_0_0;
 	s_elems[SVARDEC]			= s_elem_SVARDEC;
-	s_elems[SVARDEC_6]			= s_elem_SVARDEC_6;
-	s_elems[SVARDEC_6_1]		= s_elem_SVARDEC_6_1;
+	s_elems[SVARDEC_5]			= s_elem_SVARDEC_5;
+	s_elems[SVARDEC_5_0]		= s_elem_SVARDEC_5_0;
 	s_elems[SVARNAMES]			= s_elem_SVARNAMES;
-	s_elems[SVARNAMES_2]		= s_elem_SVARNAMES_2;
-	s_elems[SVARNAMES_2_1]		= s_elem_SVARNAMES_2_1;
+	s_elems[SVARNAMES_1]		= s_elem_SVARNAMES_1;
+	s_elems[SVARNAMES_1_0]		= s_elem_SVARNAMES_1_0;
 	s_elems[SVARNAME]			= s_elem_SVARNAME;
 	s_elems[STYPE]				= s_elem_STYPE;
 	s_elems[SSTDTYPE]			= s_elem_SSTDTYPE;
 	s_elems[SARRTYPE]			= s_elem_SARRTYPE;
 	s_elems[SSUBPROGDEC]		= s_elem_SSUBPROGDEC;
-	s_elems[SSUBPROGDEC_3]		= s_elem_SSUBPROGDEC_3;
-	s_elems[SSUBPROGDEC_5]		= s_elem_SSUBPROGDEC_5;
+	s_elems[SSUBPROGDEC_2]		= s_elem_SSUBPROGDEC_2;
+	s_elems[SSUBPROGDEC_4]		= s_elem_SSUBPROGDEC_4;
 	s_elems[SPROCEDURENAME]		= s_elem_SPROCEDURENAME;
 	s_elems[SFORMPARAM]			= s_elem_SFORMPARAM;
-	s_elems[SFORMPARAM_5]		= s_elem_SFORMPARAM_5;
-	s_elems[SFORMPARAM_5_1]		= s_elem_SFORMPARAM_5_1;
+	s_elems[SFORMPARAM_4]		= s_elem_SFORMPARAM_4;
+	s_elems[SFORMPARAM_4_0]		= s_elem_SFORMPARAM_4_0;
 	s_elems[SCOMPSTAT]			= s_elem_SCOMPSTAT;
-	s_elems[SCOMPSTAT_3]		= s_elem_SCOMPSTAT_3;
-	s_elems[SCOMPSTAT_3_1]		= s_elem_SCOMPSTAT_3_1;
+	s_elems[SCOMPSTAT_2]		= s_elem_SCOMPSTAT_2;
+	s_elems[SCOMPSTAT_2_0]		= s_elem_SCOMPSTAT_2_0;
 	s_elems[SSTAT]				= s_elem_SSTAT;
 	s_elems[SCONDSTAT]			= s_elem_SCONDSTAT;
-	s_elems[SCONDSTAT_5]		= s_elem_SCONDSTAT_5;
-	s_elems[SCONDSTAT_5_1]		= s_elem_SCONDSTAT_5_1;
+	s_elems[SCONDSTAT_4]		= s_elem_SCONDSTAT_4;
+	s_elems[SCONDSTAT_4_0]		= s_elem_SCONDSTAT_4_0;
 	s_elems[SITERSTAT]			= s_elem_SITERSTAT;
 	s_elems[SEXITSTAT]			= s_elem_SEXITSTAT;
 	s_elems[SCALLSTAT]			= s_elem_SCALLSTAT;
-	s_elems[SCALLSTAT_3]		= s_elem_SCALLSTAT_3;
-	s_elems[SCALLSTAT_3_1]		= s_elem_SCALLSTAT_3_1;
+	s_elems[SCALLSTAT_2]		= s_elem_SCALLSTAT_2;
+	s_elems[SCALLSTAT_2_0]		= s_elem_SCALLSTAT_2_0;
 	s_elems[SEXPRS]				= s_elem_SEXPRS;
-	s_elems[SEXPRS_2]			= s_elem_SEXPRS_2;
-	s_elems[SEXPRS_2_1]			= s_elem_SEXPRS_2_1;
+	s_elems[SEXPRS_1]			= s_elem_SEXPRS_1;
+	s_elems[SEXPRS_1_0]			= s_elem_SEXPRS_1_0;
 	s_elems[SRETSTAT]			= s_elem_SRETSTAT;
 	s_elems[SASSIGNSTAT]		= s_elem_SASSIGNSTAT;
 	s_elems[SLEFTPART]			= s_elem_SLEFTPART;
 	s_elems[SVAR]				= s_elem_SVAR;
-	s_elems[SVAR_2]				= s_elem_SVAR_2;
-	s_elems[SVAR_2_1]			= s_elem_SVAR_2_1;
+	s_elems[SVAR_1]				= s_elem_SVAR_1;
+	s_elems[SVAR_1_0]			= s_elem_SVAR_1_0;
 	s_elems[SEXPR]				= s_elem_SEXPR;
-	s_elems[SEXPR_2]			= s_elem_SEXPR_2;
-	s_elems[SEXPR_2_1]			= s_elem_SEXPR_2_1;
+	s_elems[SEXPR_1]			= s_elem_SEXPR_1;
+	s_elems[SEXPR_1_0]			= s_elem_SEXPR_1_0;
 	s_elems[SSIMPLEEXPR]		= s_elem_SSIMPLEEXPR;
-	s_elems[SSIMPLEEXPR_1]		= s_elem_SSIMPLEEXPR_1;
-	s_elems[SSIMPLEEXPR_1_1]	= s_elem_SSIMPLEEXPR_1_1;
-	s_elems[SSIMPLEEXPR_3]		= s_elem_SSIMPLEEXPR_3;
-	s_elems[SSIMPLEEXPR_3_1]	= s_elem_SSIMPLEEXPR_3_1;
+	s_elems[SSIMPLEEXPR_0]		= s_elem_SSIMPLEEXPR_0;
+	s_elems[SSIMPLEEXPR_0_0]	= s_elem_SSIMPLEEXPR_0_0;
+	s_elems[SSIMPLEEXPR_2]		= s_elem_SSIMPLEEXPR_2;
+	s_elems[SSIMPLEEXPR_2_0]	= s_elem_SSIMPLEEXPR_2_0;
 	s_elems[STERM]				= s_elem_STERM;
-	s_elems[STERM_2]			= s_elem_STERM_2;
-	s_elems[STERM_2_1]			= s_elem_STERM_2_1;
+	s_elems[STERM_1]			= s_elem_STERM_1;
+	s_elems[STERM_1_0]			= s_elem_STERM_1_0;
 	s_elems[SFACTOR]			= s_elem_SFACTOR;
+	s_elems[SFACTOR_2]			= s_elem_SFACTOR_2;
 	s_elems[SFACTOR_3]			= s_elem_SFACTOR_3;
 	s_elems[SFACTOR_4]			= s_elem_SFACTOR_4;
-	s_elems[SFACTOR_5]			= s_elem_SFACTOR_5;
 	s_elems[SCONST]				= s_elem_SCONST;
 	s_elems[SMULOP]				= s_elem_SMULOP;
 	s_elems[SADDOP]				= s_elem_SADDOP;
 	s_elems[SRELATOP]			= s_elem_SRELATOP;
 	s_elems[SINSTAT]			= s_elem_SINSTAT;
+	s_elems[SINSTAT_0]			= s_elem_SINSTAT_0;
 	s_elems[SINSTAT_1]			= s_elem_SINSTAT_1;
-	s_elems[SINSTAT_2]			= s_elem_SINSTAT_2;
-	s_elems[SINSTAT_2_1]		= s_elem_SINSTAT_2_1;
-	s_elems[SINSTAT_2_1_3]		= s_elem_SINSTAT_2_1_3;
-	s_elems[SINSTAT_2_1_3_1]	= s_elem_SINSTAT_2_1_3_1;
+	s_elems[SINSTAT_1_0]		= s_elem_SINSTAT_1_0;
+	s_elems[SINSTAT_1_0_2]		= s_elem_SINSTAT_1_0_2;
+	s_elems[SINSTAT_1_0_2_0]	= s_elem_SINSTAT_1_0_2_0;
 	s_elems[SOUTSTAT]			= s_elem_SOUTSTAT;
+	s_elems[SOUTSTAT_0]			= s_elem_SOUTSTAT_0;
 	s_elems[SOUTSTAT_1]			= s_elem_SOUTSTAT_1;
-	s_elems[SOUTSTAT_2]			= s_elem_SOUTSTAT_2;
-	s_elems[SOUTSTAT_2_1]		= s_elem_SOUTSTAT_2_1;
-	s_elems[SOUTSTAT_2_1_3]		= s_elem_SOUTSTAT_2_1_3;
-	s_elems[SOUTSTAT_2_1_3_1]	= s_elem_SOUTSTAT_2_1_3_1;
+	s_elems[SOUTSTAT_1_0]		= s_elem_SOUTSTAT_1_0;
+	s_elems[SOUTSTAT_1_0_2]		= s_elem_SOUTSTAT_1_0_2;
+	s_elems[SOUTSTAT_1_0_2_0]	= s_elem_SOUTSTAT_1_0_2_0;
 	s_elems[SOUTFORM]			= s_elem_SOUTFORM;
-	s_elems[SOUTFORM_1]			= s_elem_SOUTFORM_1;
-	s_elems[SOUTFORM_1_2]		= s_elem_SOUTFORM_1_2;
-	s_elems[SOUTFORM_1_2_1]		= s_elem_SOUTFORM_1_2_1;
+	s_elems[SOUTFORM_0]			= s_elem_SOUTFORM_0;
+	s_elems[SOUTFORM_0_1]		= s_elem_SOUTFORM_0_1;
+	s_elems[SOUTFORM_0_1_0]		= s_elem_SOUTFORM_0_1_0;
 	s_elems[SEMPTYSTAT]			= s_elem_SEMPTYSTAT;
 }
 
 SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
 	int i;
-	SyntaxElem sElem = s_elems[s_elem_it];
 	SyntaxTreeNode* youngest_child = NULL;
 	SyntaxTreeNode* this = malloc_tree_node();
 	this->s_elem_it = s_elem_it;
 	this->indent_depth = indent_depth;
 
-	switch(sElem.op){
+	switch(s_elems[this->s_elem_it].op){
+
 	/* check 1. to meet TERMINATOR */
 	case SELEMOP_TERMINATOR:
 		/* empry stat	: return empty */
@@ -325,43 +326,45 @@ SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
 			token = scan();
 			return this;
 		}
-		else {
+		else{
 			this->parse_result = PARSERESULT_NOTMATCH;
 			return this;
 		}
 
 	/* check 2. to meet ALL OF the conditions */
 	case SELEMOP_ALL_OF:
-		for(i = 0; i < sElem.children_num; i++){
+		for(i = 0; i < s_elems[this->s_elem_it].children_num; i++){
 			youngest_child = add_child(this, youngest_child, i);
 
 			switch(youngest_child->parse_result){
 
-			/* one of children is not match : NOT MATCH */
+			/* one of children is not matched : NOT MATCH */
 			case PARSERESULT_NOTMATCH:
 				this->parse_result = PARSERESULT_NOTMATCH;
 				return this;
 
-			/* one of children is empty : continue */
-			case PARSERESULT_EMPTY:
-				break;
-
-			/* one of children is match : schedule return MATCH and continue */
+			/* one of children is matched : schedule return MATCH and continue */
 			case PARSERESULT_MATCH:
 				this->parse_result = PARSERESULT_MATCH;
 				break;
+
+			/* one of children is empty : continue */
+			/*
+			case PARSERESULT_EMPTY:
+				break;
+			*/
 			}
 		}
 		return this;
 
 	/* check 3. to meet ONE OF the conditions */
 	case SELEMOP_ONE_OF:
-		for(i = 0; i < sElem.children_num; i++){
+		for(i = 0; i < s_elems[this->s_elem_it].children_num; i++){
 			youngest_child = add_child(this, youngest_child, i);
 
 			switch(youngest_child->parse_result){
 
-			/* one of children is match : MATCH */
+			/* one of children is matched : MATCH */
 			case PARSERESULT_MATCH:				
 				this->parse_result = PARSERESULT_MATCH;
 				return this;
@@ -371,15 +374,19 @@ SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
 				this->parse_result = PARSERESULT_EMPTY;
 				break;
 
-			/* one of children is not match : continue */
+			/* one of children is not matched : continue */
+			/*
+			case PARSERESULT_NOTMATCH:
+				break;
+			*/
 			}
 		}
 		return this;
 
 	/* check 4. to meet the condition ZERO OR MORE times */
 	case SELEMOP_ZERO_OR_MORE:
-		/* match 1 or more time : return MATCH */
-		/* other : return EMPTY */
+		/* match 1 or more time : MATCH */
+		/* other : EMPTY */
 		this->parse_result = PARSERESULT_EMPTY;
 		while(1){
 			youngest_child = add_child(this, youngest_child, 0);
@@ -387,23 +394,27 @@ SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
 			if(youngest_child->parse_result != PARSERESULT_MATCH){
 				break;
 			}
+
 			this->parse_result = PARSERESULT_MATCH;
 		}
-
 		return this;
 
 	/* check 5. to meet the condition ZERO OR ONE time */
 	case SELEMOP_ZERO_OR_ONE:
 		youngest_child = add_child(this, youngest_child, 0);
 
-		if(youngest_child->parse_result == PARSERESULT_MATCH)
+		/* match 1 time : MATCH */
+		if(youngest_child->parse_result == PARSERESULT_MATCH){
 			this->parse_result = PARSERESULT_MATCH;
-		else
+		}
+		/* match 0 time : EMPTY */
+		else{
 			this->parse_result = PARSERESULT_EMPTY;
+		}
 
 		return this;
 	}
 
-	/* nobody can come here just for debug */
-	return NULL;
+	printf("nobody can come here just for compile\n");
+	exit(-1);
 }
