@@ -1,7 +1,7 @@
 #include "token-list.h"
 
 /* keyword list */
-KEY keyword[KEYWORDSIZE] = {
+Key keyword[KEYWORDSIZE] = {
 	{"and", 	TAND	},
 	{"array",	TARRAY	},
 	{"begin",	TBEGIN	},
@@ -33,7 +33,7 @@ KEY keyword[KEYWORDSIZE] = {
 };
 
 /* symbol list */
-KEY symbol1[SYMBOL1SIZE] = {
+Key symbol1[SYMBOL1SIZE] = {
 	{"+", 	TPLUS	},
 	{"-",	TMINUS	},
 	{"*",	TSTAR	},
@@ -49,7 +49,7 @@ KEY symbol1[SYMBOL1SIZE] = {
 	{":",	TCOLON	},
 	{";",	TSEMI	}
 };
-KEY symbol2[SYMBOL2SIZE] = {
+Key symbol2[SYMBOL2SIZE] = {
 	{"<>",	TNOTEQ	},
 	{"<=",	TLEEQ	},
 	{">=",	TGREQ	},

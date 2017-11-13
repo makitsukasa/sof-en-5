@@ -59,26 +59,26 @@
 #define NUMOFTOKEN	49
 
 /* token-list.c */
-typedef struct KEY_ {
+typedef struct Key_ {
 	char * keyword;
 	int keytoken;
-}KEY;
+}Key;
 
 #define KEYWORDSIZE	28
 #define SYMBOL1SIZE 14
 #define SYMBOL2SIZE 4
 
-extern KEY keyword[KEYWORDSIZE];
-extern KEY symbol1[SYMBOL1SIZE];
-extern KEY symbol2[SYMBOL2SIZE];
+extern Key keyword[KEYWORDSIZE];
+extern Key symbol1[SYMBOL1SIZE];
+extern Key symbol2[SYMBOL2SIZE];
 
 extern void error(int linenum, char *mes);
 
 /* scan.c */
-extern int init_scan(char *filename);
-extern int scan(void);
+extern int line_num;
 extern int num_attr;
 extern char string_attr[MAXSTRSIZE];
-extern int line_num;
+extern int init_scan(char *filename);
+extern int scan(void);
 extern int get_linenum(void);
 extern void end_scan(void);

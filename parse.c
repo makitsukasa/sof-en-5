@@ -1,7 +1,6 @@
 #include "pretty-printer.h"
 
 /* const */ SyntaxElem s_elem_array[NUMOFSYNTAX + 1];
-
 int token;
 
 int is_indent(int parent_s_elem_it, int child_it){
@@ -21,8 +20,9 @@ int is_indent(int parent_s_elem_it, int child_it){
 /* returns added child */
 SyntaxTreeNode* add_child(SyntaxTreeNode* this, SyntaxTreeNode* youngest_child, int child_it){
 	int indent = this->indent_depth + is_indent(this->s_elem_it, child_it);
+	int iter = this->iter_depth + (this->s_elem_it == SITERSTAT ? 1 : 0);
 	SyntaxTreeNode* newborn
-		= parse(s_elem_array[this->s_elem_it].children[child_it], indent);
+		= parse(s_elem_array[this->s_elem_it].children[child_it], indent, iter);
 
 	if(youngest_child == NULL){
 		this->child = newborn;
@@ -117,7 +117,7 @@ void init_parse(void) {
 	SyntaxElem s_elem_SCOMPSTAT			= {SELEMOP_ALL_OF,			4, {TBEGIN, SSTAT, SCOMPSTAT_2, TEND}};
 	SyntaxElem s_elem_SCOMPSTAT_2		= {SELEMOP_ZERO_OR_MORE,	1, {SCOMPSTAT_2_0}};
 	SyntaxElem s_elem_SCOMPSTAT_2_0		= {SELEMOP_ALL_OF,			2, {TSEMI, SSTAT}};
-	SyntaxElem s_elem_SSTAT				= {SELEMOP_ONE_OF,			10, {SASSIGNSTAT, SCONDSTAT, SITERSTAT, SEXITSTAT, SCALLSTAT, SRETSTAT, SINSTAT, SOUTSTAT, SCOMPSTAT, SEMPTYSTAT}};
+	SyntaxElem s_elem_SSTAT				= {SELEMOP_ONE_OF,			10,{SASSIGNSTAT, SCONDSTAT, SITERSTAT, SEXITSTAT, SCALLSTAT, SRETSTAT, SINSTAT, SOUTSTAT, SCOMPSTAT, SEMPTYSTAT}};
 	SyntaxElem s_elem_SCONDSTAT			= {SELEMOP_ALL_OF,			5, {TIF, SEXPR, TTHEN, SSTAT, SCONDSTAT_4}};
 	SyntaxElem s_elem_SCONDSTAT_4		= {SELEMOP_ZERO_OR_ONE,		1, {SCONDSTAT_4_0}};
 	SyntaxElem s_elem_SCONDSTAT_4_0		= {SELEMOP_ALL_OF,			2, {TELSE, SSTAT}};
@@ -175,17 +175,17 @@ void init_parse(void) {
 	s_elem_array[TNAME]				= s_elem_TNAME;
 	s_elem_array[TPROGRAM]			= s_elem_TPROGRAM;
 	s_elem_array[TVAR]				= s_elem_TVAR;
-	s_elem_array[TARRAY]				= s_elem_TARRAY;
+	s_elem_array[TARRAY]			= s_elem_TARRAY;
 	s_elem_array[TOF]				= s_elem_TOF;
-	s_elem_array[TBEGIN]				= s_elem_TBEGIN;
+	s_elem_array[TBEGIN]			= s_elem_TBEGIN;
 	s_elem_array[TEND]				= s_elem_TEND;
 	s_elem_array[TIF]				= s_elem_TIF;
 	s_elem_array[TTHEN]				= s_elem_TTHEN;
 	s_elem_array[TELSE]				= s_elem_TELSE;
-	s_elem_array[TPROCEDURE]			= s_elem_TPROCEDURE;
+	s_elem_array[TPROCEDURE]		= s_elem_TPROCEDURE;
 	s_elem_array[TRETURN]			= s_elem_TRETURN;
 	s_elem_array[TCALL]				= s_elem_TCALL;
-	s_elem_array[TWHILE]				= s_elem_TWHILE;
+	s_elem_array[TWHILE]			= s_elem_TWHILE;
 	s_elem_array[TDO]				= s_elem_TDO;
 	s_elem_array[TNOT]				= s_elem_TNOT;
 	s_elem_array[TOR]				= s_elem_TOR;
@@ -197,14 +197,14 @@ void init_parse(void) {
 	s_elem_array[TREADLN]			= s_elem_TREADLN;
 	s_elem_array[TWRITELN]			= s_elem_TWRITELN;
 	s_elem_array[TTRUE]				= s_elem_TTRUE;
-	s_elem_array[TFALSE]				= s_elem_TFALSE;
+	s_elem_array[TFALSE]			= s_elem_TFALSE;
 	s_elem_array[TNUMBER]			= s_elem_TNUMBER;
 	s_elem_array[TSTRING]			= s_elem_TSTRING;
 	s_elem_array[TPLUS]				= s_elem_TPLUS;
-	s_elem_array[TMINUS]				= s_elem_TMINUS;
+	s_elem_array[TMINUS]			= s_elem_TMINUS;
 	s_elem_array[TSTAR]				= s_elem_TSTAR;
-	s_elem_array[TEQUAL]				= s_elem_TEQUAL;
-	s_elem_array[TNOTEQ]				= s_elem_TNOTEQ;
+	s_elem_array[TEQUAL]			= s_elem_TEQUAL;
+	s_elem_array[TNOTEQ]			= s_elem_TNOTEQ;
 	s_elem_array[TLE]				= s_elem_TLE;
 	s_elem_array[TLEEQ]				= s_elem_TLEEQ;
 	s_elem_array[TGR]				= s_elem_TGR;
@@ -215,17 +215,17 @@ void init_parse(void) {
 	s_elem_array[TRSQPAREN]			= s_elem_TRSQPAREN;
 	s_elem_array[TASSIGN]			= s_elem_TASSIGN;
 	s_elem_array[TDOT]				= s_elem_TDOT;
-	s_elem_array[TCOMMA]				= s_elem_TCOMMA;
-	s_elem_array[TCOLON]				= s_elem_TCOLON;
+	s_elem_array[TCOMMA]			= s_elem_TCOMMA;
+	s_elem_array[TCOLON]			= s_elem_TCOLON;
 	s_elem_array[TSEMI]				= s_elem_TSEMI;
 	s_elem_array[TREAD]				= s_elem_TREAD;
-	s_elem_array[TWRITE]				= s_elem_TWRITE;
-	s_elem_array[TBREAK]				= s_elem_TBREAK;
+	s_elem_array[TWRITE]			= s_elem_TWRITE;
+	s_elem_array[TBREAK]			= s_elem_TBREAK;
 	*/
 	s_elem_array[SPROGRAM]			= s_elem_SPROGRAM;
-	s_elem_array[SBLOCK]				= s_elem_SBLOCK;
+	s_elem_array[SBLOCK]			= s_elem_SBLOCK;
 	s_elem_array[SBLOCK_0]			= s_elem_SBLOCK_0;
-	s_elem_array[SBLOCK_0_0]			= s_elem_SBLOCK_0_0;
+	s_elem_array[SBLOCK_0_0]		= s_elem_SBLOCK_0_0;
 	s_elem_array[SVARDEC]			= s_elem_SVARDEC;
 	s_elem_array[SVARDEC_5]			= s_elem_SVARDEC_5;
 	s_elem_array[SVARDEC_5_0]		= s_elem_SVARDEC_5_0;
@@ -239,10 +239,10 @@ void init_parse(void) {
 	s_elem_array[SSUBPROGDEC]		= s_elem_SSUBPROGDEC;
 	s_elem_array[SSUBPROGDEC_2]		= s_elem_SSUBPROGDEC_2;
 	s_elem_array[SSUBPROGDEC_4]		= s_elem_SSUBPROGDEC_4;
-	s_elem_array[SPROCEDURENAME]		= s_elem_SPROCEDURENAME;
-	s_elem_array[SFORMPARAM]			= s_elem_SFORMPARAM;
+	s_elem_array[SPROCEDURENAME]	= s_elem_SPROCEDURENAME;
+	s_elem_array[SFORMPARAM]		= s_elem_SFORMPARAM;
 	s_elem_array[SFORMPARAM_4]		= s_elem_SFORMPARAM_4;
-	s_elem_array[SFORMPARAM_4_0]		= s_elem_SFORMPARAM_4_0;
+	s_elem_array[SFORMPARAM_4_0]	= s_elem_SFORMPARAM_4_0;
 	s_elem_array[SCOMPSTAT]			= s_elem_SCOMPSTAT;
 	s_elem_array[SCOMPSTAT_2]		= s_elem_SCOMPSTAT_2;
 	s_elem_array[SCOMPSTAT_2_0]		= s_elem_SCOMPSTAT_2_0;
@@ -255,14 +255,14 @@ void init_parse(void) {
 	s_elem_array[SCALLSTAT]			= s_elem_SCALLSTAT;
 	s_elem_array[SCALLSTAT_2]		= s_elem_SCALLSTAT_2;
 	s_elem_array[SCALLSTAT_2_0]		= s_elem_SCALLSTAT_2_0;
-	s_elem_array[SEXPRS]				= s_elem_SEXPRS;
+	s_elem_array[SEXPRS]			= s_elem_SEXPRS;
 	s_elem_array[SEXPRS_1]			= s_elem_SEXPRS_1;
-	s_elem_array[SEXPRS_1_0]			= s_elem_SEXPRS_1_0;
+	s_elem_array[SEXPRS_1_0]		= s_elem_SEXPRS_1_0;
 	s_elem_array[SRETSTAT]			= s_elem_SRETSTAT;
 	s_elem_array[SASSIGNSTAT]		= s_elem_SASSIGNSTAT;
 	s_elem_array[SLEFTPART]			= s_elem_SLEFTPART;
 	s_elem_array[SVAR]				= s_elem_SVAR;
-	s_elem_array[SVAR_1]				= s_elem_SVAR_1;
+	s_elem_array[SVAR_1]			= s_elem_SVAR_1;
 	s_elem_array[SVAR_1_0]			= s_elem_SVAR_1_0;
 	s_elem_array[SEXPR]				= s_elem_SEXPR;
 	s_elem_array[SEXPR_1]			= s_elem_SEXPR_1;
@@ -279,9 +279,9 @@ void init_parse(void) {
 	s_elem_array[SFACTOR_2]			= s_elem_SFACTOR_2;
 	s_elem_array[SFACTOR_3]			= s_elem_SFACTOR_3;
 	s_elem_array[SFACTOR_4]			= s_elem_SFACTOR_4;
-	s_elem_array[SCONST]				= s_elem_SCONST;
-	s_elem_array[SMULOP]				= s_elem_SMULOP;
-	s_elem_array[SADDOP]				= s_elem_SADDOP;
+	s_elem_array[SCONST]			= s_elem_SCONST;
+	s_elem_array[SMULOP]			= s_elem_SMULOP;
+	s_elem_array[SADDOP]			= s_elem_SADDOP;
 	s_elem_array[SRELATOP]			= s_elem_SRELATOP;
 	s_elem_array[SINSTAT]			= s_elem_SINSTAT;
 	s_elem_array[SINSTAT_0]			= s_elem_SINSTAT_0;
@@ -290,23 +290,25 @@ void init_parse(void) {
 	s_elem_array[SINSTAT_1_0_2]		= s_elem_SINSTAT_1_0_2;
 	s_elem_array[SINSTAT_1_0_2_0]	= s_elem_SINSTAT_1_0_2_0;
 	s_elem_array[SOUTSTAT]			= s_elem_SOUTSTAT;
-	s_elem_array[SOUTSTAT_0]			= s_elem_SOUTSTAT_0;
-	s_elem_array[SOUTSTAT_1]			= s_elem_SOUTSTAT_1;
+	s_elem_array[SOUTSTAT_0]		= s_elem_SOUTSTAT_0;
+	s_elem_array[SOUTSTAT_1]		= s_elem_SOUTSTAT_1;
 	s_elem_array[SOUTSTAT_1_0]		= s_elem_SOUTSTAT_1_0;
-	s_elem_array[SOUTSTAT_1_0_2]		= s_elem_SOUTSTAT_1_0_2;
+	s_elem_array[SOUTSTAT_1_0_2]	= s_elem_SOUTSTAT_1_0_2;
 	s_elem_array[SOUTSTAT_1_0_2_0]	= s_elem_SOUTSTAT_1_0_2_0;
 	s_elem_array[SOUTFORM]			= s_elem_SOUTFORM;
-	s_elem_array[SOUTFORM_0]			= s_elem_SOUTFORM_0;
+	s_elem_array[SOUTFORM_0]		= s_elem_SOUTFORM_0;
 	s_elem_array[SOUTFORM_0_1]		= s_elem_SOUTFORM_0_1;
-	s_elem_array[SOUTFORM_0_1_0]		= s_elem_SOUTFORM_0_1_0;
-	s_elem_array[SEMPTYSTAT]			= s_elem_SEMPTYSTAT;
+	s_elem_array[SOUTFORM_0_1_0]	= s_elem_SOUTFORM_0_1_0;
+	s_elem_array[SEMPTYSTAT]		= s_elem_SEMPTYSTAT;
 }
 
-SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
+SyntaxTreeNode* parse(int s_elem_it, int indent_depth, int iter_depth){
 	int i;
 	SyntaxTreeNode* youngest_child = NULL;
 	SyntaxTreeNode* this = malloc_tree_node();
 	this->s_elem_it = s_elem_it;
+	this->line_num = line_num;
+	this->iter_depth = iter_depth;
 	this->indent_depth = indent_depth;
 
 	switch(s_elem_array[this->s_elem_it].op){
@@ -320,9 +322,14 @@ SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
 		}
 		/* other		: compare token and elem */
 		else if(token == s_elem_it){
+			if(token == TBREAK && this->iter_depth <= 0){
+				this->parse_result = PARSERESULT_ACCIDENT;
+				this->s_elem_it = s_elem_it;
+				strcpy(this->string_attr, string_attr);
+				return this;
+			}
 			this->parse_result = PARSERESULT_MATCH;
 			this->s_elem_it = s_elem_it;
-			this->line_num = line_num;
 			strcpy(this->string_attr, string_attr);
 			token = scan();
 			return this;
@@ -413,7 +420,7 @@ SyntaxTreeNode* parse(int s_elem_it, int indent_depth){
 				this->parse_result = PARSERESULT_ACCIDENT;
 				break;
 			}
-			if(youngest_child->parse_result != PARSERESULT_MATCH){
+			else if(youngest_child->parse_result != PARSERESULT_MATCH){
 				break;
 			}
 

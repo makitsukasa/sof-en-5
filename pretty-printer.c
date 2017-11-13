@@ -26,15 +26,15 @@ const char* SYNTAXDIC[NUMOFSYNTAX + 1] = {
 int is_head_of_line;
 
 SyntaxTreeNode* malloc_tree_node(){
-	SyntaxTreeNode *p = malloc(sizeof(SyntaxTreeNode));
-	if(p == NULL){
+	SyntaxTreeNode *node = malloc(sizeof(SyntaxTreeNode));
+	if(node == NULL){
 		printf("error i could not malloc\n");
 		exit(-1);
 	}
-	p->brother = NULL;
-	p->child = NULL;
+	node->brother = NULL;
+	node->child = NULL;
 
-	return p;
+	return node;
 }
 
 void free_tree(SyntaxTreeNode* node){
@@ -46,13 +46,13 @@ void free_tree(SyntaxTreeNode* node){
 	free(node);
 	node = NULL;
 }
-
+/*
 void debug_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
 	printf("%9p ", node);
 	printf("%16s ", SYNTAXDIC[node->s_elem_it]);
-	printf("l%d ", node->line_num);
+	printf("l%3d ", node->line_num);
 	printf("d%d ", node->indent_depth);
 	printf("w%d ", node->iter_depth);
 	printf("%s ", node->parse_result == PARSERESULT_MATCH ? "T" : 
@@ -66,25 +66,43 @@ void debug_tree(SyntaxTreeNode* node){
 	debug_tree(node->child);
 	debug_tree(node->brother);
 }
+*/
+void dump_expected_token(int s_elem_it){
+	int i;
+	int max_it = 1;
+
+	if(s_elem_array[s_elem_it].op == SELEMOP_ONE_OF){
+		max_it = s_elem_array[s_elem_it].children_num;
+	}
+
+	for(i = 0; i < max_it; i++){
+		int child_it = s_elem_array[s_elem_it].children[i];
+		if(s_elem_array[child_it].op == SELEMOP_TERMINATOR){
+			printf("%s,", SYNTAXDIC[child_it]);
+		}else{
+			dump_expected_token(child_it);
+		}
+	}	
+}
 
 int find_error_tree(SyntaxTreeNode* node){
 	if(node == NULL) return PARSERESULT_EMPTY;
 
 	if(node->parse_result == PARSERESULT_ACCIDENT){
 		if(find_error_tree(node->child) == PARSERESULT_ACCIDENT){
+			/*
 			printf("%9p ", node);
 			printf("%16s ", SYNTAXDIC[node->s_elem_it]);
 			printf("l%d ", node->line_num);
 			printf("d%d ", node->indent_depth);
 			printf("w%d ", node->iter_depth);
-			printf("%s ", node->parse_result == PARSERESULT_MATCH ? "T" : 
-						node->parse_result == PARSERESULT_DIFFERENCE ? "F" :
-						node->parse_result == PARSERESULT_EMPTY ? "E" : "A");
-			printf("c%9p ", node->child);
-			printf("b%9p ", node->brother);
+			printf("child %9p ", node->child);
+			printf("bro %9p ", node->brother);
 			printf("%s ", node->string_attr);
 			printf("'S CHILD");
 			printf("\n");
+			*/
+			printf("\tin parsing %s (line %d)\n", SYNTAXDIC[node->s_elem_it], node->line_num);
 			return PARSERESULT_ACCIDENT;
 		}
 	}
@@ -93,20 +111,58 @@ int find_error_tree(SyntaxTreeNode* node){
 		return PARSERESULT_ACCIDENT;
 	}
 
-	if(node->s_elem_it <= NUMOFTOKEN && node->parse_result == PARSERESULT_DIFFERENCE){
+	if(node->s_elem_it <= NUMOFTOKEN){
+		if(node->parse_result == PARSERESULT_DIFFERENCE){
+			/*
+			printf("%9p ", node);
+			printf("%16s ", SYNTAXDIC[node->s_elem_it]);
+			printf("l%d ", node->line_num);
+			printf("d%d ", node->indent_depth);
+			printf("w%d ", node->iter_depth);
+			printf("child %9p ", node->child);
+			printf("bro %9p ", node->brother);
+			printf("%s ", node->string_attr);
+			printf("needs this token");
+			printf("\n");
+			*/
+			printf("expected ' %s ' token (line %d)\n", SYNTAXDIC[node->s_elem_it], node->line_num);
+			return PARSERESULT_ACCIDENT;
+		}
+		else if(node->parse_result == PARSERESULT_ACCIDENT){
+			/*
+			printf("%9p ", node);
+			printf("%16s ", SYNTAXDIC[node->s_elem_it]);
+			printf("l%d ", node->line_num);
+			printf("d%d ", node->indent_depth);
+			printf("w%d ", node->iter_depth);
+			printf("child %9p ", node->child);
+			printf("bro %9p ", node->brother);
+			printf("%s ", node->string_attr);
+			printf("this token is illegal");
+			printf("\n");
+			*/
+			printf("unauthorized %s token (line %d)\n", SYNTAXDIC[node->s_elem_it], node->line_num);
+			return PARSERESULT_ACCIDENT;
+		}
+	}
+
+	else if(node->parse_result == PARSERESULT_EMPTY || node->parse_result == PARSERESULT_DIFFERENCE){
+		/*
 		printf("%9p ", node);
 		printf("%16s ", SYNTAXDIC[node->s_elem_it]);
 		printf("l%d ", node->line_num);
 		printf("d%d ", node->indent_depth);
 		printf("w%d ", node->iter_depth);
-		printf("%s ", node->parse_result == PARSERESULT_MATCH ? "T" : 
-					node->parse_result == PARSERESULT_DIFFERENCE ? "F" :
-					node->parse_result == PARSERESULT_EMPTY ? "E" : "A");
-		printf("c%9p ", node->child);
-		printf("b%9p ", node->brother);
+		printf("child %9p ", node->child);
+		printf("bro %9p ", node->brother);
 		printf("%s ", node->string_attr);
-		printf("HERE");
+		printf("needs this token");
 		printf("\n");
+		*/
+		printf("expected %s (line %d) ", SYNTAXDIC[node->s_elem_it], node->line_num);
+		printf("(ex.");
+		dump_expected_token(node->s_elem_it);
+		printf(")\n");
 		return PARSERESULT_ACCIDENT;
 	}
 
@@ -166,6 +222,8 @@ void print_tree(SyntaxTreeNode* node){
 }
 
 int main(int nc, char *np[]) {
+	SyntaxTreeNode *node_SPROGRAM;
+
 	if(nc < 2) {
 		printf("File name id not given.\n");
 		exit(-1);
@@ -178,7 +236,7 @@ int main(int nc, char *np[]) {
 
 	init_parse();
 
-	SyntaxTreeNode *node_SPROGRAM = parse(SPROGRAM, 0);
+	node_SPROGRAM = parse(SPROGRAM, 0, 0);
 
 	/*debug_tree(node_SPROGRAM);*/
 	
@@ -187,12 +245,12 @@ int main(int nc, char *np[]) {
 		printf("\n");
 	}
 	else{
-		printf("\nstatus:\n");
+		printf("syntax error found.\ndetail:\n");
 		find_error_tree(node_SPROGRAM);
-		printf("syntax error\n");
 	}
 
 	free_tree(node_SPROGRAM);
+	end_scan();
 
 	return 0;
 }
