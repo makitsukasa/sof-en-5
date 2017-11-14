@@ -46,7 +46,7 @@ void free_tree(SyntaxTreeNode* node){
 	free(node);
 	node = NULL;
 }
-/*
+
 void debug_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
@@ -66,7 +66,7 @@ void debug_tree(SyntaxTreeNode* node){
 	debug_tree(node->child);
 	debug_tree(node->brother);
 }
-*/
+
 void dump_expected_token(int s_elem_it){
 	int i;
 	int max_it = 1;
@@ -238,7 +238,7 @@ int main(int nc, char *np[]) {
 
 	node_SPROGRAM = parse(SPROGRAM, 0, 0);
 
-	/*debug_tree(node_SPROGRAM);*/
+	debug_tree(node_SPROGRAM);
 	
 	if(node_SPROGRAM->parse_result == PARSERESULT_MATCH){
 		print_tree(node_SPROGRAM);

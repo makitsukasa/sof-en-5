@@ -248,10 +248,6 @@ int scan(void){
 	return -1;
 }
 
-int get_line_num(void){
-	return line_num;
-}
-
 void end_scan(void){
 	fclose(fp);
 }
