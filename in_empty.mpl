@@ -1,0 +1,4 @@
+program emptystat;
+begin
+    
+end.
