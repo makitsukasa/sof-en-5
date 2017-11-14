@@ -12,7 +12,7 @@ run: a.out
 clean:
 	rm *.out
 
-gcovclear:
+gcovclean:
 	rm *.gcov *.gcda *.gcno
 
 gcovinit:
