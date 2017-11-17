@@ -10,19 +10,15 @@ run: a.out
 	@./a.out ${IN}
 
 clean:
-	-make gcovclean
-	rm *.out
-
-gcovclean:
-	rm *.gcov *.gcda *.gcno
+	rm *.out *.gcov *.gcda *.gcno
 
 gcovinit:
-	-make gcovclean
+	-make clean
 	gcc *.c -Wall -Wextra -std=c89 -o a.out -O0 -coverage
 
 gcovrun:
-	./a.out ${IN}
-	gcov ${F}.gcda
+	-./a.out ${IN}
+	-gcov ${F}.gcda
 	cat ${F}.c.gcov > out.txt
 
 gcovall:

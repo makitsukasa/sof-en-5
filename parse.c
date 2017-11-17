@@ -3,36 +3,6 @@
 /* const */ SyntaxElem s_elem_array[NUMOFSYNTAX + 1];
 int token;
 
-int is_indent(int parent_s_elem_it, int child_it){
-	if(parent_s_elem_it == SBLOCK && child_it == 0)
-		return 1;
-
-	if(parent_s_elem_it == SSUBPROGDEC && child_it == 4)
-		return 1;
-
-	if(parent_s_elem_it == SCOMPSTAT && 
-		(child_it == 1 || child_it == 2))
-			return 1;
-
-	return 0;
-}
-
-/* returns added child */
-SyntaxTreeNode* add_child(SyntaxTreeNode* this, SyntaxTreeNode* youngest_child, int child_it){
-	int indent = this->indent_depth + is_indent(this->s_elem_it, child_it);
-	int iter = this->iter_depth + (this->s_elem_it == SITERSTAT ? 1 : 0);
-	SyntaxTreeNode* newborn
-		= parse(s_elem_array[this->s_elem_it].children[child_it], indent, iter);
-
-	if(youngest_child == NULL){
-		this->child = newborn;
-	}
-	else{
-		youngest_child->brother = newborn;
-	}
-	return newborn;
-}
-
 void init_parse(void) {
 	int i;
 	token = scan();
@@ -302,38 +272,56 @@ void init_parse(void) {
 	s_elem_array[SEMPTYSTAT]		= s_elem_SEMPTYSTAT;
 }
 
-SyntaxTreeNode* parse(int s_elem_it, int indent_depth, int iter_depth){
+/* returns added child */
+SyntaxTreeNode* add_child(SyntaxTreeNode* this, SyntaxTreeNode* youngest_child, int child_it){
+	int iter = this->iter_depth + (this->s_elem_it == SITERSTAT ? 1 : 0);
+	SyntaxTreeNode* newborn
+		= parse(s_elem_array[this->s_elem_it].children[child_it], iter);
+
+	newborn->parent = this;
+
+	if(youngest_child == NULL){
+		this->child = newborn;
+	}
+	else{
+		youngest_child->brother = newborn;
+	}
+	return newborn;
+}
+
+SyntaxTreeNode* parse(int s_elem_it, int iter_depth){
 	int i;
 	SyntaxTreeNode* youngest_child = NULL;
 	SyntaxTreeNode* this = malloc_tree_node();
 	this->s_elem_it = s_elem_it;
 	this->line_num = line_num;
 	this->iter_depth = iter_depth;
-	this->indent_depth = indent_depth;
 
 	switch(s_elem_array[this->s_elem_it].op){
 
 	/* check 1. to meet TERMINATOR */
 	case SELEMOP_TERMINATOR:
-		/* empry stat	: return empty */
+		/* empry stat		: return empty */
 		if(s_elem_it == SEMPTYSTAT){
 			this->parse_result = PARSERESULT_EMPTY;
 			return this;
 		}
-		/* other		: compare token and elem */
+		/* token == elem	: return match */
 		else if(token == s_elem_it){
-			if(token == TBREAK && this->iter_depth <= 0){
-				this->parse_result = PARSERESULT_ACCIDENT;
-				this->s_elem_it = s_elem_it;
-				strcpy(this->string_attr, string_attr);
-				return this;
-			}
-			this->parse_result = PARSERESULT_MATCH;
 			this->s_elem_it = s_elem_it;
 			strcpy(this->string_attr, string_attr);
-			token = scan();
+			
+			/* 'break' token must be in iter stat */
+			if(token == TBREAK && this->iter_depth <= 0){
+				this->parse_result = PARSERESULT_ACCIDENT;
+			}
+			else{
+				this->parse_result = PARSERESULT_MATCH;
+				token = scan();
+			}
 			return this;
 		}
+		/* token != elem	: return difference */
 		else{
 			this->parse_result = PARSERESULT_DIFFERENCE;
 			return this;
@@ -355,13 +343,15 @@ SyntaxTreeNode* parse(int s_elem_it, int indent_depth, int iter_depth){
 			case PARSERESULT_DIFFERENCE:
 				if(this->child == youngest_child){
 					this->parse_result = PARSERESULT_DIFFERENCE;
-					return this;	
 				}
+				/* now i parse LL(1) syntax rule,
+				 * first child is matched but another child is not matched
+				 * => an accident happened, stop parsing and
+				 */
 				else{
 					this->parse_result = PARSERESULT_ACCIDENT;
-					/*youngest_child->parse_result = PARSERESULT_ACCIDENT;*/
-					return this;
 				}
+				return this;
 
 			/* one of children is matched : schedule return MATCH and continue */
 			case PARSERESULT_MATCH:

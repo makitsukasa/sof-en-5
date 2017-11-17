@@ -31,6 +31,7 @@ SyntaxTreeNode* malloc_tree_node(){
 		printf("error i could not malloc\n");
 		exit(-1);
 	}
+	node->parent = NULL;
 	node->brother = NULL;
 	node->child = NULL;
 
@@ -47,9 +48,7 @@ void free_tree(SyntaxTreeNode* node){
 	node = NULL;
 }
 
-void debug_tree(SyntaxTreeNode* node){
-	if(node == NULL) return;
-
+void print_tree_node(SyntaxTreeNode* node){
 	printf("%9p ", node);
 	printf("%16s ", SYNTAXDIC[node->s_elem_it]);
 	printf("l%3d ", node->line_num);
@@ -61,7 +60,13 @@ void debug_tree(SyntaxTreeNode* node){
 	printf("c%9p ", node->child);
 	printf("b%9p ", node->brother);
 	printf("%s ", node->string_attr);
-	printf("\n");
+	printf("\n");	
+}
+
+void debug_tree(SyntaxTreeNode* node){
+	if(node == NULL) return;
+
+	print_tree_node(node);
 
 	debug_tree(node->child);
 	debug_tree(node->brother);
@@ -91,16 +96,8 @@ int find_error_tree(SyntaxTreeNode* node){
 	if(node->parse_result == PARSERESULT_ACCIDENT){
 		if(find_error_tree(node->child) == PARSERESULT_ACCIDENT){
 			/*
-			printf("%9p ", node);
-			printf("%16s ", SYNTAXDIC[node->s_elem_it]);
-			printf("l%d ", node->line_num);
-			printf("d%d ", node->indent_depth);
-			printf("w%d ", node->iter_depth);
-			printf("child %9p ", node->child);
-			printf("bro %9p ", node->brother);
-			printf("%s ", node->string_attr);
-			printf("'S CHILD");
-			printf("\n");
+			print_tree_node(this);
+			printf("'S CHILD\n");
 			*/
 			printf("\tin parsing %s (line %d)\n", SYNTAXDIC[node->s_elem_it], node->line_num);
 			return PARSERESULT_ACCIDENT;
@@ -114,32 +111,16 @@ int find_error_tree(SyntaxTreeNode* node){
 	if(node->s_elem_it <= NUMOFTOKEN){
 		if(node->parse_result == PARSERESULT_DIFFERENCE){
 			/*
-			printf("%9p ", node);
-			printf("%16s ", SYNTAXDIC[node->s_elem_it]);
-			printf("l%d ", node->line_num);
-			printf("d%d ", node->indent_depth);
-			printf("w%d ", node->iter_depth);
-			printf("child %9p ", node->child);
-			printf("bro %9p ", node->brother);
-			printf("%s ", node->string_attr);
-			printf("needs this token");
-			printf("\n");
+			print_tree_node(this);
+			printf("needs this token\n");
 			*/
 			printf("expected ' %s ' token (line %d)\n", SYNTAXDIC[node->s_elem_it], node->line_num);
 			return PARSERESULT_ACCIDENT;
 		}
 		else if(node->parse_result == PARSERESULT_ACCIDENT){
 			/*
-			printf("%9p ", node);
-			printf("%16s ", SYNTAXDIC[node->s_elem_it]);
-			printf("l%d ", node->line_num);
-			printf("d%d ", node->indent_depth);
-			printf("w%d ", node->iter_depth);
-			printf("child %9p ", node->child);
-			printf("bro %9p ", node->brother);
-			printf("%s ", node->string_attr);
-			printf("this token is illegal");
-			printf("\n");
+			print_tree_node(this);
+			printf("this token is illegal\n");
 			*/
 			printf("unauthorized %s token (line %d)\n", SYNTAXDIC[node->s_elem_it], node->line_num);
 			return PARSERESULT_ACCIDENT;
@@ -148,16 +129,8 @@ int find_error_tree(SyntaxTreeNode* node){
 
 	else if(node->parse_result == PARSERESULT_EMPTY || node->parse_result == PARSERESULT_DIFFERENCE){
 		/*
-		printf("%9p ", node);
-		printf("%16s ", SYNTAXDIC[node->s_elem_it]);
-		printf("l%d ", node->line_num);
-		printf("d%d ", node->indent_depth);
-		printf("w%d ", node->iter_depth);
-		printf("child %9p ", node->child);
-		printf("bro %9p ", node->brother);
-		printf("%s ", node->string_attr);
-		printf("needs this token");
-		printf("\n");
+		print_tree_node(this);
+		printf("needs this token\n");
 		*/
 		printf("expected %s (line %d) ", SYNTAXDIC[node->s_elem_it], node->line_num);
 		printf("(ex.");
@@ -167,6 +140,58 @@ int find_error_tree(SyntaxTreeNode* node){
 	}
 
 	return PARSERESULT_EMPTY;
+}
+
+int indent_difference(int grampa_s_elem_it, int parent_s_elem_it, int child_s_elem_it){
+
+	if(grampa_s_elem_it == SITERSTAT &&
+		parent_s_elem_it == SSTAT && child_s_elem_it == SCOMPSTAT){
+		return -1;
+	}
+	if(grampa_s_elem_it == SCONDSTAT &&
+		parent_s_elem_it == SSTAT && child_s_elem_it == SCOMPSTAT){
+		return -1;
+	}
+	if(grampa_s_elem_it == SCONDSTAT_4_0 &&
+		parent_s_elem_it == SSTAT && child_s_elem_it == SCOMPSTAT){
+		return -1;
+	}
+
+	if(parent_s_elem_it == SBLOCK && child_s_elem_it == SBLOCK_0)
+		return 1;
+	if(parent_s_elem_it == SSUBPROGDEC && child_s_elem_it == SSUBPROGDEC_4)
+		return 1;
+	if(parent_s_elem_it == SITERSTAT && child_s_elem_it == SSTAT)
+		return 1;
+	if(parent_s_elem_it == SCONDSTAT && child_s_elem_it == SSTAT)
+		return 1;
+	if(parent_s_elem_it == SCONDSTAT_4_0 && child_s_elem_it == SSTAT)
+		return 1;
+	if(parent_s_elem_it == SCOMPSTAT && child_s_elem_it == SSTAT)
+		return 1;
+	if(parent_s_elem_it == SCOMPSTAT && child_s_elem_it == SCOMPSTAT_2)
+		return 1;
+	if(parent_s_elem_it == SVARDEC && child_s_elem_it != TVAR)
+		return 1;
+
+	return 0;
+}
+
+void preformat_tree(SyntaxTreeNode* parent, SyntaxTreeNode* this, int indent_depth){
+	int i;
+	int g_it = (parent == NULL) ? 0 : parent->s_elem_it;
+	int p_it = (this   == NULL) ? 0 : this  ->s_elem_it;
+	SyntaxTreeNode* node;
+	if(this == NULL) return;
+
+	this->indent_depth = indent_depth;
+
+	node = this->child;
+	for(i = 0; node != NULL; i++){
+		int indent = indent_depth + indent_difference(g_it, p_it, node->s_elem_it);
+		preformat_tree(this, node, indent);
+		node = node->brother;
+	}
 }
 
 void print_tree(SyntaxTreeNode* node){
@@ -199,10 +224,12 @@ void print_tree(SyntaxTreeNode* node){
 		is_head_of_line = 0;
 	}
 	else if(node->s_elem_it == TSEMI || node->s_elem_it == TCOMMA ||
-			node->s_elem_it == TDOT || node->s_elem_it == TLPAREN){
-		/* not print " " */
+			node->s_elem_it == TDOT || 
+			(node->s_elem_it == TLPAREN && node->parent->s_elem_it != SFACTOR_2)){
+		/* not print " " before print token */
 	}
 	else{
+		/* print " " before print token */
 		printf(" ");
 	}
 
@@ -213,7 +240,9 @@ void print_tree(SyntaxTreeNode* node){
 		printf("%s", node->string_attr);
 	}
 
-	if(node->s_elem_it == TSEMI || node->s_elem_it == TBEGIN || node->s_elem_it == TDO){
+	if(node->s_elem_it == TSEMI || node->s_elem_it == TBEGIN ||
+		node->s_elem_it == TDO || node->s_elem_it == TTHEN || 
+		node->s_elem_it == TELSE || node->s_elem_it == TVAR){
 		is_head_of_line = 1;
 	}
 
@@ -236,15 +265,16 @@ int main(int nc, char *np[]) {
 
 	init_parse();
 
-	node_SPROGRAM = parse(SPROGRAM, 0, 0);
+	node_SPROGRAM = parse(SPROGRAM, 0);
 
-	debug_tree(node_SPROGRAM);
-	
 	if(node_SPROGRAM->parse_result == PARSERESULT_MATCH){
+		preformat_tree(NULL, node_SPROGRAM, 0);
 		print_tree(node_SPROGRAM);
 		printf("\n");
+		debug_tree(node_SPROGRAM);
 	}
 	else{
+		debug_tree(node_SPROGRAM);
 		printf("syntax error found.\ndetail:\n");
 		find_error_tree(node_SPROGRAM);
 	}
