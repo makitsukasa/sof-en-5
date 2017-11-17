@@ -1,5 +1,6 @@
-*.out
-*.jpg
-*.txt
-*.zip
-*-submit/
+*
+*/
+
+!*.c
+!*.h
+!*.mpl
