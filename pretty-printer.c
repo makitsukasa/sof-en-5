@@ -47,7 +47,7 @@ void free_tree(SyntaxTreeNode* node){
 	free(node);
 	node = NULL;
 }
-
+/*
 void print_tree_node(SyntaxTreeNode* node){
 	printf("%9p ", node);
 	printf("%16s ", SYNTAXDIC[node->s_elem_it]);
@@ -71,11 +71,10 @@ void debug_tree(SyntaxTreeNode* node){
 	debug_tree(node->child);
 	debug_tree(node->brother);
 }
-
+*/
 void dump_expected_token(int s_elem_it){
 	int i;
 	int max_it = 1;
-
 	if(s_elem_array[s_elem_it].op == SELEMOP_ONE_OF){
 		max_it = s_elem_array[s_elem_it].children_num;
 	}
@@ -139,6 +138,7 @@ int find_error_tree(SyntaxTreeNode* node){
 		return PARSERESULT_ACCIDENT;
 	}
 
+	printf("this statement will run when parse is completed with no error and execute find_error_tree\n" );
 	return PARSERESULT_EMPTY;
 }
 
@@ -270,11 +270,11 @@ int main(int nc, char *np[]) {
 	if(node_SPROGRAM->parse_result == PARSERESULT_MATCH){
 		preformat_tree(NULL, node_SPROGRAM, 0);
 		print_tree(node_SPROGRAM);
-		printf("\n");
-		debug_tree(node_SPROGRAM);
+		/*printf("\n");*/
+		/*debug_tree(node_SPROGRAM);*/
 	}
 	else{
-		debug_tree(node_SPROGRAM);
+		/*debug_tree(node_SPROGRAM);*/
 		printf("syntax error found.\ndetail:\n");
 		find_error_tree(node_SPROGRAM);
 	}

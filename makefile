@@ -10,14 +10,14 @@ run: a.out
 	@./a.out ${IN}
 
 clean:
-	rm *.out *.gcov *.gcda *.gcno
+	-rm *.out *.gcov *.gcda *.gcno
 
 gcovinit:
-	-make clean
+	make clean
 	gcc *.c -Wall -Wextra -std=c89 -o a.out -O0 -coverage
 
 gcovrun:
-	-./a.out ${IN}
+	-./a.out ${IN} > ${IN}.txt
 	-gcov ${F}.gcda
 	cat ${F}.c.gcov > out.txt
 

@@ -413,7 +413,7 @@ SyntaxTreeNode* parse(int s_elem_it, int iter_depth){
 			else if(youngest_child->parse_result != PARSERESULT_MATCH){
 				break;
 			}
-
+			/* match 1 or more time : MATCH */
 			this->parse_result = PARSERESULT_MATCH;
 		}
 		return this;
@@ -422,10 +422,10 @@ SyntaxTreeNode* parse(int s_elem_it, int iter_depth){
 	case SELEMOP_ZERO_OR_ONE:
 		youngest_child = add_child(this, youngest_child, 0);
 
-		/* match 1 time : MATCH */
 		if(youngest_child->parse_result == PARSERESULT_ACCIDENT){
 			this->parse_result = PARSERESULT_ACCIDENT;
 		}
+		/* match 1 time : MATCH */
 		else if(youngest_child->parse_result == PARSERESULT_MATCH){
 			this->parse_result = PARSERESULT_MATCH;
 		}
@@ -435,8 +435,10 @@ SyntaxTreeNode* parse(int s_elem_it, int iter_depth){
 		}
 
 		return this;
+
+	default:
+		printf("nobody can come here just for compile\n");
+		exit(-1);
 	}
 
-	printf("nobody can come here just for compile\n");
-	exit(-1);
 }

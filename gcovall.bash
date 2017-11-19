@@ -9,8 +9,8 @@ done
 
 if [$# -lt 1]; then
 	make gcovrun IN="" F=scan
-	make gcovrun IN="hogerahogehogehogehogera.hoge" F=scan
+	make gcovrun IN="not_exist.mpl" F=scan
 else
 	make gcovrun IN="" F=${1}
-	make gcovrun IN="hogerahogehogehogehogera.hoge" F=${1}
+	make gcovrun IN="not_exist.mpl" F=${1}
 fi
