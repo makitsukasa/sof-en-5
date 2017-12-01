@@ -22,20 +22,13 @@ typedef struct VarData_{
 
 typedef struct ProcedureData_{
 	char name[MAXSTRSIZE];
+	int is_main_routine;
 	int defined_line;
 	VarData *var_data_head;
 	VarData *var_data_tail;
 	struct ProcedureData_ *next;
 } ProcData;
 
-/* only one jittai */
-typedef struct ProgramData_{
-	char name[MAXSTRSIZE];
-	VarData *var_data_head;
-	VarData *var_data_tail;
-	ProcData *proc_data_head;
-	ProcData *proc_data_tail;
-} ProgData;
 
 #define CHECKTYPERESULT_NOTMATCH 0
 #define CHECKTYPERESULT_MATCH 1

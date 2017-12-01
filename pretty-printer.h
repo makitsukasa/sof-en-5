@@ -20,7 +20,7 @@
 #define SARRTYPE			 63	/* all of		TARRAY TLSQPAREN TNUMBER TRSQPAREN TOF SSTDTYPE          */
 #define SSUBPROGDEC			 64	/* all of		TPROCEDURE SPROCEDURENAME SSUBPROGDEC_2
 													TSEMI SSUBPROGDEC_4 SCOMPSTAT TSEMI                  */
-#define SSUBPROGDEC_2		 65	/* zero or one	SFORMALPARAM                                             */
+#define SSUBPROGDEC_2		 65	/* zero or one	SFORMPARAM                                               */
 #define SSUBPROGDEC_4		 66	/* zero or one	SVARDEC                                                  */
 #define SPROCEDURENAME		 67	/* all of		TNAME                                                    */
 #define SFORMPARAM			 68	/* all of		TLPAREN SVARNAMES TCOLON STYPE SFORMPARAM_5 TRPAREN      */

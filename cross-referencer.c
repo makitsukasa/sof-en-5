@@ -1,29 +1,46 @@
 #include "cross-referencer.h"
 
-void add_var_data(VarData* vdata, SyntaxTreeNode* namespace){
-
-}
 
 void list_variable(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
 
-	if(node->s_elem_it == SPROGRAM){
+	if(node == NULL) return;
+
+	switch(node->s_elem_it){
+	case SPROGRAM:
+	case SSUBPROGDEC:
 		namespace = node;
+		node->data = malloc(sizeof(ProcData));
+		list_variable(node->child, namespace);
+		list_variable(node->brother, namespace);
+		break;
+
+	case SVARDEC:
+
+	case SVARNAMES:
+		else{
+			SyntaxTreeNode* node_SVARNAMES_1_0 = node->child->brother->child;
+			node->child->data = malloc(sizeof(VarData));
+			for(; node_SVARNAMES_1_0 != NULL && node_SVARNAMES_1_0->parse_result != PARSERESULT_DIFFERENCE;){
+				node_SVARNAMES_1_0->child->brother->data = malloc(sizeof(VarData));
+				node_SVARNAMES_1_0 = node_SVARNAMES_1_0->brother;
+			}
+			if(((ProcData*)namespace->data)->var_data_tail == NULL){
+				((ProcData*)namespace->data)->var_data_tail = node->data;	
+			}
+			else{
+				((ProcData*)namespace->data)->var_data_tail->next = node->data;
+				((ProcData*)namespace->data)->var_data_tail = node->data;
+			}
+			list_variable(node->brother, namespace);
+			break;
+		}
+
+	default:
+		list_variable(node->child, namespace);
+		list_variable(node->brother, namespace);
+
 	}
-
-	if(node->s_elem_it == SVARDEC){
-		VarData* vdata = malloc(sizeof(VarData));
-
-		node->data = (void*) vdata;
-		namespace->data->var_data_tail->next = vdata;
-		namespace->data->var_data_tail = vdata;
-	}
-
-	if(node->s_elem_it == SVARDEC){
-		/* var name is type*/
-
-
-	}
-
+	
 }
 
 int main(int nc, char *np[]){
@@ -53,6 +70,8 @@ int main(int nc, char *np[]){
 	}
 
 	list_variable(node_SPROGRAM, NULL);
+
+	debug_tree(node_SPROGRAM);
 /*
 	if(check_type(node_SPROGRAM) == 0){
 		printf("syntax error found.\ndetail:\n");

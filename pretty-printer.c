@@ -31,6 +31,7 @@ SyntaxTreeNode* malloc_tree_node(){
 		printf("error i could not malloc\n");
 		exit(-1);
 	}
+	node->data = NULL;
 	node->parent = NULL;
 	node->brother = NULL;
 	node->child = NULL;
@@ -47,7 +48,7 @@ void free_tree(SyntaxTreeNode* node){
 	free(node);
 	node = NULL;
 }
-#if 0
+#if 1
 void print_tree_node(SyntaxTreeNode* node){
 	printf("%9p ", node);
 	printf("%16s ", SYNTAXDIC[node->s_elem_it]);
@@ -60,11 +61,27 @@ void print_tree_node(SyntaxTreeNode* node){
 	printf("c%9p ", node->child);
 	printf("b%9p ", node->brother);
 	printf("%s ", node->string_attr);
-	printf("\n");	
+	printf("\n");
+	if(node->data != NULL){
+		printf("         %9p ", node->data);
+		if(node->s_elem_it == SPROGRAM || node->s_elem_it == SSUBPROGDEC){
+
+		}
+		else if(node->s_elem_it == SVARDEC){
+
+		}
+		printf("\n");	
+	}
 }
 
 void debug_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
+
+	if(node->parse_result == PARSERESULT_DIFFERENCE){
+		debug_tree(node->child);
+		debug_tree(node->brother);
+		return;
+	}
 
 	print_tree_node(node);
 
