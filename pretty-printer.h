@@ -100,6 +100,7 @@ typedef struct SyntaxTreeNode_{
 	int iter_depth;
 	int line_num;
 	int parse_result;
+	void* data;
 	struct SyntaxTreeNode_* parent;
 	struct SyntaxTreeNode_* brother;
 	struct SyntaxTreeNode_* child;

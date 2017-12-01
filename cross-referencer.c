@@ -1,10 +1,28 @@
 #include "cross-referencer.h"
 
-void list_variable(SyntaxTreeNode* node){
+void add_var_data(VarData* vdata, SyntaxTreeNode* namespace){
 
 }
 
-Type check_type(SyntaxTreeNode* node){
+void list_variable(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
+
+	if(node->s_elem_it == SPROGRAM){
+		namespace = node;
+	}
+
+	if(node->s_elem_it == SVARDEC){
+		VarData* vdata = malloc(sizeof(VarData));
+
+		node->data = (void*) vdata;
+		namespace->data->var_data_tail->next = vdata;
+		namespace->data->var_data_tail = vdata;
+	}
+
+	if(node->s_elem_it == SVARDEC){
+		/* var name is type*/
+
+
+	}
 
 }
 
@@ -34,11 +52,13 @@ int main(int nc, char *np[]){
 		return -1;
 	}
 
+	list_variable(node_SPROGRAM, NULL);
+/*
 	if(check_type(node_SPROGRAM) == 0){
 		printf("syntax error found.\ndetail:\n");
 
 	}
-
+*/
 
 
 	free_tree(node_SPROGRAM);
