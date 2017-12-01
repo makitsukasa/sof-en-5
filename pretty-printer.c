@@ -47,7 +47,7 @@ void free_tree(SyntaxTreeNode* node){
 	free(node);
 	node = NULL;
 }
-/*
+#if 0
 void print_tree_node(SyntaxTreeNode* node){
 	printf("%9p ", node);
 	printf("%16s ", SYNTAXDIC[node->s_elem_it]);
@@ -71,7 +71,8 @@ void debug_tree(SyntaxTreeNode* node){
 	debug_tree(node->child);
 	debug_tree(node->brother);
 }
-*/
+#endif
+
 void dump_expected_token(int s_elem_it){
 	int i;
 	int max_it = 1;
@@ -142,6 +143,7 @@ int find_error_tree(SyntaxTreeNode* node){
 	return PARSERESULT_EMPTY;
 }
 
+#if 0
 int indent_difference(int grampa_s_elem_it, int parent_s_elem_it, int child_s_elem_it){
 
 	if(grampa_s_elem_it == SITERSTAT &&
@@ -250,7 +252,7 @@ void print_tree(SyntaxTreeNode* node){
 	print_tree(node->brother);
 }
 
-int main(int nc, char *np[]) {
+int pretty_printer_main(int nc, char *np[]) {
 	SyntaxTreeNode *node_SPROGRAM;
 
 	if(nc < 2) {
@@ -285,3 +287,4 @@ int main(int nc, char *np[]) {
 	return 0;
 }
 
+#endif

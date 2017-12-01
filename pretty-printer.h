@@ -116,6 +116,7 @@ extern const char* SYNTAXDIC[NUMOFSYNTAX + 1];
 extern SyntaxTreeNode* malloc_tree_node();
 extern void free_tree(SyntaxTreeNode* node);
 extern void print_tree(SyntaxTreeNode* node);
+extern int find_error_tree(SyntaxTreeNode* node);
 
 /* parse.c */
 #define PARSERESULT_MATCH		1

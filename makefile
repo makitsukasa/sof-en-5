@@ -21,8 +21,8 @@ gcovrun:
 	-gcov ${F}.gcda
 	cat ${F}.c.gcov > out.txt
 
-gcovall:
-	$(foreach VAR,$(wildcard in_*.mpl),$(make gcovrun IN=${VAR}))
+#gcovall:
+#	$(foreach VAR,$(wildcard in_*.mpl),$(make gcovrun IN=${VAR}))
 
 gitcommit:
 	git add -A

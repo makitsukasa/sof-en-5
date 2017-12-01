@@ -68,7 +68,7 @@ char *tokenstr[NUMOFTOKEN+1] = {
 	 "false", "NUMBER", "STRING", "+", "-", "*", "=", "<>", "<", "<=", ">", 
 	">=", "(", ")", "[", "]", ":=", ".", ",", ":", ";", "read","write", "break"
 };
-
+#if 0
 int scanner_main(int nc, char *np[]) {
 	int token, i;
 
@@ -98,6 +98,7 @@ int scanner_main(int nc, char *np[]) {
 
 	return 0;
 }
+#endif
 
 void error(int linenum, char *mes) {
 	/*fprintf(stderr, "\nline %d ERROR: %s\n", linenum, mes);*/
