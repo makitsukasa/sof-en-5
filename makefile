@@ -12,6 +12,11 @@ run: a.out
 clean:
 	-rm *.out *.gcov *.gcda *.gcno
 
+gdb:
+	make clean
+	gcc *.c -Wall -Wextra -std=c89 -o a.out -O0 -g
+	gdb ./a.out
+
 gcovinit:
 	make clean
 	gcc *.c -Wall -Wextra -std=c89 -o a.out -O0 -coverage

@@ -23,7 +23,7 @@
 #define SSUBPROGDEC_2		 65	/* zero or one	SFORMPARAM                                               */
 #define SSUBPROGDEC_4		 66	/* zero or one	SVARDEC                                                  */
 #define SPROCEDURENAME		 67	/* all of		TNAME                                                    */
-#define SFORMPARAM			 68	/* all of		TLPAREN SVARNAMES TCOLON STYPE SFORMPARAM_5 TRPAREN      */
+#define SFORMPARAM			 68	/* all of		TLPAREN SVARNAMES TCOLON STYPE SFORMPARAM_4 TRPAREN      */
 #define SFORMPARAM_4		 69	/* zero or more	SFORMPARAM_4_0                                           */
 #define SFORMPARAM_4_0		 70	/* all of		TSEMI SVARNAMES TCOLON STYPE                             */
 #define SCOMPSTAT			 71	/* all of		TBEGIN SSTAT SCOMPSTAT_2 TEND                            */

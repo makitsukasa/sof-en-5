@@ -7,7 +7,7 @@ const char* SYNTAXDIC[NUMOFSYNTAX + 1] = {
 	"INTEGER", "STRING", "+", "-", "*", "=", "<>", "<", "<=", ">", ">=",
 	"(", ")", "[", "]", ":=", ".", ",", ":", ";", "read", "write", "break",
 	"SPROGRAM", "SBLOCK", "SBLOCK_0", "SBLOCK_0_0", "SVARDEC", "SVARDEC_5",
-	"SVARDEC_5_1", "SVARNAMES", "SVARNAMES_1", "SVARNAMES_1_0", "SVARNAME",
+	"SVARDEC_5_0", "SVARNAMES", "SVARNAMES_1", "SVARNAMES_1_0", "SVARNAME",
 	"STYPE", "SSTDTYPE", "SARRTYPE", "SSUBPROGDEC", "SSUBPROGDEC_2",
 	"SSUBPROGDEC_4", "SPROCEDURENAME", "SFORMPARAM", "SFORMPARAM_4",
 	"SFORMPARAM_4_0", "SCOMPSTAT", "SCOMPSTAT_2", "SCOMPSTAT_2_0", "SSTAT",
