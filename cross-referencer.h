@@ -37,6 +37,9 @@ typedef struct ProgramData_{
 	ProcData *proc_data_tail;
 } ProgData;
 
+#define TYPE_INTEGER	1
+#define TYPE_STRING		2
+#define TYPE_NUMBER		3
 
 #define CHECKTYPERESULT_NOTMATCH 0
 #define CHECKTYPERESULT_MATCH 1

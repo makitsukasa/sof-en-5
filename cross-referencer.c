@@ -39,6 +39,7 @@ void list_variable(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
 		{
 			SyntaxTreeNode* node_SVARNAME;
 			SyntaxTreeNode* node_SVARNAMES_1_0;
+			Type type;
 			if(node->s_elem_it == SVARDEC || node->s_elem_it == SFORMPARAM){
 				node_SVARNAME = node->child->brother->child;
 			}
@@ -51,18 +52,26 @@ void list_variable(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
 			else{
 				node_SVARNAMES_1_0 = node->child->child->brother->child;
 			}
+			if(node->s_elem_it == SVARDEC_5_0){
+				/*type = (Type*)node->child->brother->brother->brother->data;*/
+			}
+			else{
+				/*type = (Type*)node->child->brother->brother->brother->brother->data;*/	
+			}
 			node_SVARNAME->data = calloc(1, sizeof(VarData));
 			strcpy(((VarData*)node_SVARNAME->data)->name,
 					node_SVARNAME->child->string_attr);
 			if(node->s_elem_it == SFORMPARAM || node->s_elem_it == SFORMPARAM_4_0){
 				((VarData*)node_SVARNAME->data)->is_param = 1;
+				((VarData*)node_SVARNAME->data)->type = type;
 			}
 
-			for(; node_SVARNAMES_1_0 != NULL && node_SVARNAMES_1_0->parse_result != PARSERESULT_DIFFERENCE;){
-				node_SVARNAMES_1_0->child->brother->data = calloc(1, sizeof(VarData));
-				strcpy(((VarData*)node_SVARNAMES_1_0->child->brother->data)->name,
-						node_SVARNAMES_1_0->child->brother->child->string_attr);
-				node_SVARNAMES_1_0 = node_SVARNAMES_1_0->brother;
+			for(; node_SVARNAMES_1_0 != NULL &&
+				node_SVARNAMES_1_0->parse_result != PARSERESULT_DIFFERENCE;){
+					node_SVARNAMES_1_0->child->brother->data = calloc(1, sizeof(VarData));
+					strcpy(((VarData*)node_SVARNAMES_1_0->child->brother->data)->name,
+							node_SVARNAMES_1_0->child->brother->child->string_attr);
+					node_SVARNAMES_1_0 = node_SVARNAMES_1_0->brother;
 			}
 
 			if(((ProcData*)namespace->data)->var_data_tail == NULL){
