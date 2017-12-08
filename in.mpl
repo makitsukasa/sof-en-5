@@ -1,8 +1,8 @@
 program hogeprog;
 var
-	hoge1, piyo : integer;
-	hoge2, piyo : integer;
-procedure hogeproc(hoge3 : integer);
+	hoge1, piyo : boolean;
+	hoge2, piyo : array[7] of char;
+procedure hogeproc(hoge3, piyo, huga : integer);
 	var hoge4 : integer;
 	begin
 		writeln;

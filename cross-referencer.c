@@ -13,10 +13,11 @@ void list_variable(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
 
 	switch(node->s_elem_it){
 	case SPROGRAM:
-		node->data = calloc(1, sizeof(ProcData));
+		node->data = calloc(1, sizeof(ProgData));
 
+		((ProgData*)node->data)->defined_line = node->line_num;
 		namespace = node;
-		strcpy(((ProcData*)node->data)->name, node->child->brother->string_attr);
+		strcpy(((ProgData*)node->data)->name, node->child->brother->string_attr);
 
 		list_variable(node->child, namespace);
 		list_variable(node->brother, namespace);
@@ -24,7 +25,8 @@ void list_variable(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
 
 	case SSUBPROGDEC:
 		node->data = calloc(1, sizeof(ProcData));
-
+		
+		((ProcData*)node->data)->defined_line = node->line_num;
 		strcpy(((ProcData*)node->data)->name, node->child->brother->child->string_attr);
 		namespace = node;
 
@@ -39,39 +41,54 @@ void list_variable(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
 		{
 			SyntaxTreeNode* node_SVARNAME;
 			SyntaxTreeNode* node_SVARNAMES_1_0;
-			Type type;
+			void *type;
+			int is_param = (node->s_elem_it == SFORMPARAM ||
+							 node->s_elem_it == SFORMPARAM_4_0) ? 1 : 0;
+
+			if(node->s_elem_it == SVARDEC_5_0){
+				list_variable(node->child->brother->brother, namespace);
+				type = node->child->brother->brother->data;
+			}
+			else{
+				list_variable(node->child->brother->brother->brother, namespace);
+				type = node->child->brother->brother->brother->data;
+			}
+
 			if(node->s_elem_it == SVARDEC || node->s_elem_it == SFORMPARAM){
 				node_SVARNAME = node->child->brother->child;
 			}
 			else{
 				node_SVARNAME = node->child->child;
 			}
+
+			node_SVARNAME->data = calloc(1, sizeof(VarData));
+			strcpy(((VarData*)node_SVARNAME->data)->name,
+					node_SVARNAME->child->string_attr);
+
+			((VarData*)node_SVARNAME->data)->is_param = is_param;
+			((VarData*)node_SVARNAME->data)->defined_line = node_SVARNAME->line_num;
+			((VarData*)node_SVARNAME->data)->type.stdtype = ((Type*) type)->stdtype;
+			((VarData*)node_SVARNAME->data)->type.array_size = ((Type*) type)->array_size;
+
 			if(node->s_elem_it == SVARDEC || node->s_elem_it == SFORMPARAM){
 				node_SVARNAMES_1_0 = node->child->brother->child->brother->child;
 			}
 			else{
 				node_SVARNAMES_1_0 = node->child->child->brother->child;
 			}
-			if(node->s_elem_it == SVARDEC_5_0){
-				/*type = (Type*)node->child->brother->brother->brother->data;*/
-			}
-			else{
-				/*type = (Type*)node->child->brother->brother->brother->brother->data;*/	
-			}
-			node_SVARNAME->data = calloc(1, sizeof(VarData));
-			strcpy(((VarData*)node_SVARNAME->data)->name,
-					node_SVARNAME->child->string_attr);
-			if(node->s_elem_it == SFORMPARAM || node->s_elem_it == SFORMPARAM_4_0){
-				((VarData*)node_SVARNAME->data)->is_param = 1;
-				((VarData*)node_SVARNAME->data)->type = type;
-			}
 
-			for(; node_SVARNAMES_1_0 != NULL &&
-				node_SVARNAMES_1_0->parse_result != PARSERESULT_DIFFERENCE;){
-					node_SVARNAMES_1_0->child->brother->data = calloc(1, sizeof(VarData));
-					strcpy(((VarData*)node_SVARNAMES_1_0->child->brother->data)->name,
-							node_SVARNAMES_1_0->child->brother->child->string_attr);
-					node_SVARNAMES_1_0 = node_SVARNAMES_1_0->brother;
+			for(; (node_SVARNAMES_1_0 != NULL &&
+					node_SVARNAMES_1_0->parse_result == PARSERESULT_MATCH);
+					node_SVARNAMES_1_0 = node_SVARNAMES_1_0->brother){
+				SyntaxTreeNode *node_SVARNAME = node_SVARNAMES_1_0->child->brother;
+				node_SVARNAME->data = calloc(1, sizeof(VarData));
+				strcpy(((VarData*)node_SVARNAME->data)->name,
+						node_SVARNAMES_1_0->child->brother->child->string_attr);
+
+				((VarData*)node_SVARNAME->data)->is_param = is_param;
+				((VarData*)node_SVARNAME->data)->defined_line = node_SVARNAME->line_num;
+				((VarData*)node_SVARNAME->data)->type.stdtype = ((Type*) type)->stdtype;
+				((VarData*)node_SVARNAME->data)->type.array_size = ((Type*) type)->array_size;
 			}
 
 			if(((ProcData*)namespace->data)->var_data_tail == NULL){
@@ -86,6 +103,34 @@ void list_variable(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
 			break;
 		}
 
+	case STYPE:
+		{
+			Type *type = malloc(sizeof(Type));
+			SyntaxTreeNode *child = node->child;
+			SyntaxTreeNode *node_stdtype;
+			while(child->parse_result != PARSERESULT_MATCH){
+				child = child->brother;
+			}
+			if(child->s_elem_it == SSTDTYPE){
+				node_stdtype = child->child;
+				while(node_stdtype->parse_result != PARSERESULT_MATCH){
+					node_stdtype = node_stdtype->brother;
+				}
+				type->stdtype = node_stdtype->s_elem_it;
+				type->array_size = 0;
+			}
+			else /* if(node->child->s_elem_it == SARRAYTYPE) */{
+				node_stdtype = child->child->brother->brother->
+								brother->brother->brother->child;
+				while(node_stdtype->parse_result != PARSERESULT_MATCH){
+					node_stdtype = node_stdtype->brother;
+				}
+				type->stdtype = node_stdtype->s_elem_it;
+				type->array_size = atoi(child->child->brother->brother->string_attr);
+			}
+			node->data = (void*) type;
+
+		}
 	default:
 		list_variable(node->child, namespace);
 		list_variable(node->brother, namespace);
@@ -106,7 +151,7 @@ void print_variable(SyntaxTreeNode* node){
 
 	if(node->data != NULL){
 		if(node->s_elem_it == SPROGRAM){
-			printf("prog  ");
+			printf("progr   ");
 			printf("l%d ", ((ProcData*)node->data)->defined_line);
 			printf("vh%9p ", ((ProcData*)node->data)->var_data_head);
 			printf("np%9p ", ((ProcData*)node->data)->next);
@@ -114,7 +159,7 @@ void print_variable(SyntaxTreeNode* node){
 			printf("\n");
 		}
 		if(node->s_elem_it == SSUBPROGDEC){
-			printf("proc  ");
+			printf("proce   ");
 			printf("l%d ", ((ProcData*)node->data)->defined_line);
 			printf("vh%9p ", ((ProcData*)node->data)->var_data_head);
 			printf("np%9p ", ((ProcData*)node->data)->next);
@@ -122,8 +167,10 @@ void print_variable(SyntaxTreeNode* node){
 			printf("\n");
 		}
 		if(node->s_elem_it == SVARNAME){
-			printf("t%d ", ((VarData*)node->data)->type.stdtype);
-			printf("p%d ", ((VarData*)node->data)->is_param);
+			char type[][5] = {"char", "int ", "bool"};
+			printf("%s%d ", type[((VarData*)node->data)->type.stdtype - TCHAR],
+								((VarData*)node->data)->type.array_size);
+			printf("%s ", ((VarData*)node->data)->is_param ? "p" : "_");
 			printf("l%d ", ((VarData*)node->data)->defined_line);
 			printf("vh%9p ", ((VarData*)node->data)->referenced_line_head);
 			printf("np%9p ", ((VarData*)node->data)->next);

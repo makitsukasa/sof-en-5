@@ -77,7 +77,7 @@ void print_tree_node(SyntaxTreeNode* node){
 void debug_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
-	if(node->parse_result == PARSERESULT_DIFFERENCE){
+	if(0 && node->parse_result == PARSERESULT_DIFFERENCE){
 		debug_tree(node->child);
 		debug_tree(node->brother);
 		return;
