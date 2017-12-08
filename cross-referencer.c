@@ -39,6 +39,7 @@ void list_variable(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
 	case SFORMPARAM:
 	case SFORMPARAM_4_0:
 		{
+			/*  */
 			SyntaxTreeNode* node_SVARNAME;
 			SyntaxTreeNode* node_SVARNAMES_1_0;
 			void *type;
