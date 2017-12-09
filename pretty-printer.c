@@ -42,6 +42,10 @@ SyntaxTreeNode* malloc_tree_node(){
 void free_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
+	if(node->data != NULL){
+		free(node->data);
+	}
+
 	free_tree(node->child);
 	free_tree(node->brother);
 
