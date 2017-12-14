@@ -190,13 +190,52 @@ int list_variable_defines(SyntaxTreeNode* node, SyntaxTreeNode* namespace, Synta
 
 		/* reference */
 		if(node->data == NULL){
-			VarData *var_data = namespace->var_data_head;
+			VarData *var_data;
+			char* var_name = node->child->string_attr;
 			printf("l%2d ref of %s\n",
 					node->child->line_num, node->child->string_attr);
 
-			while(var_data != NULL){
+			switch(namespace->s_elem_it){
+			case SSUBPROGDEC:
+				var_data = ((ProcData*)namespace->data)->var_data_head;
 
+				while(var_data != NULL){
+					if(strcmp(var_name, var_data->name) == 0){
+						printf("namespace : \n");
+						node->data = malloc(sizeof(VarRef));
+
+						break;
+					}
+					var_data = var_data->next;
+				}
+
+				if(node->data != NULL){
+					break;
+				}
+
+				/* fall through and check global */
+
+			case SPROGRAM:
+				var_data = ((ProgData*)global->data)->var_data_head;
+
+				while(var_data != NULL){
+					if(strcmp(var_name, var_data->name) == 0){
+						printf("namespace : global\n");
+						node->data = malloc(sizeof(VarRef));
+						break;
+					}
+					var_data = var_data->next;
+				}
+				
+				if(node->data != NULL){
+					break;
+				}
+
+				/* not found */
+				printf("not found\n");
 			}
+
+			result_brother = list_variable_defines(node->brother, namespace, global);
 			break;
 		}
 		/* define */
