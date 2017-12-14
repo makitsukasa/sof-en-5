@@ -131,15 +131,15 @@ void fill_node_data(SyntaxTreeNode* node){
 	
 }
 
-int list_variable_defines(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
+int list_variable_defines(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNode* global){
 	int result_child = 1;
 	int result_brother = 1;
 
 	if(node == NULL) return 1;
 
 	if(node->parse_result != PARSERESULT_MATCH) {
-		result_child = list_variable_defines(node->child, namespace);
-		result_brother = list_variable_defines(node->brother, namespace);
+		result_child = list_variable_defines(node->child, namespace, global);
+		result_brother = list_variable_defines(node->brother, namespace, global);
 		return (result_child && result_brother) ? 1 : 0;
 	}
 
@@ -147,7 +147,8 @@ int list_variable_defines(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
 	case SPROGRAM:
 
 		namespace = node;
-		result_child = list_variable_defines(node->child, namespace);
+		global = node;
+		result_child = list_variable_defines(node->child, namespace, global);
 		break;
 
 	case SSUBPROGDEC:
@@ -175,8 +176,8 @@ int list_variable_defines(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
 			}
 
 			namespace = node;
-			result_child = list_variable_defines(node->child, namespace);
-			result_brother = list_variable_defines(node->brother, namespace);
+			result_child = list_variable_defines(node->child, namespace, global);
+			result_brother = list_variable_defines(node->brother, namespace, global);
 			namespace = prev_namespace;
 			break;
 		}
@@ -189,8 +190,13 @@ int list_variable_defines(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
 
 		/* reference */
 		if(node->data == NULL){
-			printf("l%d reference %s\n",
+			VarData *var_data = namespace->var_data_head;
+			printf("l%2d ref of %s\n",
 					node->child->line_num, node->child->string_attr);
+
+			while(var_data != NULL){
+
+			}
 			break;
 		}
 		/* define */
@@ -233,15 +239,15 @@ int list_variable_defines(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
 				var_data = var_data->next;
 			}
 
-			result_brother = list_variable_defines(node->brother, namespace);
+			result_brother = list_variable_defines(node->brother, namespace, global);
 			break;
 
 		}
 		break;
 
 	default:
-		result_child = list_variable_defines(node->child, namespace);
-		result_brother = list_variable_defines(node->brother, namespace);
+		result_child = list_variable_defines(node->child, namespace, global);
+		result_brother = list_variable_defines(node->brother, namespace, global);
 		break;
 	}
 
@@ -330,7 +336,7 @@ int main(int nc, char *np[]){
 
 	/*debug_tree(node_SPROGRAM);*/
 
-	if(!list_variable_defines(node_SPROGRAM, NULL)){
+	if(!list_variable_defines(node_SPROGRAM, NULL, NULL)){
 		free_tree(node_SPROGRAM);
 		end_scan();
 		return -1;
