@@ -10,28 +10,28 @@ typedef struct Lines_{
 	struct Lines_ *next;
 } Lines;
 
-/*
+
 typedef struct VarData_{
-	int is_reference;
+	int is_declaration;
 	void* data;
 	struct VarData_ *next;
 }VarData;
 
-struct VarDec{
+typedef struct VarDecData_{
 	char name[MAXSTRSIZE];
 	Type type;
 	int is_param;
 	int line;
 	struct VarRef_* ref_head;
 	struct VarRef_* ref_tail;
-};
+}VarDecData;
 
-struct VarRef_{
-	struct VarDec* var_dec;
+typedef struct VarRefData_{
+	struct VarData* var_dec;
 	int line;
-};
-*/
+}VarRefData;
 
+/*
 typedef struct VarData_{
 	char name[MAXSTRSIZE];
 	Type type;
@@ -48,6 +48,8 @@ typedef struct VarRef_{
 	VarData* var_data;
 	int linenum;
 } VarRef;
+
+*/
 
 typedef struct ProcedureData_{
 	char name[MAXSTRSIZE];
