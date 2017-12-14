@@ -37,8 +37,7 @@ void fill_node_data(SyntaxTreeNode* node){
 	case SFORMPARAM:
 	case SFORMPARAM_4_0:
 		{
-			/* nobody can read this */
-			/* but i know what it means and i know it works */
+			/* i know what it means and i know it works */
 			SyntaxTreeNode* node_SVARNAME;
 			SyntaxTreeNode* node_SVARNAMES_1_0;
 			void *type;
@@ -132,15 +131,15 @@ void fill_node_data(SyntaxTreeNode* node){
 	
 }
 
-int list_variable(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
+int list_variable_defines(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
 	int result_child = 1;
 	int result_brother = 1;
 
 	if(node == NULL) return 1;
 
 	if(node->parse_result != PARSERESULT_MATCH) {
-		result_child = list_variable(node->child, namespace);
-		result_brother = list_variable(node->brother, namespace);
+		result_child = list_variable_defines(node->child, namespace);
+		result_brother = list_variable_defines(node->brother, namespace);
 		return (result_child && result_brother) ? 1 : 0;
 	}
 
@@ -148,7 +147,7 @@ int list_variable(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
 	case SPROGRAM:
 
 		namespace = node;
-		result_child = list_variable(node->child, namespace);
+		result_child = list_variable_defines(node->child, namespace);
 		break;
 
 	case SSUBPROGDEC:
@@ -176,14 +175,26 @@ int list_variable(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
 			}
 
 			namespace = node;
-			result_child = list_variable(node->child, namespace);
-			result_brother = list_variable(node->brother, namespace);
+			result_child = list_variable_defines(node->child, namespace);
+			result_brother = list_variable_defines(node->brother, namespace);
 			namespace = prev_namespace;
 			break;
 		}
 
 	case SVARNAME:
-		{
+		/* 
+		 * node->data is not NULL => data assigned in fill_node_data() => define stat
+		 * node->data is NULL => not define stat => reference stat
+		 */
+
+		/* reference */
+		if(node->data == NULL){
+			printf("l%d reference %s\n",
+					node->child->line_num, node->child->string_attr);
+			break;
+		}
+		/* define */
+		else{
 			VarData *var_data;
 			VarData *var_data_tail;
 			if(namespace->s_elem_it == SPROGRAM){
@@ -222,14 +233,15 @@ int list_variable(SyntaxTreeNode* node, SyntaxTreeNode* namespace){
 				var_data = var_data->next;
 			}
 
-			result_brother = list_variable(node->brother, namespace);
+			result_brother = list_variable_defines(node->brother, namespace);
 			break;
 
 		}
+		break;
 
 	default:
-		result_child = list_variable(node->child, namespace);
-		result_brother = list_variable(node->brother, namespace);
+		result_child = list_variable_defines(node->child, namespace);
+		result_brother = list_variable_defines(node->brother, namespace);
 		break;
 	}
 
@@ -318,7 +330,7 @@ int main(int nc, char *np[]){
 
 	/*debug_tree(node_SPROGRAM);*/
 
-	if(!list_variable(node_SPROGRAM, NULL)){
+	if(!list_variable_defines(node_SPROGRAM, NULL)){
 		free_tree(node_SPROGRAM);
 		end_scan();
 		return -1;

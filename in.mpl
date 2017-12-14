@@ -9,5 +9,5 @@ procedure hogeproc2;
 	var hoge6 : integer;
 	begin writeln; end;
 begin
-	writeln;
+	writeln(hoge1)
 end.

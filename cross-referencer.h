@@ -17,8 +17,15 @@ typedef struct VarData_{
 	int defined_line;
 	Lines *referenced_line_head;
 	Lines *referenced_line_tail;
+	struct VarDataRef_* ref_head;
+	struct VarDataRef_* ref_tail;
 	struct VarData_ *next;
 } VarData;
+
+typedef struct VarDataRef_{
+	VarData* var_data;
+	int linenum;
+} VarDataRef;
 
 typedef struct ProcedureData_{
 	char name[MAXSTRSIZE];
