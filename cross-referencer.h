@@ -10,7 +10,6 @@ typedef struct Lines_{
 	struct Lines_ *next;
 } Lines;
 
-
 typedef struct VarData_{
 	int is_declaration;
 	void* data;
@@ -27,7 +26,7 @@ typedef struct VarDecData_{
 }VarDecData;
 
 typedef struct VarRefData_{
-	struct VarData* var_dec;
+	struct VarData_* data;
 	int line;
 }VarRefData;
 
@@ -76,4 +75,4 @@ typedef struct ProgramData_{
 #define CHECKTYPERESULT_MATCH 1
 #define CHECKTYPERESULT_IGNORED 2
 void list_name(SyntaxTreeNode *node);
-Type check_type(SyntaxTreeNode *node);
+int check_type(SyntaxTreeNode *node);

@@ -171,8 +171,7 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 
 			while(proc_data != NULL && proc_data != prog_data->proc_data_tail){
 				if(strcmp(((ProcData*)node->data)->name, proc_data->name) == 0){
-					printf("error : redefinition subprogram \"%s\"\n", 
-							proc_data->name);
+					printf("error : redefinition subprogram \"%s\"\n", proc_data->name);
 					return 0;
 				}
 				proc_data = proc_data->next;
@@ -195,8 +194,8 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 		if(node->data == NULL){
 			VarData* var_data;
 			char* var_name = node->child->string_attr;
-			printf("l%2d ref of %s\n",
-					node->child->line_num, node->child->string_attr);
+			/*printf("l%2d ref of %s\n",
+					node->child->line_num, node->child->string_attr);*/
 
 			switch(namespace->s_elem_it){
 			case SSUBPROGDEC:
@@ -206,13 +205,13 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 					VarDecData* var_dec_data = var_data->data;
 					if(strcmp(var_name, var_dec_data->name) == 0){
 						VarRefData* var_ref_data;
-						printf("namespace : procedure %s\n", ((ProcData*)namespace->data)->name);
+						/*printf("namespace : procedure %s\n", ((ProcData*)namespace->data)->name);*/
 						node->data = malloc(sizeof(VarData));
 						((VarData*)node->data)->is_declaration = 0;
 						((VarData*)node->data)->data = malloc(sizeof(VarRefData));
 						var_ref_data = ((VarData*)node->data)->data;
 						var_ref_data->line = node->child->line_num;
-						var_ref_data->var_dec = var_data;
+						var_ref_data->data = var_data;
 						break;
 					}
 					var_data = var_data->next;
@@ -231,13 +230,13 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 					VarDecData* var_dec_data = var_data->data;
 					if(strcmp(var_name, var_dec_data->name) == 0){
 						VarRefData* var_ref_data;
-						printf("namespace : global\n");
+						/*printf("namespace : global\n");*/
 						node->data = malloc(sizeof(VarData));
 						((VarData*)node->data)->is_declaration = 0;
 						((VarData*)node->data)->data = malloc(sizeof(VarRefData));
 						var_ref_data = ((VarData*)node->data)->data;
 						var_ref_data->line = node->child->line_num;
-						var_ref_data->var_dec = var_data;
+						var_ref_data->data = var_data;
 
 						break;
 					}
@@ -362,7 +361,7 @@ void print_variable(SyntaxTreeNode* node){
 				VarRefData* var_ref_data = (VarRefData*)var_data->data;
 				printf("var ref ");
 				printf("l%2d ", var_ref_data->line);
-				printf(" p%9p ", var_ref_data->var_dec);
+				printf(" p%9p ", var_ref_data->data);
 				printf("\n");
 			}
 		}
@@ -371,9 +370,156 @@ void print_variable(SyntaxTreeNode* node){
 	print_variable(node->brother);
 }
 
-Type check_type(SyntaxTreeNode* node){
-	Type type;
-	return type;
+int check_type(SyntaxTreeNode* node){
+	int result_child = 1;
+	int result_brother = 1;
+
+	if(node == NULL) return 1;
+
+	if(node->parse_result != PARSERESULT_MATCH) {
+		result_child = check_type(node->child);
+		result_brother = check_type(node->brother);
+		return (result_child && result_brother) ? 1 : 0;
+	}
+
+	switch(node->s_elem_it){
+
+	case SVAR:
+		/* hoge[piyo] (array) */
+		/* SVAR
+		 *  L> SVARNAME -> SVAR_1
+		 *                  L> SVAR_1_0
+		 *                      L> TLSQPAREN -> (*)SEXPR -> TRSQPAREN
+		 */
+
+		/* hoge (not array) */
+		/* SVAR
+		 *  L> SVARNAME -> SVAR_1
+		 *                  L> SVAR_1_0(EMPTY)
+		 */
+
+		/* array */
+		if(node->child->brother->child->parse_result == PARSERESULT_MATCH){
+			VarDecData* var_dec_data = 
+				(VarDecData*)((VarData*)((VarRefData*)((VarData*)node->child->data)->data)->data)->data;
+			SyntaxTreeNode* node_SEXPR = node->child->brother->child->child->brother;
+			if(var_dec_data->type.array_size == 0){
+				printf("error : variable \"%s\" (defined at line %d) is not array\n", 
+						var_dec_data->name, var_dec_data->line);
+				return 0;
+			}
+			/*if(node_SEXPR->){
+
+			}*/
+			return 1;
+		}
+		/* reference statement looks like NOT-array */
+		else/* if(node->child->brother->child->parse_result == PARSERESULT_EMPTY) */{
+			VarDecData* var_dec_data = 
+				(VarDecData*)((VarData*)((VarRefData*)((VarData*)node->child->data)->data)->data)->data;
+			if(var_dec_data->type.array_size != 0){
+				printf("error : variable \"%s\" (defined at line %d) is array\n", 
+						var_dec_data->name, var_dec_data->line);
+				return 0;
+			}
+			return 1;
+		}
+
+	case SCONDSTAT:
+		/* SCONDSTAT
+		 *  L> TIF -> (*)SEXPR -> TTHEN -> SSTAT -> SCONDSTAT_4
+		 *	                                         L> SCONDSTAT_4_0
+		 *                                               L> TELSE -> SSTAT
+		 */
+		break;
+
+	case SEXPR:
+		/* SEXPR
+		 *  L> SSIMPLEEXPR -> SEXPR_1
+		 *                     L> SEXPR_1_0
+		 *                         L> SRELATOP -> SSIMPLEEXPR
+		 */
+		{
+			Type current;
+			SyntaxTreeNode* node_SEXPR_1_0;
+			
+			check_type(node->child);
+
+		}
+		break;
+
+	case SSIMPLEEXPR:
+		/* SSIMPLEEXPR
+		 *  L> SSIMPLEEXPR_0 -> STERM -> SSIMPLEEXPR_2
+		 *      L> SSIMPLEEXPR_0_0        |
+		 *          L> TPLUS -> TMINUS    |
+		 *                                L> SSIMPLEEXPR_2_0
+		 *                                    L> SADDOP -> STERM
+		 */
+		break;
+
+	case STERM:
+		/* STERM
+		 *  L> SFACTOR -> STERM_1
+		 *                 L> STERM_1_0
+		 *                     L> SMULOP -> SFACTOR
+		 */
+		break;
+
+	case SFACTOR:
+		/* SFACTOR
+		 *  L> SVAR -> SCONST -> SFACTOR_2 -> SFACTOR_3 -> SFACTOR_4
+		 */
+		{
+			SyntaxTreeNode* child = node->child;
+			while(1){
+				if(child->parse_result != PARSERESULT_MATCH){
+					child = child->brother;
+				}
+				check_type(child);
+				node->data = malloc(sizeof(Type));
+				((Type*)node->data)->stdtype = ((Type*)child->data)->stdtype;
+				((Type*)node->data)->array_size = ((Type*)child->data)->array_size;
+				return 1;
+			}
+			printf("nobody can come here just for debug\n");
+			return 0;
+		}
+
+	case SCONST:
+		/* SCONST
+		 *  L> TNUMBER -> TFALSE -> TTRUE -> TSTRING(just 1 character)
+		 */
+
+		break;
+
+	case SFACTOR_2:
+		/* SFACTOR_2
+		 *  L> TLPAREN -> SEXPR -> TRPAREN
+		 */
+		break;
+
+	case SFACTOR_3:
+		/* SFACTOR_3
+		 *  L> TNOT -> SFACTOR
+		 */
+		break;
+
+	case SFACTOR_4:
+		/* SFACTOR_4
+		 *  L> SSTDTYPE -> TLPAREN -> SEXPR -> TRPAREN
+		 */
+		break;
+
+	default:
+		result_child = check_type(node->child);
+		result_brother = check_type(node->brother);
+		break;
+
+	}
+
+	return (result_child && result_brother) ? 1 : 0;
+
 }
 
 int main(int nc, char *np[]){
@@ -414,12 +560,12 @@ int main(int nc, char *np[]){
 
 	print_variable(node_SPROGRAM);
 
-/*
+
 	if(check_type(node_SPROGRAM) == 0){
-		printf("syntax error found.\ndetail:\n");
+		printf("error found.\n");
 
 	}
-*/
+
 
 
 	free_tree(node_SPROGRAM);
