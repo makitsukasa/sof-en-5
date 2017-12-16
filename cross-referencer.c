@@ -413,221 +413,345 @@ int check_type(SyntaxTreeNode* node){
 		 *                  L> SVAR_1_0(EMPTY)
 		 */
 
+		printf("check_type %s\n", SYNTAXDIC[node->s_elem_it]);
+
 		/* array */
 		if(node->child->brother->child->parse_result == PARSERESULT_MATCH){
 			VarDecData* var_dec_data = 
 				(VarDecData*)((VarData*)((VarRefData*)((VarData*)node->child->data)->data)->data)->data;
 			SyntaxTreeNode* node_SEXPR = node->child->brother->child->child->brother;
+			Type* node_SEXPR_type;
+			Type* node_SVAR_type;
 			if(var_dec_data->type.array_size == 0){
 				printf("error : variable \"%s\" (defined at line %d) is not array\n", 
 						var_dec_data->name, var_dec_data->line);
 				return 0;
 			}
-			/*if(node_SEXPR->){
-
-			}*/
+			if(!check_type(node_SEXPR)){
+				printf("error at array[int]\n");
+				return 0;
+			}
+			node_SEXPR_type = (Type*)node_SEXPR->data;
+			if(node_SEXPR_type->stdtype != TINTEGER || node_SEXPR_type->array_size != 0){
+				printf("error : index of array is not an integer\n");
+				return 0;
+			}
+			node->data = malloc(sizeof(Type));
+			node_SVAR_type = (Type*)node->data;
+			node_SVAR_type->stdtype = var_dec_data->type.stdtype;
+			node_SVAR_type->array_size = 0;
 			return 1;
 		}
 		/* reference statement looks like NOT-array */
 		else/* if(node->child->brother->child->parse_result == PARSERESULT_EMPTY) */{
 			VarDecData* var_dec_data = 
 				(VarDecData*)((VarData*)((VarRefData*)((VarData*)node->child->data)->data)->data)->data;
+			Type* node_SVAR_type;
 			if(var_dec_data->type.array_size != 0){
 				printf("error : variable \"%s\" (defined at line %d) is array\n", 
 						var_dec_data->name, var_dec_data->line);
 				return 0;
 			}
+			node->data = malloc(sizeof(Type));
+			node_SVAR_type = (Type*)node->data;
+			node_SVAR_type->stdtype = var_dec_data->type.stdtype;
+			node_SVAR_type->array_size = 0;
 			return 1;
 		}
 
-	case SCONDSTAT:
+	case SCONDSTAT:{
 		/* SCONDSTAT
 		 *  L> TIF -> (*)SEXPR -> TTHEN -> SSTAT -> SCONDSTAT_4
 		 *	                                         L> SCONDSTAT_4_0
 		 *                                               L> TELSE -> SSTAT
 		 */
-		break;
+		SyntaxTreeNode* node_SEXPR = node->child->brother;
+		Type* type;
+		if(!check_type(node_SEXPR)){
+			printf("error at if EXPR then \n");
+			return 0;
+		}
+		type = (Type*)node_SEXPR->data;
+		if(type->stdtype != TBOOLEAN || type->array_size != 0){
+			printf("error : conditional sentence is not boolean\n");
+			return 0;
+		}
+		return 1;
+	}
 
-	case SEXPR:
+	case SEXPR:{
 		/* SEXPR
 		 *  L> SSIMPLEEXPR -> SEXPR_1
 		 *                     L> SEXPR_1_0
 		 *                         L> SRELATOP -> SSIMPLEEXPR
 		 */
-		break;
+		/* operator has left-to-right associativity */
+		SyntaxTreeNode* node_SSIMPLEEXPR = node->child;
+		SyntaxTreeNode* node_SEXPR_1_0 = node->child->brother->child;
+		Type* type;
 
-	case SSIMPLEEXPR:
+		node->data = malloc(sizeof(Type));
+		type = (Type*) node->data;
+
+		if(!check_type(node_SSIMPLEEXPR)){
+			printf("error at SIMPLEEXPR\n");
+			return 0;
+		}
+		type->stdtype = ((Type*)node_SSIMPLEEXPR->data)->stdtype;
+		type->array_size = ((Type*)node_SSIMPLEEXPR->data)->array_size;
+
+		while(node_SEXPR_1_0->parse_result != PARSERESULT_EMPTY){
+			SyntaxTreeNode* node_rel_op = node_SEXPR_1_0->child->child;
+			Type* node_SSIMPLEEXPR_type;
+
+			if(!check_type(node_SEXPR_1_0->child->brother)){
+				printf("error at EXPR_1_0\n");
+				return 0;
+			}
+			while(node_rel_op->parse_result != PARSERESULT_MATCH){
+				node_rel_op = node_rel_op->brother;
+			}
+
+			node_SSIMPLEEXPR_type = (Type*)node_SEXPR_1_0->child->brother->data;
+			if(type->stdtype != node_SSIMPLEEXPR_type->stdtype ||
+					 type->array_size != 0 || node_SSIMPLEEXPR_type->array_size != 0){
+				printf("error : operand type of operator \"%s\"\n",
+						SYNTAXDIC[node_rel_op->s_elem_it]);
+				return 0;
+			}
+
+			node_SEXPR_1_0 = node_SEXPR_1_0->brother;
+		}
+		
+		return 0;
+	}
+
+	case SSIMPLEEXPR:{
+		/************************************************************************************/
 		/* SSIMPLEEXPR
 		 *  L> SSIMPLEEXPR_0 -> STERM -> SSIMPLEEXPR_2
 		 *      L> SSIMPLEEXPR_0_0        |
 		 *          L> TPLUS -> TMINUS    |
 		 *                                L> SSIMPLEEXPR_2_0
 		 *                                    L> SADDOP -> STERM
-		 */
-		break;
+		 */	
+		SyntaxTreeNode* node_STERM = node->child;
+		SyntaxTreeNode* node_SSIMPLEEXPR_2_0 = node->child->brother->child;
+		Type* type;
 
-	case STERM:
+		node->data = malloc(sizeof(Type));
+		type = (Type*) node->data;
+
+		if(!check_type(node_STERM)){
+			printf("error at FACTOR\n");
+			return 0;
+		}
+		type->stdtype = ((Type*)node_STERM->data)->stdtype;
+		type->array_size = ((Type*)node_STERM->data)->array_size;
+
+		while(node_SSIMPLEEXPR_2_0->parse_result != PARSERESULT_EMPTY){
+			SyntaxTreeNode* node_mul_op = node_SSIMPLEEXPR_2_0->child->child;
+			int required_type = TINTEGER;
+			Type* node_SFACTOR_type;
+
+			if(!check_type(node_SSIMPLEEXPR_2_0->child->brother)){
+				printf("error at TERM_1_0\n");
+				return 0;
+			}
+			while(node_mul_op->parse_result != PARSERESULT_MATCH){
+				node_mul_op = node_mul_op->brother;
+			}
+			if(node_mul_op->s_elem_it == TAND){
+				required_type = TBOOLEAN;
+			}
+
+			node_SFACTOR_type = (Type*)node_SSIMPLEEXPR_2_0->child->brother->data;
+			if(type->stdtype != required_type || type-> array_size != 0){
+				printf("error : left operand type of operator \"%s\"\n",
+						SYNTAXDIC[node_mul_op->s_elem_it]);
+				return 0;
+			}
+			if(node_SFACTOR_type->stdtype != required_type ||
+					node_SFACTOR_type-> array_size != 0){
+				printf("error : right operand type of operator \"%s\"\n",
+						SYNTAXDIC[node_mul_op->s_elem_it]);
+				return 0;
+			}
+
+			node_SSIMPLEEXPR_2_0 = node_SSIMPLEEXPR_2_0->brother;
+
+		}
+		
+		return 0;
+	}
+
+	case STERM:{
 		/* STERM
 		 *  L> SFACTOR -> STERM_1
 		 *                 L> STERM_1_0
 		 *                     L> SMULOP -> SFACTOR
 		 */
 		/* operator has left-to-right associativity */
-		{
-			SyntaxTreeNode* node_SFACTOR = node->child;
-			SyntaxTreeNode* node_STERM_1_0 = node->child->brother->child;
-			Type* type;
+		SyntaxTreeNode* node_SFACTOR = node->child;
+		SyntaxTreeNode* node_STERM_1_0 = node->child->brother->child;
+		Type* type;
 
-			node->data = malloc(sizeof(Type));
-			type = (Type*) node->data;
+		node->data = malloc(sizeof(Type));
+		type = (Type*) node->data;
 
-			if(!check_type(node_SFACTOR)){
-				printf("error at ( TERM )\n");
-			}
-			type->stdtype = ((Type*)node_SFACTOR->data)->stdtype;
-			type->array_size = ((Type*)node_SFACTOR->data)->array_size;
-
-			while(node_STERM_1_0->parse_result != PARSERESULT_EMPTY){
-				SyntaxTreeNode* node_mul_op = node_STERM_1_0->child->child;
-				int required_type = TINTEGER;
-				while(node_mul_op->parse_result != PARSERESULT_MATCH){
-					node_mul_op = node_mul_op->brother;
-				}
-				if(node_mul_op->s_elem_it == TAND){
-					required_type = TBOOLEAN;
-				}
-
-
-				Type* node_SFACTOR_type;
-				if(!check_type(node_STERM_1_0->child->brother)){
-					return 0;
-				}
-				node_SFACTOR_type = (Type*)node_mul_op->brother->data;
-				if(type->stdtype != required_type || type-> array_size != 0){
-					printf("error : left operand type of operator \"%s\"\n",
-							SYNTAXDIC[node_mul_op->s_elem_it]);
-					return 0;
-				}
-				if(node_SFACTOR_type->stdtype != required_type ||
-						node_SFACTOR_type-> array_size != 0){
-					printf("error : left operand type of operator \"%s\"\n",
-							SYNTAXDIC[node_mul_op->s_elem_it]);
-					return 0;
-				}
-
-				node_STERM_1_0 = node_STERM_1_0->brother;
-
-			}
-			
+		if(!check_type(node_SFACTOR)){
+			printf("error at FACTOR\n");
 			return 0;
 		}
+		type->stdtype = ((Type*)node_SFACTOR->data)->stdtype;
+		type->array_size = ((Type*)node_SFACTOR->data)->array_size;
 
-	case SFACTOR:
+		while(node_STERM_1_0->parse_result != PARSERESULT_DIFFERENCE){
+			SyntaxTreeNode* node_mul_op = node_STERM_1_0->child->child;
+			int required_type = TINTEGER;
+			Type* node_SFACTOR_type;
+
+			if(!check_type(node_STERM_1_0->child->brother)){
+				printf("error at TERM\n");
+				return 0;
+			}
+			while(node_mul_op->parse_result != PARSERESULT_MATCH){
+				node_mul_op = node_mul_op->brother;
+			}
+			if(node_mul_op->s_elem_it == TAND){
+				required_type = TBOOLEAN;
+			}
+
+			node_SFACTOR_type = (Type*)node_STERM_1_0->child->brother->data;
+			if(type->stdtype != required_type || type-> array_size != 0){
+				printf("error : left operand type of operator \"%s\"\n",
+						SYNTAXDIC[node_mul_op->s_elem_it]);
+				return 0;
+			}
+			if(node_SFACTOR_type->stdtype != required_type ||
+					node_SFACTOR_type-> array_size != 0){
+				printf("error : right operand type of operator \"%s\"\n",
+						SYNTAXDIC[node_mul_op->s_elem_it]);
+				return 0;
+			}
+
+			node_STERM_1_0 = node_STERM_1_0->brother;
+
+		}
+		
+		return 0;
+	}
+
+	case SFACTOR:{
 		/* SFACTOR
 		 *  L> SVAR -> SCONST -> SFACTOR_2 -> SFACTOR_3 -> SFACTOR_4
 		 */
-		{
-			SyntaxTreeNode* child = node->child;
-			while(1){
-				if(child->parse_result != PARSERESULT_MATCH){
-					child = child->brother;
-				}
-				check_type(child);
-				node->data = malloc(sizeof(Type));
-				((Type*)node->data)->stdtype = ((Type*)child->data)->stdtype;
-				((Type*)node->data)->array_size = ((Type*)child->data)->array_size;
-				return 1;
+		SyntaxTreeNode* child = node->child;
+		while(1){
+			if(child->parse_result != PARSERESULT_MATCH){
+				child = child->brother;
+				continue;
 			}
-			printf("nobody can come here just for debug\n");
-			return 0;
+			if(!check_type(child)){
+				printf("error at FACTOR\n");
+				return 0;
+			}
+			node->data = malloc(sizeof(Type));
+			((Type*)node->data)->stdtype = ((Type*)child->data)->stdtype;
+			((Type*)node->data)->array_size = ((Type*)child->data)->array_size;
+			return 1;
 		}
+		printf("nobody can come here just for debug\n");
+		return 0;
+	}
 
-	case SCONST:
+	case SCONST:{
 		/* SCONST
 		 *  L> TNUMBER -> TFALSE -> TTRUE -> TSTRING(just 1 character)
 		 */
-		{
-			SyntaxTreeNode* child = node->child;
-			while(1){
-				if(child->parse_result != PARSERESULT_MATCH){
-					child = child->brother;
-				}
-				check_type(child);
-				node->data = malloc(sizeof(Type));
-				((Type*)node->data)->stdtype = ((Type*)child->data)->stdtype;
-				((Type*)node->data)->array_size = ((Type*)child->data)->array_size;
-				if(child->s_elem_it == TSTRING){
-					/* just 1 character */
-					if(((Type*)node->data)->array_size > 1){
-						printf("error : const val needed just one character\n");
-						return 0;
-					}
-				}
-				return 1;
+		SyntaxTreeNode* child = node->child;
+		while(1){
+			if(child->parse_result != PARSERESULT_MATCH){
+				child = child->brother;
 			}
-			printf("nobody can come here just for debug\n");
-			return 0;
+			check_type(child);
+			node->data = malloc(sizeof(Type));
+			((Type*)node->data)->stdtype = ((Type*)child->data)->stdtype;
+			((Type*)node->data)->array_size = ((Type*)child->data)->array_size;
+			if(child->s_elem_it == TSTRING){
+				/* just 1 character */
+				if(((Type*)node->data)->array_size > 1){
+					printf("error : const val needed just one character\n");
+					return 0;
+				}
+			}
+			return 1;
 		}
+		printf("nobody can come here just for debug\n");
+		return 0;
+	}
 
-	case SFACTOR_2:
+	case SFACTOR_2:{
 		/* SFACTOR_2
 		 *  L> TLPAREN -> SEXPR -> TRPAREN
 		 */
-		{
-			SyntaxTreeNode* child = node->child->brother;
-			if(check_type(child)){
-				((Type*)node->data)->stdtype = ((Type*)child->data)->stdtype;
-				((Type*)node->data)->array_size = ((Type*)child->data)->array_size;
-				return 1;
-			}
-
-			printf("error at ( EXPR )\n");
-			return 0;
+		SyntaxTreeNode* child = node->child->brother;
+		if(check_type(child)){
+			node->data = malloc(sizeof(Type));
+			((Type*)node->data)->stdtype = ((Type*)child->data)->stdtype;
+			((Type*)node->data)->array_size = ((Type*)child->data)->array_size;
+			return 1;
 		}
 
-	case SFACTOR_3:
+		printf("error at ( EXPR )\n");
+		return 0;
+	}
+
+	case SFACTOR_3:{
 		/* SFACTOR_3
 		 *  L> TNOT -> SFACTOR
 		 */
-		{
-			SyntaxTreeNode* child = node->child->brother;
-			if(check_type(child)){
-				Type* type = (Type*)node->data;
-				type->stdtype = ((Type*)child->data)->stdtype;
-				type->array_size = ((Type*)child->data)->array_size;
-				if(type->stdtype == TBOOLEAN && type->array_size == 0){
-					return 1;
-				}
-				printf("error : boolean value required after \"not\" token \n");
-				return 0;
-
+		SyntaxTreeNode* child = node->child->brother;
+		if(check_type(child)){
+			Type* type;
+			node->data = malloc(sizeof(Type));
+			type = (Type*)node->data;
+			type->stdtype = ((Type*)child->data)->stdtype;
+			type->array_size = ((Type*)child->data)->array_size;
+			if(type->stdtype == TBOOLEAN && type->array_size == 0){
+				return 1;
 			}
-
-			printf("error at NOT FACTOR\n");
+			printf("error : boolean value required after \"not\" token \n");
 			return 0;
+
 		}
 
-	case SFACTOR_4:
+		printf("error at NOT FACTOR\n");
+		return 0;
+	}
+
+	case SFACTOR_4:{
 		/* SFACTOR_4
 		 *  L> SSTDTYPE -> TLPAREN -> SEXPR -> TRPAREN
 		 */
-		{
-			SyntaxTreeNode* child = node->child->brother;
-			if(check_type(child)){
-				Type* type = (Type*)node->data;
-				type->stdtype = ((Type*)child->data)->stdtype;
-				type->array_size = ((Type*)child->data)->array_size;
-				if(type->stdtype == TBOOLEAN && type->array_size == 0){
-					return 1;
-				}
-				printf("error : boolean value required after \"not\" token \n");
-				return 0;
-
+		SyntaxTreeNode* child = node->child->brother;
+		if(check_type(child)){
+			Type* type;
+			node->data = malloc(sizeof(Type));
+			type = (Type*)node->data;
+			type->stdtype = ((Type*)child->data)->stdtype;
+			type->array_size = ((Type*)child->data)->array_size;
+			if(type->stdtype == TBOOLEAN && type->array_size == 0){
+				return 1;
 			}
-
-			printf("error at STDTYPE(EXPR)\n");
+			printf("error : boolean value required after \"not\" token \n");
 			return 0;
+
 		}
+
+		printf("error at STDTYPE(EXPR)\n");
+		return 0;
+	}
 
 	default:
 		result_child = check_type(node->child);
@@ -668,7 +792,7 @@ int main(int nc, char *np[]){
 
 	fill_node_data(node_SPROGRAM);
 
-	/*debug_tree(node_SPROGRAM);*/
+	debug_tree(node_SPROGRAM);
 
 	if(!fill_var_data(node_SPROGRAM, NULL, NULL)){
 		free_tree(node_SPROGRAM);
@@ -679,9 +803,8 @@ int main(int nc, char *np[]){
 	print_variable(node_SPROGRAM);
 
 
-	if(check_type(node_SPROGRAM) == 0){
+	if(!check_type(node_SPROGRAM)){
 		printf("error found.\n");
-
 	}
 
 
