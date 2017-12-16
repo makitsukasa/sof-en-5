@@ -9,6 +9,8 @@ procedure hogeproc2;
 	var hoge6 : integer;
 	begin writeln; end;
 begin
+	if(hoge1)then
+		writeln(hoge2);
 	writeln(hoge1);
 	writeln(hoge2[1])
 end.

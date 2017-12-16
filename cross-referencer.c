@@ -333,7 +333,7 @@ void print_variable(SyntaxTreeNode* node){
 			printf("%s ", ((ProgData*)node->data)->name);
 			printf("\n");
 		}
-		if(node->s_elem_it == SSUBPROGDEC){
+		else if(node->s_elem_it == SSUBPROGDEC){
 			printf("procedu ");
 			printf("l%2d ", ((ProcData*)node->data)->defined_line);
 			printf("dp%9p ", node->data);
@@ -342,7 +342,7 @@ void print_variable(SyntaxTreeNode* node){
 			printf("%s ", ((ProcData*)node->data)->name);
 			printf("\n");
 		}
-		if(node->s_elem_it == SVARNAME){
+		else if(node->s_elem_it == SVARNAME){
 			VarData* var_data = (VarData*)node->data;
 			if(var_data->is_declaration){
 				VarDecData* var_dec_data = (VarDecData*)var_data->data;
@@ -359,11 +359,26 @@ void print_variable(SyntaxTreeNode* node){
 			}
 			else{
 				VarRefData* var_ref_data = (VarRefData*)var_data->data;
+				VarDecData* var_dec_data = (VarDecData*)((VarData*)var_ref_data->data)->data;
+				char type[][5] = {"char", "int ", "bool"};
 				printf("var ref ");
 				printf("l%2d ", var_ref_data->line);
 				printf(" p%9p ", var_ref_data->data);
+
+				printf("%s%d ", type[var_dec_data->type.stdtype - TCHAR],
+									var_dec_data->type.array_size);
+				printf("%s ", var_dec_data->name);
 				printf("\n");
 			}
+		}
+		else if(node->s_elem_it == STYPE){
+			Type* type = (Type*)node->data;
+			char arr[][5] = {"char", "int ", "bool"};
+			printf("%s%d ", arr[type->stdtype - TCHAR], type->array_size);
+			printf("\n");
+		}
+		else{
+			printf("some %s\n", SYNTAXDIC[node->s_elem_it]);
 		}
 	}
 	print_variable(node->child);
@@ -439,13 +454,6 @@ int check_type(SyntaxTreeNode* node){
 		 *                     L> SEXPR_1_0
 		 *                         L> SRELATOP -> SSIMPLEEXPR
 		 */
-		{
-			Type current;
-			SyntaxTreeNode* node_SEXPR_1_0;
-			
-			check_type(node->child);
-
-		}
 		break;
 
 	case SSIMPLEEXPR:
@@ -464,7 +472,55 @@ int check_type(SyntaxTreeNode* node){
 		 *                 L> STERM_1_0
 		 *                     L> SMULOP -> SFACTOR
 		 */
-		break;
+		/* operator has left-to-right associativity */
+		{
+			SyntaxTreeNode* node_SFACTOR = node->child;
+			SyntaxTreeNode* node_STERM_1_0 = node->child->brother->child;
+			Type* type;
+
+			node->data = malloc(sizeof(Type));
+			type = (Type*) node->data;
+
+			if(!check_type(node_SFACTOR)){
+				printf("error at ( TERM )\n");
+			}
+			type->stdtype = ((Type*)node_SFACTOR->data)->stdtype;
+			type->array_size = ((Type*)node_SFACTOR->data)->array_size;
+
+			while(node_STERM_1_0->parse_result != PARSERESULT_EMPTY){
+				SyntaxTreeNode* node_mul_op = node_STERM_1_0->child->child;
+				int required_type = TINTEGER;
+				while(node_mul_op->parse_result != PARSERESULT_MATCH){
+					node_mul_op = node_mul_op->brother;
+				}
+				if(node_mul_op->s_elem_it == TAND){
+					required_type = TBOOLEAN;
+				}
+
+
+				Type* node_SFACTOR_type;
+				if(!check_type(node_STERM_1_0->child->brother)){
+					return 0;
+				}
+				node_SFACTOR_type = (Type*)node_mul_op->brother->data;
+				if(type->stdtype != required_type || type-> array_size != 0){
+					printf("error : left operand type of operator \"%s\"\n",
+							SYNTAXDIC[node_mul_op->s_elem_it]);
+					return 0;
+				}
+				if(node_SFACTOR_type->stdtype != required_type ||
+						node_SFACTOR_type-> array_size != 0){
+					printf("error : left operand type of operator \"%s\"\n",
+							SYNTAXDIC[node_mul_op->s_elem_it]);
+					return 0;
+				}
+
+				node_STERM_1_0 = node_STERM_1_0->brother;
+
+			}
+			
+			return 0;
+		}
 
 	case SFACTOR:
 		/* SFACTOR
@@ -490,26 +546,88 @@ int check_type(SyntaxTreeNode* node){
 		/* SCONST
 		 *  L> TNUMBER -> TFALSE -> TTRUE -> TSTRING(just 1 character)
 		 */
-
-		break;
+		{
+			SyntaxTreeNode* child = node->child;
+			while(1){
+				if(child->parse_result != PARSERESULT_MATCH){
+					child = child->brother;
+				}
+				check_type(child);
+				node->data = malloc(sizeof(Type));
+				((Type*)node->data)->stdtype = ((Type*)child->data)->stdtype;
+				((Type*)node->data)->array_size = ((Type*)child->data)->array_size;
+				if(child->s_elem_it == TSTRING){
+					/* just 1 character */
+					if(((Type*)node->data)->array_size > 1){
+						printf("error : const val needed just one character\n");
+						return 0;
+					}
+				}
+				return 1;
+			}
+			printf("nobody can come here just for debug\n");
+			return 0;
+		}
 
 	case SFACTOR_2:
 		/* SFACTOR_2
 		 *  L> TLPAREN -> SEXPR -> TRPAREN
 		 */
-		break;
+		{
+			SyntaxTreeNode* child = node->child->brother;
+			if(check_type(child)){
+				((Type*)node->data)->stdtype = ((Type*)child->data)->stdtype;
+				((Type*)node->data)->array_size = ((Type*)child->data)->array_size;
+				return 1;
+			}
+
+			printf("error at ( EXPR )\n");
+			return 0;
+		}
 
 	case SFACTOR_3:
 		/* SFACTOR_3
 		 *  L> TNOT -> SFACTOR
 		 */
-		break;
+		{
+			SyntaxTreeNode* child = node->child->brother;
+			if(check_type(child)){
+				Type* type = (Type*)node->data;
+				type->stdtype = ((Type*)child->data)->stdtype;
+				type->array_size = ((Type*)child->data)->array_size;
+				if(type->stdtype == TBOOLEAN && type->array_size == 0){
+					return 1;
+				}
+				printf("error : boolean value required after \"not\" token \n");
+				return 0;
+
+			}
+
+			printf("error at NOT FACTOR\n");
+			return 0;
+		}
 
 	case SFACTOR_4:
 		/* SFACTOR_4
 		 *  L> SSTDTYPE -> TLPAREN -> SEXPR -> TRPAREN
 		 */
-		break;
+		{
+			SyntaxTreeNode* child = node->child->brother;
+			if(check_type(child)){
+				Type* type = (Type*)node->data;
+				type->stdtype = ((Type*)child->data)->stdtype;
+				type->array_size = ((Type*)child->data)->array_size;
+				if(type->stdtype == TBOOLEAN && type->array_size == 0){
+					return 1;
+				}
+				printf("error : boolean value required after \"not\" token \n");
+				return 0;
+
+			}
+
+			printf("error at STDTYPE(EXPR)\n");
+			return 0;
+		}
 
 	default:
 		result_child = check_type(node->child);
