@@ -30,6 +30,12 @@ typedef struct VarRefData_{
 	int line;
 }VarRefData;
 
+typedef struct ConstData_{
+	Type type;
+	int line;
+	int val;
+} ConstData;
+
 /*
 typedef struct VarData_{
 	char name[MAXSTRSIZE];

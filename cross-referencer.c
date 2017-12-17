@@ -154,35 +154,34 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 		result_child = fill_var_data(node->child, namespace, global);
 		break;
 
-	case SSUBPROGDEC:
-		{
-			SyntaxTreeNode* prev_namespace = namespace;
-			ProgData *prog_data = (ProgData*)namespace->data;
-			ProcData *proc_data = prog_data->proc_data_head;
+	case SSUBPROGDEC:{
+		SyntaxTreeNode* prev_namespace = namespace;
+		ProgData *prog_data = (ProgData*)namespace->data;
+		ProcData *proc_data = prog_data->proc_data_head;
 
-			if(prog_data->proc_data_tail == NULL){
-				prog_data->proc_data_head = (ProcData*)node->data;
-				prog_data->proc_data_tail = (ProcData*)node->data;
-			}
-			else{
-				prog_data->proc_data_tail->next = (ProcData*)node->data;
-				prog_data->proc_data_tail = (ProcData*)node->data;
-			}
-
-			while(proc_data != NULL && proc_data != prog_data->proc_data_tail){
-				if(strcmp(((ProcData*)node->data)->name, proc_data->name) == 0){
-					printf("error : redefinition subprogram \"%s\"\n", proc_data->name);
-					return 0;
-				}
-				proc_data = proc_data->next;
-			}
-
-			namespace = node;
-			result_child = fill_var_data(node->child, namespace, global);
-			result_brother = fill_var_data(node->brother, namespace, global);
-			namespace = prev_namespace;
-			break;
+		if(prog_data->proc_data_tail == NULL){
+			prog_data->proc_data_head = (ProcData*)node->data;
+			prog_data->proc_data_tail = (ProcData*)node->data;
 		}
+		else{
+			prog_data->proc_data_tail->next = (ProcData*)node->data;
+			prog_data->proc_data_tail = (ProcData*)node->data;
+		}
+
+		while(proc_data != NULL && proc_data != prog_data->proc_data_tail){
+			if(strcmp(((ProcData*)node->data)->name, proc_data->name) == 0){
+				printf("error : redefinition subprogram \"%s\"\n", proc_data->name);
+				return 0;
+			}
+			proc_data = proc_data->next;
+		}
+
+		namespace = node;
+		result_child = fill_var_data(node->child, namespace, global);
+		result_brother = fill_var_data(node->brother, namespace, global);
+		namespace = prev_namespace;
+		break;
+	}
 
 	case SVARNAME:
 		/* 
@@ -301,7 +300,48 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 			break;
 
 		}
-		break;
+
+	case SCONST:{
+		/* SCONST
+		 *  L> TNUMBER -> TFALSE -> TTRUE -> TSTRING (just 1 character)
+		 */
+		ConstData* const_data;
+		SyntaxTreeNode* child = node->child;
+		node->data = malloc(sizeof(ConstData));
+		const_data = node->data;
+
+		while(child->parse_result != PARSERESULT_MATCH){
+			child = child->brother;
+		}
+		switch(child->s_elem_it){
+		case TNUMBER:
+			const_data->type.stdtype = TINTEGER;
+			const_data->type.array_size = 0;
+			const_data->val = atoi(child->string_attr);
+			break;
+		case TFALSE:
+			const_data->type.stdtype = TBOOLEAN;
+			const_data->type.array_size = 0;
+			const_data->val = 0;
+			break;
+		case TTRUE:
+			const_data->type.stdtype = TBOOLEAN;
+			const_data->type.array_size = 0;
+			const_data->val = 1;
+			break;
+		case TSTRING:
+			if(strlen(child->string_attr) > 1){
+				printf("string of const stat has just one character\n");
+				return 0;
+			}
+			const_data->type.stdtype = TBOOLEAN;
+			const_data->type.array_size = 0;
+			const_data->val = child->string_attr[0];
+			break;
+		}
+		return 1;
+	}
+
 
 	default:
 		result_child = fill_var_data(node->child, namespace, global);
@@ -397,7 +437,19 @@ int check_type(SyntaxTreeNode* node){
 		return (result_child && result_brother) ? 1 : 0;
 	}
 
+	printf("check_type l%2d %s\n", node->line_num, SYNTAXDIC[node->s_elem_it]);
+	fflush(stdout);
+
 	switch(node->s_elem_it){
+	case SSUBPROGDEC:
+		/* SSUBPROGDEC
+		 *  L>TPROCEDURE->SPROCEDURENAME->SSUBPROGDEC_2->TSEMI->SSUBPROGDEC_4->SCOMPSTAT->TSEMI
+		 */
+		if(!check_type(node->child->brother->brother->brother->brother->brother)){
+			printf("error at SUBPROGDEC\n");
+			return 0;
+		}
+		return 1;
 
 	case SVAR:
 		/* hoge[piyo] (array) */
@@ -413,9 +465,7 @@ int check_type(SyntaxTreeNode* node){
 		 *                  L> SVAR_1_0(EMPTY)
 		 */
 
-		printf("check_type %s\n", SYNTAXDIC[node->s_elem_it]);
-
-		/* array */
+		/* reference statement looks like array */
 		if(node->child->brother->child->parse_result == PARSERESULT_MATCH){
 			VarDecData* var_dec_data = 
 				(VarDecData*)((VarData*)((VarRefData*)((VarData*)node->child->data)->data)->data)->data;
@@ -440,6 +490,7 @@ int check_type(SyntaxTreeNode* node){
 			node_SVAR_type = (Type*)node->data;
 			node_SVAR_type->stdtype = var_dec_data->type.stdtype;
 			node_SVAR_type->array_size = 0;
+			printf("svar (array) ok\n");
 			return 1;
 		}
 		/* reference statement looks like NOT-array */
@@ -456,6 +507,7 @@ int check_type(SyntaxTreeNode* node){
 			node_SVAR_type = (Type*)node->data;
 			node_SVAR_type->stdtype = var_dec_data->type.stdtype;
 			node_SVAR_type->array_size = 0;
+			printf("svar (not array) ok\n");
 			return 1;
 		}
 
@@ -527,7 +579,6 @@ int check_type(SyntaxTreeNode* node){
 	}
 
 	case SSIMPLEEXPR:{
-		/************************************************************************************/
 		/* SSIMPLEEXPR
 		 *  L> SSIMPLEEXPR_0 -> STERM -> SSIMPLEEXPR_2
 		 *      L> SSIMPLEEXPR_0_0        |
@@ -535,22 +586,22 @@ int check_type(SyntaxTreeNode* node){
 		 *                                L> SSIMPLEEXPR_2_0
 		 *                                    L> SADDOP -> STERM
 		 */	
-		SyntaxTreeNode* node_STERM = node->child;
-		SyntaxTreeNode* node_SSIMPLEEXPR_2_0 = node->child->brother->child;
+		SyntaxTreeNode* node_STERM = node->child->brother;
+		SyntaxTreeNode* node_SSIMPLEEXPR_2_0 = node->child->brother->brother->child;
 		Type* type;
 
 		node->data = malloc(sizeof(Type));
 		type = (Type*) node->data;
 
 		if(!check_type(node_STERM)){
-			printf("error at FACTOR\n");
+			printf("error at TERM\n");
 			return 0;
 		}
 		type->stdtype = ((Type*)node_STERM->data)->stdtype;
 		type->array_size = ((Type*)node_STERM->data)->array_size;
 
-		while(node_SSIMPLEEXPR_2_0->parse_result != PARSERESULT_EMPTY){
-			SyntaxTreeNode* node_mul_op = node_SSIMPLEEXPR_2_0->child->child;
+		while(node_SSIMPLEEXPR_2_0->parse_result != PARSERESULT_DIFFERENCE){
+			SyntaxTreeNode* node_add_op = node_SSIMPLEEXPR_2_0->child->child;
 			int required_type = TINTEGER;
 			Type* node_SFACTOR_type;
 
@@ -558,23 +609,31 @@ int check_type(SyntaxTreeNode* node){
 				printf("error at TERM_1_0\n");
 				return 0;
 			}
-			while(node_mul_op->parse_result != PARSERESULT_MATCH){
-				node_mul_op = node_mul_op->brother;
+			while(node_add_op->parse_result != PARSERESULT_MATCH){
+				node_add_op = node_add_op->brother;
 			}
-			if(node_mul_op->s_elem_it == TAND){
+			if(node_add_op->s_elem_it == TAND){
 				required_type = TBOOLEAN;
 			}
+
+			printf("koko\n");
+			printf("%p %s\n", node_SSIMPLEEXPR_2_0, SYNTAXDIC[node_SSIMPLEEXPR_2_0->s_elem_it]);
+			printf("%p %s\n", node_SSIMPLEEXPR_2_0->child,
+						SYNTAXDIC[node_SSIMPLEEXPR_2_0->child->s_elem_it]);
+			printf("%p %s\n", node_SSIMPLEEXPR_2_0->child->brother,
+						SYNTAXDIC[node_SSIMPLEEXPR_2_0->child->brother->s_elem_it]);
+			node_SFACTOR_type = (Type*)node_SSIMPLEEXPR_2_0->child->brother->data;
 
 			node_SFACTOR_type = (Type*)node_SSIMPLEEXPR_2_0->child->brother->data;
 			if(type->stdtype != required_type || type-> array_size != 0){
 				printf("error : left operand type of operator \"%s\"\n",
-						SYNTAXDIC[node_mul_op->s_elem_it]);
+						SYNTAXDIC[node_add_op->s_elem_it]);
 				return 0;
 			}
 			if(node_SFACTOR_type->stdtype != required_type ||
 					node_SFACTOR_type-> array_size != 0){
 				printf("error : right operand type of operator \"%s\"\n",
-						SYNTAXDIC[node_mul_op->s_elem_it]);
+						SYNTAXDIC[node_add_op->s_elem_it]);
 				return 0;
 			}
 
@@ -597,7 +656,7 @@ int check_type(SyntaxTreeNode* node){
 		Type* type;
 
 		node->data = malloc(sizeof(Type));
-		type = (Type*) node->data;
+		type = (Type*)node->data;
 
 		if(!check_type(node_SFACTOR)){
 			printf("error at FACTOR\n");
@@ -612,7 +671,7 @@ int check_type(SyntaxTreeNode* node){
 			Type* node_SFACTOR_type;
 
 			if(!check_type(node_STERM_1_0->child->brother)){
-				printf("error at TERM\n");
+				printf("error at FACTOR under TERM\n");
 				return 0;
 			}
 			while(node_mul_op->parse_result != PARSERESULT_MATCH){
@@ -635,11 +694,14 @@ int check_type(SyntaxTreeNode* node){
 				return 0;
 			}
 
+			type->stdtype = required_type;
+			type->array_size = 0;
+
 			node_STERM_1_0 = node_STERM_1_0->brother;
 
 		}
 		
-		return 0;
+		return 1;
 	}
 
 	case SFACTOR:{
@@ -652,13 +714,20 @@ int check_type(SyntaxTreeNode* node){
 				child = child->brother;
 				continue;
 			}
-			if(!check_type(child)){
-				printf("error at FACTOR\n");
-				return 0;
+			if(child->s_elem_it == SCONST){
+				node->data = malloc(sizeof(Type));
+				((Type*)node->data)->stdtype = ((ConstData*)child->data)->type.stdtype;
+				((Type*)node->data)->array_size = ((ConstData*)child->data)->type.array_size;
 			}
-			node->data = malloc(sizeof(Type));
-			((Type*)node->data)->stdtype = ((Type*)child->data)->stdtype;
-			((Type*)node->data)->array_size = ((Type*)child->data)->array_size;
+			else{
+				if(!check_type(child)){
+					printf("error at %s\n", SYNTAXDIC[child->s_elem_it]);
+					return 0;
+				}
+				node->data = malloc(sizeof(Type));
+				((Type*)node->data)->stdtype = ((Type*)child->data)->stdtype;
+				((Type*)node->data)->array_size = ((Type*)child->data)->array_size;
+			}
 			return 1;
 		}
 		printf("nobody can come here just for debug\n");
@@ -792,16 +861,16 @@ int main(int nc, char *np[]){
 
 	fill_node_data(node_SPROGRAM);
 
-	debug_tree(node_SPROGRAM);
-
 	if(!fill_var_data(node_SPROGRAM, NULL, NULL)){
 		free_tree(node_SPROGRAM);
 		end_scan();
 		return -1;
 	}
 
-	print_variable(node_SPROGRAM);
 
+	debug_tree(node_SPROGRAM);
+
+	print_variable(node_SPROGRAM);
 
 	if(!check_type(node_SPROGRAM)){
 		printf("error found.\n");
