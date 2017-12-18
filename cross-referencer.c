@@ -876,8 +876,6 @@ int main(int nc, char *np[]){
 		printf("error found.\n");
 	}
 
-
-
 	free_tree(node_SPROGRAM);
 	end_scan();
 
