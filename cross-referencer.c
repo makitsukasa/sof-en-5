@@ -437,8 +437,8 @@ int check_type(SyntaxTreeNode* node){
 		return (result_child && result_brother) ? 1 : 0;
 	}
 
-	printf("check_type l%2d %s\n", node->line_num, SYNTAXDIC[node->s_elem_it]);
-	fflush(stdout);
+	/*printf("check_type l%2d %s\n", node->line_num, SYNTAXDIC[node->s_elem_it]);
+	fflush(stdout);*/
 
 	switch(node->s_elem_it){
 	case SSUBPROGDEC:
@@ -450,6 +450,48 @@ int check_type(SyntaxTreeNode* node){
 			return 0;
 		}
 		return 1;
+
+	case SCONDSTAT:{
+		/* SCONDSTAT
+		 *  L> TIF -> (*)SEXPR -> TTHEN -> SSTAT -> SCONDSTAT_4
+		 *	                                         L> SCONDSTAT_4_0
+		 *                                               L> TELSE -> SSTAT
+		 */
+		SyntaxTreeNode* node_SEXPR = node->child->brother;
+		Type* type;
+		if(!check_type(node_SEXPR)){
+			printf("error at if EXPR then \n");
+			return 0;
+		}
+		type = (Type*)node_SEXPR->data;
+		if(type->stdtype != TBOOLEAN || type->array_size != 0){
+			printf("error : conditional sentence of if statement is not boolean\n");
+			return 0;
+		}
+		return 1;
+	}
+
+	case SITERSTAT:{
+		/* SITERSTAT
+		 *  L> TWHILE -> (*)SEXPR -> TDO -> SSTAT
+		 */
+		SyntaxTreeNode* node_SEXPR = node->child->brother;
+		Type* type;
+		if(!check_type(node_SEXPR)){
+			printf("error at while EXPR do \n");
+			return 0;
+		}
+		type = (Type*)node_SEXPR->data;
+		if(type->stdtype != TBOOLEAN || type->array_size != 0){
+			printf("error : conditional sentence of while statement is not boolean\n");
+			return 0;
+		}
+		return 1;
+	}
+
+	case SEXPRS:
+		/*********************************************************************/
+		break;
 
 	case SVAR:
 		/* hoge[piyo] (array) */
@@ -478,7 +520,7 @@ int check_type(SyntaxTreeNode* node){
 				return 0;
 			}
 			if(!check_type(node_SEXPR)){
-				printf("error at array[int]\n");
+				printf("error at index of array %p\n", node_SEXPR);
 				return 0;
 			}
 			node_SEXPR_type = (Type*)node_SEXPR->data;
@@ -511,25 +553,6 @@ int check_type(SyntaxTreeNode* node){
 			return 1;
 		}
 
-	case SCONDSTAT:{
-		/* SCONDSTAT
-		 *  L> TIF -> (*)SEXPR -> TTHEN -> SSTAT -> SCONDSTAT_4
-		 *	                                         L> SCONDSTAT_4_0
-		 *                                               L> TELSE -> SSTAT
-		 */
-		SyntaxTreeNode* node_SEXPR = node->child->brother;
-		Type* type;
-		if(!check_type(node_SEXPR)){
-			printf("error at if EXPR then \n");
-			return 0;
-		}
-		type = (Type*)node_SEXPR->data;
-		if(type->stdtype != TBOOLEAN || type->array_size != 0){
-			printf("error : conditional sentence is not boolean\n");
-			return 0;
-		}
-		return 1;
-	}
 
 	case SEXPR:{
 		/* SEXPR
@@ -546,13 +569,13 @@ int check_type(SyntaxTreeNode* node){
 		type = (Type*) node->data;
 
 		if(!check_type(node_SSIMPLEEXPR)){
-			printf("error at SIMPLEEXPR\n");
+			printf("error at SIMPLEEXPR %p\n", node_SSIMPLEEXPR);
 			return 0;
 		}
 		type->stdtype = ((Type*)node_SSIMPLEEXPR->data)->stdtype;
 		type->array_size = ((Type*)node_SSIMPLEEXPR->data)->array_size;
 
-		while(node_SEXPR_1_0->parse_result != PARSERESULT_EMPTY){
+		while(node_SEXPR_1_0->parse_result != PARSERESULT_DIFFERENCE){
 			SyntaxTreeNode* node_rel_op = node_SEXPR_1_0->child->child;
 			Type* node_SSIMPLEEXPR_type;
 
@@ -575,7 +598,7 @@ int check_type(SyntaxTreeNode* node){
 			node_SEXPR_1_0 = node_SEXPR_1_0->brother;
 		}
 		
-		return 0;
+		return 1;
 	}
 
 	case SSIMPLEEXPR:{
@@ -590,11 +613,14 @@ int check_type(SyntaxTreeNode* node){
 		SyntaxTreeNode* node_SSIMPLEEXPR_2_0 = node->child->brother->brother->child;
 		Type* type;
 
+		printf("check_type SIMPLEEXPR %p\n", node);
+
 		node->data = malloc(sizeof(Type));
 		type = (Type*) node->data;
 
 		if(!check_type(node_STERM)){
 			printf("error at TERM\n");
+			fflush(stdout);
 			return 0;
 		}
 		type->stdtype = ((Type*)node_STERM->data)->stdtype;
@@ -607,6 +633,7 @@ int check_type(SyntaxTreeNode* node){
 
 			if(!check_type(node_SSIMPLEEXPR_2_0->child->brother)){
 				printf("error at TERM_1_0\n");
+				fflush(stdout);
 				return 0;
 			}
 			while(node_add_op->parse_result != PARSERESULT_MATCH){
@@ -628,12 +655,14 @@ int check_type(SyntaxTreeNode* node){
 			if(type->stdtype != required_type || type-> array_size != 0){
 				printf("error : left operand type of operator \"%s\"\n",
 						SYNTAXDIC[node_add_op->s_elem_it]);
+				fflush(stdout);
 				return 0;
 			}
 			if(node_SFACTOR_type->stdtype != required_type ||
 					node_SFACTOR_type-> array_size != 0){
 				printf("error : right operand type of operator \"%s\"\n",
 						SYNTAXDIC[node_add_op->s_elem_it]);
+				fflush(stdout);
 				return 0;
 			}
 
@@ -641,7 +670,7 @@ int check_type(SyntaxTreeNode* node){
 
 		}
 		
-		return 0;
+		return 1;
 	}
 
 	case STERM:{
@@ -795,7 +824,7 @@ int check_type(SyntaxTreeNode* node){
 
 		}
 
-		printf("error at NOT FACTOR\n");
+		printf("error at FACTOR after \"not\" token\n");
 		return 0;
 	}
 
@@ -821,6 +850,23 @@ int check_type(SyntaxTreeNode* node){
 		printf("error at STDTYPE(EXPR)\n");
 		return 0;
 	}
+
+	case SINSTAT_1_0:
+		/* SINSTAT_1_0
+		 *  L> TLPAREN -> SVAR -> SINSTAT_1_0_2 -> TRPAREN
+		 *                         L> SINSTAT_1_0_2_0
+		 *                             L> TCOMMA -> SVAR
+		 */
+		break;
+
+	case SOUTFORM:
+		/* SOUTFORM
+		 *  L> SOUTFORM_0 -> TSTRING
+		 *      L> SEXPR -> SOUTFORM_0_1
+		 *                   L> SOUTFORM_0_1_0
+		 *                       L> TCOLON -> TNUMBER
+		 */
+		break;
 
 	default:
 		result_child = check_type(node->child);
