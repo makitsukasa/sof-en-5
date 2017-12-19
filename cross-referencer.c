@@ -522,6 +522,7 @@ int check_type(SyntaxTreeNode* node){
 	case SSUBPROGDEC:{
 		/* SSUBPROGDEC
 		 *  L>TPROCEDURE->SPROCEDURENAME->SSUBPROGDEC_2->TSEMI->SSUBPROGDEC_4->SCOMPSTAT->TSEMI
+		 *                                 L> SFORMPARAM         L> SVARDEC
 		 */
 		if(!check_type(node->child->brother->brother->brother->brother->brother)){
 			printf("error at SUBPROGDEC\n");
@@ -608,7 +609,7 @@ int check_type(SyntaxTreeNode* node){
 			}
 			if(param_dec_data->type.stdtype != ((Type*)node_SEXPR->data)->stdtype ||
 					param_dec_data->type.array_size != ((Type*)node_SEXPR->data)->array_size){
-				printf("error : line %d type of call statement argument is wrong\n",
+				printf("error : line %d type of argument of call statement is wrong\n",
 						call_data->line);
 			}
 
@@ -983,21 +984,72 @@ int check_type(SyntaxTreeNode* node){
 
 	case SINSTAT_1_0:{
 		/* SINSTAT_1_0
-		 *  L> TLPAREN -> SVAR -> SINSTAT_1_0_2 -> TRPAREN
-		 *                         L> SINSTAT_1_0_2_0
-		 *                             L> TCOMMA -> SVAR
+		 *  L> TLPAREN -> (*)SVAR -> SINSTAT_1_0_2 -> TRPAREN
+		 *                            L> SINSTAT_1_0_2_0
+		 *                                L> TCOMMA -> (*)SVAR
 		 */
-		break;
+		SyntaxTreeNode* node_SVAR = node->child->brother;
+		SyntaxTreeNode* node_SINSTAT_1_0_2_0 = node->child->brother->brother->child;
+		Type* child_type;
+
+		if(!check_type(node_SVAR)){
+			printf("error at VAR %p\n", node_SVAR);
+			return 0;
+		}
+		child_type = (Type*)node_SVAR->data;
+		if(child_type->stdtype == TCHAR || child_type->array_size != 0){
+			printf("error line %d augment type of read statement is wrong\n",
+					node->child->line_num);
+			return 0;
+		}
+
+		while(node_SINSTAT_1_0_2_0 != NULL &&
+				node_SINSTAT_1_0_2_0->parse_result == PARSERESULT_MATCH){
+			node_SVAR = node_SINSTAT_1_0_2_0->child->brother;
+			if(!check_type(node_SVAR)){
+				printf("error at VAR\n");
+				return 0;
+			}
+			child_type = (Type*)node_SVAR->data;
+			if(child_type->stdtype == TCHAR || child_type->array_size != 0){
+				printf("error line %d augment type of read statement is wrong\n",
+						node->child->line_num);
+				return 0;
+			}
+			node_SINSTAT_1_0_2_0 = node_SINSTAT_1_0_2_0->brother;
+		}
+		
+		return 1;
 	}
 
 	case SOUTFORM:{
 		/* SOUTFORM
 		 *  L> SOUTFORM_0 -> TSTRING
-		 *      L> SEXPR -> SOUTFORM_0_1
-		 *                   L> SOUTFORM_0_1_0
-		 *                       L> TCOLON -> TNUMBER
+		 *      L> (*)SEXPR -> SOUTFORM_0_1
+		 *                      L> SOUTFORM_0_1_0
+		 *                          L> TCOLON -> TNUMBER
 		 */
-		break;
+		SyntaxTreeNode* node_SEXPR;
+		Type* node_SEXPR_type;
+
+		if(node->child->parse_result == PARSERESULT_EMPTY){
+			/* SOUTFORM_0 is empty but TSTRING is matched */
+			return 1;
+		}
+		node_SEXPR = node->child->child;
+
+		if(!check_type(node_SEXPR)){
+			printf("error at EXPR\n");
+			return 0;
+		}
+
+		node_SEXPR_type = (Type*) node_SEXPR->data;
+		if(node_SEXPR_type->array_size != 0){
+			printf("error line %d augment type of write statement is must be not array\n",
+					node->child->line_num);
+			return 0;
+		}
+
 	}
 
 	default:{
