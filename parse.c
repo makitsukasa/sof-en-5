@@ -289,14 +289,55 @@ SyntaxTreeNode* add_child(SyntaxTreeNode* this, SyntaxTreeNode* youngest_child, 
 	return newborn;
 }
 
+SyntaxTreeNode* parse_SOUTFORM(int iter_depth){
+	if(token == TSTRING && strlen(string_attr) >= 2){
+		SyntaxTreeNode* this = malloc_tree_node();
+		SyntaxTreeNode* child_SOUTFORM_0 = malloc_tree_node();
+		SyntaxTreeNode* child_TSTRING = malloc_tree_node();
+
+		this->s_elem_it = SOUTFORM;
+		/* this ->string_attr */
+		this->iter_depth = iter_depth;
+		this->line_num = line_num;
+		this->parse_result = PARSERESULT_MATCH;
+
+		child_SOUTFORM_0->s_elem_it = SOUTFORM_0;
+		/* child_SOUTFORM_0->string_attr */
+		child_SOUTFORM_0->iter_depth = iter_depth;
+		child_SOUTFORM_0->line_num = line_num;
+		child_SOUTFORM_0->parse_result = PARSERESULT_DIFFERENCE;
+
+		child_TSTRING->s_elem_it = TSTRING;
+		strcpy(child_TSTRING->string_attr, string_attr);
+		child_TSTRING->iter_depth = iter_depth;
+		child_TSTRING->line_num = line_num;
+		child_TSTRING->parse_result = PARSERESULT_MATCH;
+
+		this->child = child_SOUTFORM_0;
+		child_SOUTFORM_0->brother = child_TSTRING;
+		token = scan();
+		return this;
+	}
+	return parse(SOUTFORM_NOT_LONG_STRING, iter_depth);
+}
+
 SyntaxTreeNode* parse(int s_elem_it, int iter_depth){
 	int i;
 	SyntaxTreeNode* youngest_child = NULL;
-	SyntaxTreeNode* this = malloc_tree_node();
+	SyntaxTreeNode* this;
+
+	if(s_elem_it == SOUTFORM){
+		return parse_SOUTFORM(iter_depth);
+	}
+	if(s_elem_it == SOUTFORM_NOT_LONG_STRING){
+		s_elem_it = SOUTFORM;
+	}
+
+	this = malloc_tree_node();
 	this->s_elem_it = s_elem_it;
 	this->line_num = line_num;
 	this->iter_depth = iter_depth;
-
+		
 	switch(s_elem_array[this->s_elem_it].op){
 
 	/* check 1. to meet TERMINATOR */
@@ -380,7 +421,7 @@ SyntaxTreeNode* parse(int s_elem_it, int iter_depth){
 				return this;
 
 			/* one of children is matched : MATCH */
-			case PARSERESULT_MATCH:				
+			case PARSERESULT_MATCH:
 				this->parse_result = PARSERESULT_MATCH;
 				return this;
 

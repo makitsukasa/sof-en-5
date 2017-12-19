@@ -313,20 +313,19 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 		while(child->parse_result != PARSERESULT_MATCH){
 			child = child->brother;
 		}
+		const_data->line = child->line_num;
+		const_data->type.array_size = 0;
 		switch(child->s_elem_it){
 		case TNUMBER:
 			const_data->type.stdtype = TINTEGER;
-			const_data->type.array_size = 0;
 			const_data->val = atoi(child->string_attr);
 			break;
 		case TFALSE:
 			const_data->type.stdtype = TBOOLEAN;
-			const_data->type.array_size = 0;
 			const_data->val = 0;
 			break;
 		case TTRUE:
 			const_data->type.stdtype = TBOOLEAN;
-			const_data->type.array_size = 0;
 			const_data->val = 1;
 			break;
 		case TSTRING:
@@ -334,8 +333,7 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 				printf("string of const stat has just one character\n");
 				return 0;
 			}
-			const_data->type.stdtype = TBOOLEAN;
-			const_data->type.array_size = 0;
+			const_data->type.stdtype = TSTRING;
 			const_data->val = child->string_attr[0];
 			break;
 		}
@@ -353,13 +351,13 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 
 }
 
-void print_variable(SyntaxTreeNode* node){
+void debug_variable(SyntaxTreeNode* node){
 
 	if(node == NULL) return;
 
 	if(node->parse_result != PARSERESULT_MATCH) {
-		print_variable(node->child);
-		print_variable(node->brother);
+		debug_variable(node->child);
+		debug_variable(node->brother);
 		return;
 	}
 
@@ -403,7 +401,7 @@ void print_variable(SyntaxTreeNode* node){
 				char type[][5] = {"char", "int ", "bool"};
 				printf("var ref ");
 				printf("l%2d ", var_ref_data->line);
-				printf(" p%9p ", var_ref_data->data);
+				printf("p %9p ", var_ref_data->data);
 
 				printf("%s%d ", type[var_dec_data->type.stdtype - TCHAR],
 									var_dec_data->type.array_size);
@@ -415,14 +413,24 @@ void print_variable(SyntaxTreeNode* node){
 			Type* type = (Type*)node->data;
 			char arr[][5] = {"char", "int ", "bool"};
 			printf("%s%d ", arr[type->stdtype - TCHAR], type->array_size);
+			printf("      type");
+			printf("\n");
+		}
+		else if(node->s_elem_it == SCONST){
+			ConstData* const_data = (ConstData*)node->data;
+			char arr[][5] = {"char", "int ", "bool"};
+			printf("%s%d ", arr[const_data->type.stdtype - TCHAR], 
+							const_data->type.array_size);
+			printf("  l%2d ", const_data->line);
+			printf("const %d ", const_data->val);
 			printf("\n");
 		}
 		else{
-			printf("some %s\n", SYNTAXDIC[node->s_elem_it]);
+			printf("some data at %s\n", SYNTAXDIC[node->s_elem_it]);
 		}
 	}
-	print_variable(node->child);
-	print_variable(node->brother);
+	debug_variable(node->child);
+	debug_variable(node->brother);
 }
 
 int check_type(SyntaxTreeNode* node){
@@ -489,7 +497,7 @@ int check_type(SyntaxTreeNode* node){
 		return 1;
 	}
 
-	case SEXPRS:
+	case SEXPRS: /* call statement */
 		/*********************************************************************/
 		break;
 
@@ -768,25 +776,19 @@ int check_type(SyntaxTreeNode* node){
 		 *  L> TNUMBER -> TFALSE -> TTRUE -> TSTRING(just 1 character)
 		 */
 		SyntaxTreeNode* child = node->child;
-		while(1){
-			if(child->parse_result != PARSERESULT_MATCH){
-				child = child->brother;
-			}
-			check_type(child);
-			node->data = malloc(sizeof(Type));
-			((Type*)node->data)->stdtype = ((Type*)child->data)->stdtype;
-			((Type*)node->data)->array_size = ((Type*)child->data)->array_size;
-			if(child->s_elem_it == TSTRING){
-				/* just 1 character */
-				if(((Type*)node->data)->array_size > 1){
-					printf("error : const val needed just one character\n");
-					return 0;
-				}
-			}
-			return 1;
+		ConstData* const_data;
+		while(child->parse_result != PARSERESULT_MATCH){
+			child = child->brother;
 		}
-		printf("nobody can come here just for debug\n");
-		return 0;
+		check_type(child);
+		if(child->s_elem_it == TSTRING){
+			/* just 1 character */
+			if(((Type*)node->data)->array_size > 1){
+				printf("error : const val needed just one character\n");
+				return 0;
+			}
+		}
+		return 1;
 	}
 
 	case SFACTOR_2:{
@@ -916,7 +918,7 @@ int main(int nc, char *np[]){
 
 	debug_tree(node_SPROGRAM);
 
-	print_variable(node_SPROGRAM);
+	debug_variable(node_SPROGRAM);
 
 	if(!check_type(node_SPROGRAM)){
 		printf("error found.\n");

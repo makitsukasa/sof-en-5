@@ -10,5 +10,6 @@ procedure hogeproc2;
 	begin writeln; end;
 begin
 	writeln(hoge1);
-	writeln(hoge2[7])
+	writeln(hoge2[7]);
+    writeln('string');
 end.

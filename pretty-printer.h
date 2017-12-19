@@ -87,6 +87,8 @@
 
 #define NUMOFSYNTAX			127
 
+#define SOUTFORM_NOT_LONG_STRING	200
+
 typedef struct SyntaxElem_{
 	int op;
 	int children_num;
