@@ -35,32 +35,52 @@ void fill_node_data(SyntaxTreeNode* node){
 	case SVARDEC:
 	case SVARDEC_5_0:
 	case SFORMPARAM:
-	case SFORMPARAM_4_0:
-		{
-			/* i know what it means and i know it works */
-			SyntaxTreeNode* node_SVARNAME;
-			SyntaxTreeNode* node_SVARNAMES_1_0;
-			VarDecData* var_dec_data;
-			void *type;
-			int is_param = (node->s_elem_it == SFORMPARAM ||
-							 node->s_elem_it == SFORMPARAM_4_0) ? 1 : 0;
+	case SFORMPARAM_4_0:{
+		/* i know what it means and i know it works */
+		SyntaxTreeNode* node_SVARNAME;
+		SyntaxTreeNode* node_SVARNAMES_1_0;
+		VarDecData* var_dec_data;
+		void *type;
+		int is_param = (node->s_elem_it == SFORMPARAM ||
+						 node->s_elem_it == SFORMPARAM_4_0) ? 1 : 0;
 
-			if(node->s_elem_it == SVARDEC_5_0){
-				fill_node_data(node->child->brother->brother);
-				type = node->child->brother->brother->data;
-			}
-			else{
-				fill_node_data(node->child->brother->brother->brother);
-				type = node->child->brother->brother->brother->data;
-			}
+		if(node->s_elem_it == SVARDEC_5_0){
+			fill_node_data(node->child->brother->brother);
+			type = node->child->brother->brother->data;
+		}
+		else{
+			fill_node_data(node->child->brother->brother->brother);
+			type = node->child->brother->brother->brother->data;
+		}
 
-			if(node->s_elem_it == SVARDEC || node->s_elem_it == SFORMPARAM){
-				node_SVARNAME = node->child->brother->child;
-			}
-			else{
-				node_SVARNAME = node->child->child;
-			}
+		if(node->s_elem_it == SVARDEC || node->s_elem_it == SFORMPARAM){
+			node_SVARNAME = node->child->brother->child;
+		}
+		else{
+			node_SVARNAME = node->child->child;
+		}
 
+		node_SVARNAME->data = calloc(1, sizeof(VarData));
+		((VarData*)node_SVARNAME->data)->is_declaration = 1;
+		((VarData*)node_SVARNAME->data)->data = calloc(1, sizeof(VarDecData));
+		var_dec_data = (VarDecData*)((VarData*)node_SVARNAME->data)->data;
+		strcpy(var_dec_data->name, node_SVARNAME->child->string_attr);
+		var_dec_data->is_param = is_param;
+		var_dec_data->line = node_SVARNAME->line_num;
+		var_dec_data->type.stdtype = ((Type*) type)->stdtype;
+		var_dec_data->type.array_size = ((Type*) type)->array_size;
+
+		if(node->s_elem_it == SVARDEC || node->s_elem_it == SFORMPARAM){
+			node_SVARNAMES_1_0 = node->child->brother->child->brother->child;
+		}
+		else{
+			node_SVARNAMES_1_0 = node->child->child->brother->child;
+		}
+
+		for(; (node_SVARNAMES_1_0 != NULL &&
+				node_SVARNAMES_1_0->parse_result == PARSERESULT_MATCH);
+				node_SVARNAMES_1_0 = node_SVARNAMES_1_0->brother){
+			SyntaxTreeNode *node_SVARNAME = node_SVARNAMES_1_0->child->brother;
 			node_SVARNAME->data = calloc(1, sizeof(VarData));
 			((VarData*)node_SVARNAME->data)->is_declaration = 1;
 			((VarData*)node_SVARNAME->data)->data = calloc(1, sizeof(VarDecData));
@@ -70,66 +90,43 @@ void fill_node_data(SyntaxTreeNode* node){
 			var_dec_data->line = node_SVARNAME->line_num;
 			var_dec_data->type.stdtype = ((Type*) type)->stdtype;
 			var_dec_data->type.array_size = ((Type*) type)->array_size;
-
-			if(node->s_elem_it == SVARDEC || node->s_elem_it == SFORMPARAM){
-				node_SVARNAMES_1_0 = node->child->brother->child->brother->child;
-			}
-			else{
-				node_SVARNAMES_1_0 = node->child->child->brother->child;
-			}
-
-			for(; (node_SVARNAMES_1_0 != NULL &&
-					node_SVARNAMES_1_0->parse_result == PARSERESULT_MATCH);
-					node_SVARNAMES_1_0 = node_SVARNAMES_1_0->brother){
-				SyntaxTreeNode *node_SVARNAME = node_SVARNAMES_1_0->child->brother;
-				node_SVARNAME->data = calloc(1, sizeof(VarData));
-				((VarData*)node_SVARNAME->data)->is_declaration = 1;
-				((VarData*)node_SVARNAME->data)->data = calloc(1, sizeof(VarDecData));
-				var_dec_data = (VarDecData*)((VarData*)node_SVARNAME->data)->data;
-				strcpy(var_dec_data->name, node_SVARNAME->child->string_attr);
-				var_dec_data->is_param = is_param;
-				var_dec_data->line = node_SVARNAME->line_num;
-				var_dec_data->type.stdtype = ((Type*) type)->stdtype;
-				var_dec_data->type.array_size = ((Type*) type)->array_size;
-			}
-
-
-			fill_node_data(node->child);
-			break;
 		}
 
-	case STYPE:
-		{
-			Type *type = calloc(1, sizeof(Type));
-			SyntaxTreeNode *child = node->child;
-			SyntaxTreeNode *node_stdtype;
-			while(child->parse_result != PARSERESULT_MATCH){
-				child = child->brother;
-			}
-			if(child->s_elem_it == SSTDTYPE){
-				node_stdtype = child->child;
-				while(node_stdtype->parse_result != PARSERESULT_MATCH){
-					node_stdtype = node_stdtype->brother;
-				}
-				type->stdtype = node_stdtype->s_elem_it;
-				type->array_size = 0;
-			}
-			else /* if(node->child->s_elem_it == SARRAYTYPE) */{
-				node_stdtype = child->child->brother->brother->
-								brother->brother->brother->child;
-				while(node_stdtype->parse_result != PARSERESULT_MATCH){
-					node_stdtype = node_stdtype->brother;
-				}
-				type->stdtype = node_stdtype->s_elem_it;
-				type->array_size = atoi(child->child->brother->brother->string_attr);
-			}
-			node->data = (void*) type;
 
+		fill_node_data(node->child);
+		break;
+	}
+
+	case STYPE:{
+		Type *type = calloc(1, sizeof(Type));
+		SyntaxTreeNode *child = node->child;
+		SyntaxTreeNode *node_stdtype;
+		while(child->parse_result != PARSERESULT_MATCH){
+			child = child->brother;
 		}
+		if(child->s_elem_it == SSTDTYPE){
+			node_stdtype = child->child;
+			while(node_stdtype->parse_result != PARSERESULT_MATCH){
+				node_stdtype = node_stdtype->brother;
+			}
+			type->stdtype = node_stdtype->s_elem_it;
+			type->array_size = 0;
+		}
+		else /* if(node->child->s_elem_it == SARRAYTYPE) */{
+			node_stdtype = child->child->brother->brother->
+							brother->brother->brother->child;
+			while(node_stdtype->parse_result != PARSERESULT_MATCH){
+				node_stdtype = node_stdtype->brother;
+			}
+			type->stdtype = node_stdtype->s_elem_it;
+			type->array_size = atoi(child->child->brother->brother->string_attr);
+		}
+		node->data = (void*) type;
+	}
+
 	default:
 		fill_node_data(node->child);
 		fill_node_data(node->brother);
-
 	}
 	
 }
@@ -147,12 +144,12 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 	}
 
 	switch(node->s_elem_it){
-	case SPROGRAM:
-
+	case SPROGRAM:{
 		namespace = node;
 		global = node;
 		result_child = fill_var_data(node->child, namespace, global);
 		break;
+	}
 
 	case SSUBPROGDEC:{
 		SyntaxTreeNode* prev_namespace = namespace;
@@ -183,7 +180,7 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 		break;
 	}
 
-	case SVARNAME:
+	case SVARNAME:{
 		/* 
 		 * node->data is not NULL => data assigned in fill_node_data() => define stat
 		 * node->data is NULL => not define stat => reference stat
@@ -300,6 +297,12 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 			break;
 
 		}
+	}
+
+	case SCALLSTAT:{
+
+		break;
+	}
 
 	case SCONST:{
 		/* SCONST
@@ -333,7 +336,8 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 				printf("string of const stat has just one character\n");
 				return 0;
 			}
-			const_data->type.stdtype = TSTRING;
+			/* const_data->type.stdtype = TSTRING; */
+			const_data->type.stdtype = TCHAR;
 			const_data->val = child->string_attr[0];
 			break;
 		}
@@ -341,10 +345,11 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 	}
 
 
-	default:
+	default:{
 		result_child = fill_var_data(node->child, namespace, global);
 		result_brother = fill_var_data(node->brother, namespace, global);
 		break;
+	}
 	}
 
 	return (result_child && result_brother) ? 1 : 0;
@@ -449,7 +454,7 @@ int check_type(SyntaxTreeNode* node){
 	fflush(stdout);*/
 
 	switch(node->s_elem_it){
-	case SSUBPROGDEC:
+	case SSUBPROGDEC:{
 		/* SSUBPROGDEC
 		 *  L>TPROCEDURE->SPROCEDURENAME->SSUBPROGDEC_2->TSEMI->SSUBPROGDEC_4->SCOMPSTAT->TSEMI
 		 */
@@ -458,6 +463,7 @@ int check_type(SyntaxTreeNode* node){
 			return 0;
 		}
 		return 1;
+	}
 
 	case SCONDSTAT:{
 		/* SCONDSTAT
@@ -497,11 +503,48 @@ int check_type(SyntaxTreeNode* node){
 		return 1;
 	}
 
-	case SEXPRS: /* call statement */
-		/*********************************************************************/
+	case SCALLSTAT:{
+		/* SCALLSTAT
+		 *  L> TCALL -> SPROCNAME -> SCALLSTAT_2
+		 *                             L> SCALLSTAT_2_0
+		 *                                 L> TLPAREN -> SEXPRS -> TRPAREN
+		 *                                                L> SEXPR -> SEXPRS_1
+		 *                                                             L> SEXPRS_1_0
+		 *                                                                 L> TCOMMA -> SEXPR
+		 */
+		int param_num = 0;
+		SyntaxTreeNode* node_SCALLSTAT_2 = node->child->brother->brother;
+		SyntaxTreeNode* node_SEXPRS_1_0;
+		SyntaxTreeNode* node_SEXPR;
+		if(node_SCALLSTAT_2->parse_result == PARSERESULT_EMPTY){
+			/* just 0 argument */
+			node_SEXPRS_1_0 = NULL;
+		}
+		else{
+			SyntaxTreeNode* node_SEXPRS_1 =
+					node_SCALLSTAT_2->child->child->brother->child->brother;
+
+			/* try first argument */
+
+			if(node_SEXPRS_1->parse_result == PARSERESULT_EMPTY){
+				/* just 1 argument */
+				node_SEXPRS_1_0 = NULL;
+			}
+			else{
+				/* 2 or more augments */
+				node_SEXPRS_1_0 = node_SEXPRS_1->child;
+			}
+			while(0 && node_SEXPRS_1_0 != NULL){
+					
+			}
+		}
+
+
 		break;
 
-	case SVAR:
+	}
+
+	case SVAR:{
 		/* hoge[piyo] (array) */
 		/* SVAR
 		 *  L> SVARNAME -> SVAR_1
@@ -560,6 +603,7 @@ int check_type(SyntaxTreeNode* node){
 			printf("svar (not array) ok\n");
 			return 1;
 		}
+	}
 
 
 	case SEXPR:{
@@ -621,7 +665,7 @@ int check_type(SyntaxTreeNode* node){
 		SyntaxTreeNode* node_SSIMPLEEXPR_2_0 = node->child->brother->brother->child;
 		Type* type;
 
-		printf("check_type SIMPLEEXPR %p\n", node);
+		/*printf("check_type SIMPLEEXPR %p\n", node);*/
 
 		node->data = malloc(sizeof(Type));
 		type = (Type*) node->data;
@@ -853,15 +897,16 @@ int check_type(SyntaxTreeNode* node){
 		return 0;
 	}
 
-	case SINSTAT_1_0:
+	case SINSTAT_1_0:{
 		/* SINSTAT_1_0
 		 *  L> TLPAREN -> SVAR -> SINSTAT_1_0_2 -> TRPAREN
 		 *                         L> SINSTAT_1_0_2_0
 		 *                             L> TCOMMA -> SVAR
 		 */
 		break;
+	}
 
-	case SOUTFORM:
+	case SOUTFORM:{
 		/* SOUTFORM
 		 *  L> SOUTFORM_0 -> TSTRING
 		 *      L> SEXPR -> SOUTFORM_0_1
@@ -869,12 +914,13 @@ int check_type(SyntaxTreeNode* node){
 		 *                       L> TCOLON -> TNUMBER
 		 */
 		break;
+	}
 
-	default:
+	default:{
 		result_child = check_type(node->child);
 		result_brother = check_type(node->brother);
 		break;
-
+	}
 	}
 
 	return (result_child && result_brother) ? 1 : 0;

@@ -9,7 +9,7 @@ procedure hogeproc2;
 	var hoge6 : integer;
 	begin writeln; end;
 begin
-	writeln(hoge1);
-	writeln(hoge2[7]);
-    writeln('string');
+	call hogeproc1(1, 2, 3);
+	call hogeproc1(4);
+	call hogeproc1;
 end.

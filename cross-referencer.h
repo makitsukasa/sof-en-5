@@ -30,6 +30,11 @@ typedef struct VarRefData_{
 	int line;
 }VarRefData;
 
+typedef struct ProcCallData{
+	struct ProcedureData_* proc_data;
+	int line;
+};
+
 typedef struct ConstData_{
 	Type type;
 	int line;
