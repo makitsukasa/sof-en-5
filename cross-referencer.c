@@ -1,13 +1,13 @@
 #include "cross-referencer.h"
 
 
-void fill_node_data(SyntaxTreeNode* node){
+void fill_node_data_prepare(SyntaxTreeNode* node){
 
 	if(node == NULL) return;
 
 	if(node->parse_result != PARSERESULT_MATCH) {
-		fill_node_data(node->child);
-		fill_node_data(node->brother);
+		fill_node_data_prepare(node->child);
+		fill_node_data_prepare(node->brother);
 		return;
 	}
 
@@ -18,8 +18,8 @@ void fill_node_data(SyntaxTreeNode* node){
 		((ProgData*)node->data)->defined_line = node->line_num;
 		strcpy(((ProgData*)node->data)->name, node->child->brother->string_attr);
 
-		fill_node_data(node->child);
-		fill_node_data(node->brother);
+		fill_node_data_prepare(node->child);
+		fill_node_data_prepare(node->brother);
 		break;
 
 	case SSUBPROGDEC:
@@ -28,8 +28,8 @@ void fill_node_data(SyntaxTreeNode* node){
 		((ProcData*)node->data)->defined_line = node->line_num;
 		strcpy(((ProcData*)node->data)->name, node->child->brother->child->string_attr);
 
-		fill_node_data(node->child);
-		fill_node_data(node->brother);
+		fill_node_data_prepare(node->child);
+		fill_node_data_prepare(node->brother);
 		break;
 
 	case SVARDEC:
@@ -45,11 +45,11 @@ void fill_node_data(SyntaxTreeNode* node){
 						 node->s_elem_it == SFORMPARAM_4_0) ? 1 : 0;
 
 		if(node->s_elem_it == SVARDEC_5_0){
-			fill_node_data(node->child->brother->brother);
+			fill_node_data_prepare(node->child->brother->brother);
 			type = node->child->brother->brother->data;
 		}
 		else{
-			fill_node_data(node->child->brother->brother->brother);
+			fill_node_data_prepare(node->child->brother->brother->brother);
 			type = node->child->brother->brother->brother->data;
 		}
 
@@ -93,7 +93,7 @@ void fill_node_data(SyntaxTreeNode* node){
 		}
 
 
-		fill_node_data(node->child);
+		fill_node_data_prepare(node->child);
 		break;
 	}
 
@@ -125,21 +125,21 @@ void fill_node_data(SyntaxTreeNode* node){
 	}
 
 	default:
-		fill_node_data(node->child);
-		fill_node_data(node->brother);
+		fill_node_data_prepare(node->child);
+		fill_node_data_prepare(node->brother);
 	}
 	
 }
 
-int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNode* global){
+int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNode* global){
 	int result_child = 1;
 	int result_brother = 1;
 
 	if(node == NULL) return 1;
 
 	if(node->parse_result != PARSERESULT_MATCH) {
-		result_child = fill_var_data(node->child, namespace, global);
-		result_brother = fill_var_data(node->brother, namespace, global);
+		result_child = fill_node_data(node->child, namespace, global);
+		result_brother = fill_node_data(node->brother, namespace, global);
 		return (result_child && result_brother) ? 1 : 0;
 	}
 
@@ -147,7 +147,7 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 	case SPROGRAM:{
 		namespace = node;
 		global = node;
-		result_child = fill_var_data(node->child, namespace, global);
+		result_child = fill_node_data(node->child, namespace, global);
 		break;
 	}
 
@@ -174,15 +174,15 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 		}
 
 		namespace = node;
-		result_child = fill_var_data(node->child, namespace, global);
-		result_brother = fill_var_data(node->brother, namespace, global);
+		result_child = fill_node_data(node->child, namespace, global);
+		result_brother = fill_node_data(node->brother, namespace, global);
 		namespace = prev_namespace;
 		break;
 	}
 
 	case SVARNAME:{
 		/* 
-		 * node->data is not NULL => data assigned in fill_node_data() => define stat
+		 * node->data is not NULL => data assigned in fill_node_data_prepare() => define stat
 		 * node->data is NULL => not define stat => reference stat
 		 */
 
@@ -248,7 +248,7 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 				return 0;
 			}
 
-			result_brother = fill_var_data(node->brother, namespace, global);
+			result_brother = fill_node_data(node->brother, namespace, global);
 			break;
 		}
 		/* define */
@@ -293,13 +293,68 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 				var_data = var_data->next;
 			}
 
-			result_brother = fill_var_data(node->brother, namespace, global);
+			result_brother = fill_node_data(node->brother, namespace, global);
 			break;
 
 		}
 	}
 
 	case SCALLSTAT:{
+		/* SCALLSTAT
+		 *  L> TCALL -> SPROCEDURENAME -> SCALLSTAT_2
+		 *               L> TNAME          L> SCALLSTAT_2_0
+		 *                                     L> TLPAREN -> SEXPRS -> TRPAREN
+		 *                                                    L> SEXPR -> SEXPRS_1
+		 *                                                                 L> SEXPRS_1_0
+		 *                                                                     L> TCOMMA -> SEXPR
+		 */
+		SyntaxTreeNode* node_SCALLSTAT_2;
+		SyntaxTreeNode* node_SEXPRS;
+		SyntaxTreeNode* node_SEXPRS_1_0;
+		ProcCallData* call_data;
+		char* call_name;
+		ProcData* proc_data;
+		int matched = 0;
+
+		node->data = malloc(sizeof(ProcCallData));
+		call_data = (ProcCallData*)node->data;
+		call_data->line = node->child->line_num;
+
+		call_name = node->child->brother->child->string_attr;
+
+		proc_data = ((ProgData*)global->data)->proc_data_head;
+
+		while(proc_data != NULL){
+			if(strcmp(proc_data->name, call_name) != 0){
+				proc_data = proc_data->next;
+				continue;
+			}
+			matched = 1;
+			break;
+		}
+
+		if(!matched){
+			printf("line %d : undefined reference to procedure \"%s\"\n",
+					call_data->line, call_name);
+			return 0;
+		}
+
+		call_data->proc_data = proc_data;
+
+		node_SCALLSTAT_2 = node->child->brother->brother;
+		if(node_SCALLSTAT_2->parse_result == PARSERESULT_EMPTY){
+			break;
+		}
+
+		node_SEXPRS = node_SCALLSTAT_2->child->child->brother;
+		result_child = fill_node_data(node_SEXPRS->child, namespace, global);
+
+		node_SEXPRS_1_0 = node_SEXPRS->child->brother;
+		while(node_SEXPRS_1_0 != NULL){
+			int result_new_child = fill_node_data(node_SEXPRS_1_0->child->brother, namespace, global);
+			result_child = result_child && result_new_child ? 1 : 0;
+			node_SEXPRS_1_0 = node_SEXPRS_1_0->brother;
+		}
 
 		break;
 	}
@@ -346,8 +401,8 @@ int fill_var_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNod
 
 
 	default:{
-		result_child = fill_var_data(node->child, namespace, global);
-		result_brother = fill_var_data(node->brother, namespace, global);
+		result_child = fill_node_data(node->child, namespace, global);
+		result_brother = fill_node_data(node->brother, namespace, global);
 		break;
 	}
 	}
@@ -394,7 +449,7 @@ void debug_variable(SyntaxTreeNode* node){
 									var_dec_data->type.array_size);
 				printf("%s ", var_dec_data->is_param ? "p" : "-");
 				printf("l%2d ", var_dec_data->line);
-				printf("dp%9p ", node->data);
+				printf("dp%9p ", var_data);
 				printf("rh%9p ", var_dec_data->ref_head);
 				printf("np%9p ", var_data->next);
 				printf("%s ", var_dec_data->name);
@@ -406,6 +461,7 @@ void debug_variable(SyntaxTreeNode* node){
 				char type[][5] = {"char", "int ", "bool"};
 				printf("var ref ");
 				printf("l%2d ", var_ref_data->line);
+				printf("dp%9p ", var_data);
 				printf("p %9p ", var_ref_data->data);
 
 				printf("%s%d ", type[var_dec_data->type.stdtype - TCHAR],
@@ -428,6 +484,15 @@ void debug_variable(SyntaxTreeNode* node){
 							const_data->type.array_size);
 			printf("  l%2d ", const_data->line);
 			printf("const %d ", const_data->val);
+			printf("\n");
+		}
+		else if(node->s_elem_it == SCALLSTAT){
+			ProcCallData* call_data = (ProcCallData*) node->data;
+			printf("call    ");
+			printf("l%2d ", call_data->line);
+			printf("dp%9p ", call_data);
+			printf("p %9p ", call_data->proc_data);
+			/*printf("np%9p ", ((ProcData*)node->data)->next);*/
 			printf("\n");
 		}
 		else{
@@ -516,15 +581,36 @@ int check_type(SyntaxTreeNode* node){
 		SyntaxTreeNode* node_SCALLSTAT_2 = node->child->brother->brother;
 		SyntaxTreeNode* node_SEXPRS_1_0;
 		SyntaxTreeNode* node_SEXPR;
+		ProcCallData* call_data = (ProcCallData*)node->data;
+		ProcData* proc_data = call_data->proc_data;
 		if(node_SCALLSTAT_2->parse_result == PARSERESULT_EMPTY){
 			/* just 0 argument */
 			node_SEXPRS_1_0 = NULL;
 		}
 		else{
-			SyntaxTreeNode* node_SEXPRS_1 =
-					node_SCALLSTAT_2->child->child->brother->child->brother;
+			int match = 1;
+			SyntaxTreeNode* node_SEXPR = node_SCALLSTAT_2->child->child->brother->child;
+			SyntaxTreeNode* node_SEXPRS_1 = node_SEXPR->brother;
+			VarData* param_data;
+			VarDecData* param_dec_data;
 
 			/* try first argument */
+			param_data = proc_data->var_data_head;
+			param_dec_data = (VarDecData*)param_data->data;
+			if(param_data == NULL || param_dec_data->is_param == 0){
+				printf("error : line %d call statement has too few arguments\n", 
+						call_data->line);
+				return 0;
+			}
+			if(!check_type(node_SEXPR)){
+				printf("error at EXPR\n");
+				return 0;
+			}
+			if(param_dec_data->type.stdtype != ((Type*)node_SEXPR->data)->stdtype ||
+					param_dec_data->type.array_size != ((Type*)node_SEXPR->data)->array_size){
+				printf("error : line %d type of call statement argument is wrong\n",
+						call_data->line);
+			}
 
 			if(node_SEXPRS_1->parse_result == PARSERESULT_EMPTY){
 				/* just 1 argument */
@@ -534,11 +620,11 @@ int check_type(SyntaxTreeNode* node){
 				/* 2 or more augments */
 				node_SEXPRS_1_0 = node_SEXPRS_1->child;
 			}
-			while(0 && node_SEXPRS_1_0 != NULL){
-					
+
+			while(node_SEXPRS_1_0 == NULL){
+				break;
 			}
 		}
-
 
 		break;
 
@@ -583,7 +669,6 @@ int check_type(SyntaxTreeNode* node){
 			node_SVAR_type = (Type*)node->data;
 			node_SVAR_type->stdtype = var_dec_data->type.stdtype;
 			node_SVAR_type->array_size = 0;
-			printf("svar (array) ok\n");
 			return 1;
 		}
 		/* reference statement looks like NOT-array */
@@ -600,7 +685,6 @@ int check_type(SyntaxTreeNode* node){
 			node_SVAR_type = (Type*)node->data;
 			node_SVAR_type->stdtype = var_dec_data->type.stdtype;
 			node_SVAR_type->array_size = 0;
-			printf("svar (not array) ok\n");
 			return 1;
 		}
 	}
@@ -953,14 +1037,13 @@ int main(int nc, char *np[]){
 		return -1;
 	}
 
-	fill_node_data(node_SPROGRAM);
+	fill_node_data_prepare(node_SPROGRAM);
 
-	if(!fill_var_data(node_SPROGRAM, NULL, NULL)){
+	if(!fill_node_data(node_SPROGRAM, NULL, NULL)){
 		free_tree(node_SPROGRAM);
 		end_scan();
 		return -1;
 	}
-
 
 	debug_tree(node_SPROGRAM);
 
