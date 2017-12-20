@@ -1,7 +1,7 @@
 #include "pretty-printer.h"
 
 typedef struct Type_{
-	int stdtype;
+	int stdtype; /* TINTEGER or TSTRING or TBOOLEAN */
 	int array_size;
 } Type;
 
@@ -78,12 +78,8 @@ typedef struct ProgramData_{
 	ProcData *proc_data_tail;
 } ProgData;
 
-#define TYPE_INTEGER	TINTEGER
-#define TYPE_STRING		TSTRING
-#define TYPE_NUMBER		TNUMBER
 
-#define CHECKTYPERESULT_NOTMATCH 0
-#define CHECKTYPERESULT_MATCH 1
-#define CHECKTYPERESULT_IGNORED 2
-void list_name(SyntaxTreeNode *node);
-int check_type(SyntaxTreeNode *node);
+/* nodedata.c */
+void fill_node_data_prepare(SyntaxTreeNode* node);
+int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNode* global);
+int check_type(SyntaxTreeNode* node);

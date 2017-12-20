@@ -7,7 +7,7 @@ procedure hogeproc1(hoge1, piyo, huga : integer);
 	begin hoge1 := 1; end;
 procedure hogeproc2;
 	var hoge6 : integer;
-	begin writeln; end;
+	begin writeln(hoge6); end;
 begin
-	writeln(hoge2);
+
 end.
