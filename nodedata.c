@@ -91,7 +91,6 @@ void fill_node_data_prepare(SyntaxTreeNode* node){
 			var_dec_data->type.array_size = ((Type*) type)->array_size;
 		}
 
-
 		fill_node_data_prepare(node->child);
 		break;
 	}

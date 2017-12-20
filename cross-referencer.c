@@ -27,16 +27,16 @@ int main(int nc, char *np[]){
 	}
 
 	fill_node_data_prepare(node_SPROGRAM);
+	
+	debug_tree(node_SPROGRAM);
+
+	debug_variable(node_SPROGRAM);
 
 	if(!fill_node_data(node_SPROGRAM, NULL, NULL)){
 		free_tree(node_SPROGRAM);
 		end_scan();
 		return -1;
 	}
-
-	debug_tree(node_SPROGRAM);
-
-	debug_variable(node_SPROGRAM);
 
 	if(!check_type(node_SPROGRAM)){
 		printf("error found.\n");
