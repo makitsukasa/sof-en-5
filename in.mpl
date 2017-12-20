@@ -1,31 +1,23 @@
-program typeconv;
- var i : integer; b : boolean; c : char;
+program sample31p;
+var a : integer;
+procedure p(a : char);
 begin
-  i := integer(false);
-  while i <= integer(true) do begin
-    writeln( boolean(i), ' : ', i);
-    i := i + 1;
-  end;
-  writeln;
-  i := integer(' ');
-  while i < 127 do begin
-    if i div 16 * 16 = i then writeln;
-    write(char(i), ' ');
-    i := i + 1;
-  end;
-  writeln
-end.
-  
-program hogeprog;
-var
-	hoge1, piyo : char;
-	hoge2, piyo2 : array[7] of integer;
-procedure hogeproc1(hoge1, piyo, huga : integer);
-	var hoge4 : integer;
-	begin hoge1 := 1; end;
-procedure hogeproc2;
-	var hoge6 : integer;
-	begin writeln(hoge6); end;
+	writeln('proc of p');
+	a := 'a'
+end;
+var b : char;
+procedure q(b:integer);
+  var a : boolean;
+      q : integer;
 begin
-
+	writeln('proc of q');
+	readln(q);
+	a := b = q;
+	if a then writeln('true') else writeln('false')
+end;
+var c : integer;
+begin
+	a := 1;		b := 'b';
+	call p(b);
+	call q(a);call q(2*a+1)
 end.

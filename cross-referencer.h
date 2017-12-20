@@ -21,8 +21,9 @@ typedef struct VarDecData_{
 	Type type;
 	int is_param;
 	int line;
-	struct VarRef_* ref_head;
-	struct VarRef_* ref_tail;
+	int line_pretty_printed;
+	struct VarData_* ref_head;
+	struct VarData_* ref_tail;
 }VarDecData;
 
 typedef struct VarRefData_{
@@ -64,6 +65,7 @@ typedef struct VarRef_{
 typedef struct ProcedureData_{
 	char name[MAXSTRSIZE];
 	int defined_line;
+	int define_finished_line_pretty_printed;
 	VarData *var_data_head;
 	VarData *var_data_tail;
 	struct ProcedureData_ *next;

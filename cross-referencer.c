@@ -1,5 +1,9 @@
 #include "cross-referencer.h"
 
+int print_cross_referencer(SyntaxTreeNode* node){
+	
+}
+
 int main(int nc, char *np[]){
 	SyntaxTreeNode *node_SPROGRAM;
 
@@ -26,17 +30,22 @@ int main(int nc, char *np[]){
 		return -1;
 	}
 
-	fill_node_data_prepare(node_SPROGRAM);
-	
-	debug_tree(node_SPROGRAM);
+	decide_printed_line_num_tree(node_SPROGRAM);
 
-	debug_variable(node_SPROGRAM);
+	fill_node_data_prepare(node_SPROGRAM);
 
 	if(!fill_node_data(node_SPROGRAM, NULL, NULL)){
+		debug_tree(node_SPROGRAM);
+
+		debug_variable(node_SPROGRAM);
 		free_tree(node_SPROGRAM);
 		end_scan();
 		return -1;
 	}
+
+	debug_tree(node_SPROGRAM);
+
+	debug_variable(node_SPROGRAM);
 
 	if(!check_type(node_SPROGRAM)){
 		printf("error found.\n");

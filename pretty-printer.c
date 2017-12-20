@@ -24,6 +24,7 @@ const char* SYNTAXDIC[NUMOFSYNTAX + 1] = {
 };
 
 int is_head_of_line;
+int line_num_pretty_printed;
 
 SyntaxTreeNode* malloc_tree_node(){
 	SyntaxTreeNode *node = malloc(sizeof(SyntaxTreeNode));
@@ -57,6 +58,7 @@ void print_tree_node(SyntaxTreeNode* node){
 	printf("%9p ", node);
 	printf("%16s ", SYNTAXDIC[node->s_elem_it]);
 	printf("l%3d ", node->line_num);
+	printf("rl%3d ", node->line_num_pretty_printed);
 	printf("d%d ", node->indent_depth);
 	printf("w%d ", node->iter_depth);
 	printf("%s ", node->parse_result == PARSERESULT_MATCH ? "T" : 
@@ -216,7 +218,48 @@ void preformat_tree(SyntaxTreeNode* parent, SyntaxTreeNode* this, int indent_dep
 		node = node->brother;
 	}
 }
+#endif
 
+void decide_printed_line_num_tree(SyntaxTreeNode* node){
+	if(node == NULL) return;
+
+	if(node->s_elem_it == TPROGRAM) {
+		is_head_of_line = 0;
+		line_num_pretty_printed = 1;
+		node->line_num_pretty_printed = line_num_pretty_printed;
+		decide_printed_line_num_tree(node->child);
+		decide_printed_line_num_tree(node->brother);
+		return;
+	}
+
+	if(node->parse_result != PARSERESULT_MATCH || node->s_elem_it > NUMOFTOKEN){
+		node->line_num_pretty_printed = line_num_pretty_printed;
+		decide_printed_line_num_tree(node->child);
+		decide_printed_line_num_tree(node->brother);
+		return;
+	}
+
+	if(node->s_elem_it == TEND || node->s_elem_it == TELSE){
+		is_head_of_line = 1;
+	}
+
+	if(is_head_of_line){
+		line_num_pretty_printed++;
+		is_head_of_line = 0;
+	}
+
+	node->line_num_pretty_printed = line_num_pretty_printed;
+
+	if(node->s_elem_it == TSEMI || node->s_elem_it == TBEGIN ||
+		node->s_elem_it == TDO || node->s_elem_it == TTHEN || 
+		node->s_elem_it == TELSE || node->s_elem_it == TVAR){
+		is_head_of_line = 1;
+	}
+
+	decide_printed_line_num_tree(node->child);
+	decide_printed_line_num_tree(node->brother);
+}
+#if 0
 void print_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 

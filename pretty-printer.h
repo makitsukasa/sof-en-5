@@ -101,6 +101,7 @@ typedef struct SyntaxTreeNode_{
 	int indent_depth;
 	int iter_depth;
 	int line_num;
+	int line_num_pretty_printed;
 	int parse_result;
 	void* data;
 	struct SyntaxTreeNode_* parent;

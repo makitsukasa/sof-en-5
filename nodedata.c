@@ -25,6 +25,9 @@ void fill_node_data_prepare(SyntaxTreeNode* node){
 		node->data = calloc(1, sizeof(ProcData));
 		
 		((ProcData*)node->data)->defined_line = node->line_num;
+		/* TPROCEDURE, SPROCEDURENAME, SSUBPROGDEC_2, TSEMI, SSUBPROGDEC_4, SCOMPSTAT, TSEMI*/
+		((ProcData*)node->data)->define_finished_line_pretty_printed =
+			node->child->brother->brother->brother->brother->brother->brother->line_num_pretty_printed;
 		strcpy(((ProcData*)node->data)->name, node->child->brother->child->string_attr);
 
 		fill_node_data_prepare(node->child);
@@ -66,6 +69,7 @@ void fill_node_data_prepare(SyntaxTreeNode* node){
 		strcpy(var_dec_data->name, node_SVARNAME->child->string_attr);
 		var_dec_data->is_param = is_param;
 		var_dec_data->line = node_SVARNAME->line_num;
+		var_dec_data->line_pretty_printed = node_SVARNAME->line_num_pretty_printed;
 		var_dec_data->type.stdtype = ((Type*) type)->stdtype;
 		var_dec_data->type.array_size = ((Type*) type)->array_size;
 
@@ -87,11 +91,13 @@ void fill_node_data_prepare(SyntaxTreeNode* node){
 			strcpy(var_dec_data->name, node_SVARNAME->child->string_attr);
 			var_dec_data->is_param = is_param;
 			var_dec_data->line = node_SVARNAME->line_num;
+			var_dec_data->line_pretty_printed = node_SVARNAME->line_num_pretty_printed;
 			var_dec_data->type.stdtype = ((Type*) type)->stdtype;
 			var_dec_data->type.array_size = ((Type*) type)->array_size;
 		}
 
 		fill_node_data_prepare(node->child);
+		fill_node_data_prepare(node->brother);
 		break;
 	}
 
@@ -200,12 +206,28 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 					if(strcmp(var_name, var_dec_data->name) == 0){
 						VarRefData* var_ref_data;
 						/*printf("namespace : procedure %s\n", ((ProcData*)namespace->data)->name);*/
+
+						if(node->line_num_pretty_printed < var_dec_data->line_pretty_printed){
+							printf("error : line %d reference to %s before declare\n", 
+									node->line_num, var_name);
+							return 0;
+						}
+
 						node->data = malloc(sizeof(VarData));
 						((VarData*)node->data)->is_declaration = 0;
 						((VarData*)node->data)->data = malloc(sizeof(VarRefData));
 						var_ref_data = ((VarData*)node->data)->data;
 						var_ref_data->line = node->child->line_num;
 						var_ref_data->data = var_data;
+
+						if(var_dec_data->ref_head == NULL){
+							var_dec_data->ref_head = (VarData*)node->data;
+							var_dec_data->ref_tail = var_dec_data->ref_head;
+						}
+						else{
+							var_dec_data->ref_tail->next = (VarData*)node->data;
+							var_dec_data->ref_tail = var_dec_data->ref_tail->next;
+						}
 						break;
 					}
 					var_data = var_data->next;
@@ -215,7 +237,7 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 					break;
 				}
 
-				/* fall through and check global */
+				/* fall through and check global variables */
 
 			case SPROGRAM:
 				var_data = ((ProgData*)global->data)->var_data_head;
@@ -225,6 +247,13 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 					if(strcmp(var_name, var_dec_data->name) == 0){
 						VarRefData* var_ref_data;
 						/*printf("namespace : global\n");*/
+
+						if(node->line_num_pretty_printed < var_dec_data->line_pretty_printed){
+							printf("error : line %d reference to %s before declare\n", 
+									node->line_num, var_name);
+							return 0;
+						}
+						
 						node->data = malloc(sizeof(VarData));
 						((VarData*)node->data)->is_declaration = 0;
 						((VarData*)node->data)->data = malloc(sizeof(VarRefData));
@@ -334,6 +363,12 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 		if(!matched){
 			printf("line %d : undefined reference to procedure \"%s\"\n",
 					call_data->line, call_name);
+			return 0;
+		}
+
+		if(node->line_num_pretty_printed < proc_data->define_finished_line_pretty_printed){
+			printf("error : line %d reference to procedure \"%s\" before declare\n", 
+					node->line_num, call_name);
 			return 0;
 		}
 
@@ -584,7 +619,7 @@ int check_type(SyntaxTreeNode* node){
 		/* just 0 argument */
 		if(node_SCALLSTAT_2->parse_result == PARSERESULT_EMPTY){
 			VarData* param_data = proc_data->var_data_head;
-			VarDecData* param_dec_data = (VarDecData*)param_data->data;
+			VarDecData* param_dec_data = param_data == NULL ? NULL : (VarDecData*)param_data->data;
 			node_SEXPRS_1_0 = NULL;
 			if(param_data != NULL && param_dec_data->is_param == 1){
 				printf("error : line %d call statement has too few arguments\n", 
@@ -605,12 +640,12 @@ int check_type(SyntaxTreeNode* node){
 
 			/* try first argument */
 			param_data = proc_data->var_data_head;
-			param_dec_data = (VarDecData*)param_data->data;
-			if(param_data == NULL || param_dec_data->is_param == 0){
+			if(param_data == NULL || ((VarDecData*)param_data->data)->is_param == 0){
 				printf("error : line %d call statement has too many arguments\n", 
 						call_data->line);
 				return 0;
 			}
+			param_dec_data = (VarDecData*)param_data->data;
 			if(!check_type(node_SEXPR)){
 				printf("\t in EXPR\n");
 				return 0;
@@ -660,8 +695,7 @@ int check_type(SyntaxTreeNode* node){
 
 			/* no more argument but yes more param */
 			param_data = param_data->next;
-			param_dec_data = (VarDecData*)param_data->data;
-			if(param_data != NULL && param_dec_data->is_param == 1){
+			if(param_data != NULL && ((VarDecData*)param_data->data)->is_param == 1){
 				printf("error : line %d call statement has too few arguments\n", 
 						call_data->line);
 				return 0;
@@ -772,10 +806,16 @@ int check_type(SyntaxTreeNode* node){
 			node_SSIMPLEEXPR_type = (Type*)node_SEXPR_1_0->child->brother->data;
 			if(type->stdtype != node_SSIMPLEEXPR_type->stdtype ||
 					 type->array_size != 0 || node_SSIMPLEEXPR_type->array_size != 0){
-				printf("error : operand type of operator \"%s\"\n",
+				printf("error : line %d operand type of operator \"%s\"\n",
+						node->line_num,
 						SYNTAXDIC[node_rel_op->s_elem_it]);
+				printf("%d-%d %d-%d\n", type->stdtype, type->array_size,
+					node_SSIMPLEEXPR_type->stdtype, node_SSIMPLEEXPR_type->array_size);
 				return 0;
 			}
+
+			type->stdtype = TBOOLEAN;
+			type->array_size = 0;
 
 			node_SEXPR_1_0 = node_SEXPR_1_0->brother;
 		}
@@ -989,23 +1029,34 @@ int check_type(SyntaxTreeNode* node){
 		/* SFACTOR_4
 		 *  L> SSTDTYPE -> TLPAREN -> SEXPR -> TRPAREN
 		 */
-		SyntaxTreeNode* child = node->child->brother;
-		if(check_type(child)){
-			Type* type;
-			node->data = malloc(sizeof(Type));
-			type = (Type*)node->data;
-			type->stdtype = ((Type*)child->data)->stdtype;
-			type->array_size = ((Type*)child->data)->array_size;
-			if(type->stdtype == TBOOLEAN && type->array_size == 0){
-				return 1;
-			}
-			printf("error : boolean value required after \"not\" token \n");
+		SyntaxTreeNode* node_SEXPR = node->child->brother->brother;
+		SyntaxTreeNode* node_Tstdtype = node->child->child;
+		Type* node_SEXPR_type;
+		Type* type;
+		if(!check_type(node_SEXPR)){
+			printf("\t in EXPR\n");
 			return 0;
+		}
+		node_SEXPR_type = (Type*)node_SEXPR->data;
 
+		node->data = malloc(sizeof(Type));
+		type = (Type*)node->data;
+
+		if(node_SEXPR_type->array_size != 0){
+			printf("error : line %d type conversion statement has array\n",
+					node->line_num);
+			return 0;
 		}
 
-		printf("\t in STDTYPE(EXPR)\n");
-		return 0;
+		while(node_Tstdtype->parse_result != PARSERESULT_MATCH){
+			node_Tstdtype = node_Tstdtype->brother;
+		}
+
+		type->stdtype = node_Tstdtype->s_elem_it;
+		type->array_size = 0;
+
+		return 1;
+
 	}
 
 	case SINSTAT_1_0:{
@@ -1023,7 +1074,7 @@ int check_type(SyntaxTreeNode* node){
 			return 0;
 		}
 		child_type = (Type*)node_SVAR->data;
-		if(child_type->stdtype == TCHAR || child_type->array_size != 0){
+		if(child_type->stdtype == TBOOLEAN || child_type->array_size != 0){
 			printf("error line %d augment type of read statement is wrong\n",
 					node->child->line_num);
 			return 0;
@@ -1037,7 +1088,7 @@ int check_type(SyntaxTreeNode* node){
 				return 0;
 			}
 			child_type = (Type*)node_SVAR->data;
-			if(child_type->stdtype == TCHAR || child_type->array_size != 0){
+			if(child_type->stdtype == TBOOLEAN || child_type->array_size != 0){
 				printf("error line %d augment type of read statement is wrong\n",
 						node->child->line_num);
 				return 0;
