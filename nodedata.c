@@ -12,7 +12,7 @@ void fill_node_data_prepare(SyntaxTreeNode* node){
 
 	switch(node->s_elem_it){
 	case SPROGRAM:
-		node->data = calloc(1, sizeof(ProgData));
+		node->data = mem_alloc(sizeof(ProgData));
 
 		((ProgData*)node->data)->defined_line = node->line_num;
 		strcpy(((ProgData*)node->data)->name, node->child->brother->string_attr);
@@ -22,7 +22,7 @@ void fill_node_data_prepare(SyntaxTreeNode* node){
 		break;
 
 	case SSUBPROGDEC:
-		node->data = calloc(1, sizeof(ProcData));
+		node->data = mem_alloc(sizeof(ProcData));
 		
 		((ProcData*)node->data)->defined_line = node->line_num;
 		/* TPROCEDURE, SPROCEDURENAME, SSUBPROGDEC_2, TSEMI, SSUBPROGDEC_4, SCOMPSTAT, TSEMI*/
@@ -62,9 +62,9 @@ void fill_node_data_prepare(SyntaxTreeNode* node){
 			node_SVARNAME = node->child->child;
 		}
 
-		node_SVARNAME->data = calloc(1, sizeof(VarData));
+		node_SVARNAME->data = mem_alloc(sizeof(VarData));
 		((VarData*)node_SVARNAME->data)->is_declaration = 1;
-		((VarData*)node_SVARNAME->data)->data = calloc(1, sizeof(VarDecData));
+		((VarData*)node_SVARNAME->data)->data = mem_alloc(sizeof(VarDecData));
 		var_dec_data = (VarDecData*)((VarData*)node_SVARNAME->data)->data;
 		strcpy(var_dec_data->name, node_SVARNAME->child->string_attr);
 		var_dec_data->is_param = is_param;
@@ -84,9 +84,9 @@ void fill_node_data_prepare(SyntaxTreeNode* node){
 				node_SVARNAMES_1_0->parse_result == PARSERESULT_MATCH);
 				node_SVARNAMES_1_0 = node_SVARNAMES_1_0->brother){
 			SyntaxTreeNode *node_SVARNAME = node_SVARNAMES_1_0->child->brother;
-			node_SVARNAME->data = calloc(1, sizeof(VarData));
+			node_SVARNAME->data = mem_alloc(sizeof(VarData));
 			((VarData*)node_SVARNAME->data)->is_declaration = 1;
-			((VarData*)node_SVARNAME->data)->data = calloc(1, sizeof(VarDecData));
+			((VarData*)node_SVARNAME->data)->data = mem_alloc(sizeof(VarDecData));
 			var_dec_data = (VarDecData*)((VarData*)node_SVARNAME->data)->data;
 			strcpy(var_dec_data->name, node_SVARNAME->child->string_attr);
 			var_dec_data->is_param = is_param;
@@ -102,7 +102,7 @@ void fill_node_data_prepare(SyntaxTreeNode* node){
 	}
 
 	case STYPE:{
-		Type *type = calloc(1, sizeof(Type));
+		Type *type = mem_alloc(sizeof(Type));
 		SyntaxTreeNode *child = node->child;
 		SyntaxTreeNode *node_stdtype;
 		while(child->parse_result != PARSERESULT_MATCH){
@@ -125,7 +125,7 @@ void fill_node_data_prepare(SyntaxTreeNode* node){
 			type->stdtype = node_stdtype->s_elem_it;
 			type->array_size = atoi(child->child->brother->brother->string_attr);
 		}
-		node->data = (void*) type;
+		node->data = (void*)type;
 	}
 
 	default:
@@ -213,9 +213,9 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 							return 0;
 						}
 
-						node->data = malloc(sizeof(VarData));
+						node->data = mem_alloc(sizeof(VarData));
 						((VarData*)node->data)->is_declaration = 0;
-						((VarData*)node->data)->data = malloc(sizeof(VarRefData));
+						((VarData*)node->data)->data = mem_alloc(sizeof(VarRefData));
 						var_ref_data = ((VarData*)node->data)->data;
 						var_ref_data->line = node->child->line_num;
 						var_ref_data->data = var_data;
@@ -255,9 +255,9 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 							return 0;
 						}
 						
-						node->data = malloc(sizeof(VarData));
+						node->data = mem_alloc(sizeof(VarData));
 						((VarData*)node->data)->is_declaration = 0;
-						((VarData*)node->data)->data = malloc(sizeof(VarRefData));
+						((VarData*)node->data)->data = mem_alloc(sizeof(VarRefData));
 						var_ref_data = ((VarData*)node->data)->data;
 						var_ref_data->line = node->child->line_num;
 						var_ref_data->data = var_data;
@@ -358,7 +358,7 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 		ProcData* proc_data;
 		int matched = 0;
 
-		node->data = malloc(sizeof(ProcCallData));
+		node->data = mem_alloc(sizeof(ProcCallData));
 		call_data = (ProcCallData*)node->data;
 		call_data->line = node->child->line_num;
 
@@ -421,7 +421,7 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 		 */
 		ConstData* const_data;
 		SyntaxTreeNode* child = node->child;
-		node->data = malloc(sizeof(ConstData));
+		node->data = mem_alloc(sizeof(ConstData));
 		const_data = node->data;
 
 		while(child->parse_result != PARSERESULT_MATCH){
@@ -466,7 +466,7 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 	return (result_child && result_brother) ? 1 : 0;
 
 }
-
+#if 0
 void debug_variable(SyntaxTreeNode* node){
 
 	if(node == NULL) return;
@@ -559,6 +559,7 @@ void debug_variable(SyntaxTreeNode* node){
 	debug_variable(node->brother);
 
 }
+#endif
 
 int check_type(SyntaxTreeNode* node){
 	int result_child = 1;
@@ -735,20 +736,20 @@ int check_type(SyntaxTreeNode* node){
 	}
 
 	case SVAR:{
-		/* hoge[piyo] (array) */
+		/* pattern 1 hoge[piyo] */
 		/* SVAR
 		 *  L> SVARNAME -> SVAR_1
 		 *                  L> SVAR_1_0
 		 *                      L> TLSQPAREN -> (*)SEXPR -> TRSQPAREN
 		 */
 
-		/* hoge (not array) */
+		/* pattern 2 hoge */
 		/* SVAR
 		 *  L> SVARNAME -> SVAR_1
 		 *                  L> SVAR_1_0(EMPTY)
 		 */
 
-		/* reference statement looks like array */
+		/* pattern 1 */
 		if(node->child->brother->child->parse_result == PARSERESULT_MATCH){
 			VarDecData* var_dec_data = 
 				(VarDecData*)((VarData*)((VarRefData*)((VarData*)node->child->data)->data)->data)->data;
@@ -769,26 +770,22 @@ int check_type(SyntaxTreeNode* node){
 				printf("error : index of array is not an integer\n");
 				return 0;
 			}
-			node->data = malloc(sizeof(Type));
+			node->data = mem_alloc(sizeof(Type));
 			node_SVAR_type = (Type*)node->data;
 			node_SVAR_type->stdtype = var_dec_data->type.stdtype;
 			node_SVAR_type->array_size = 0;
 			return 1;
 		}
-		/* reference statement looks like NOT-array */
+		/* pattern 2 */
 		else/* if(node->child->brother->child->parse_result == PARSERESULT_EMPTY) */{
 			VarDecData* var_dec_data = 
 				(VarDecData*)((VarData*)((VarRefData*)((VarData*)node->child->data)->data)->data)->data;
 			Type* node_SVAR_type;
-			if(var_dec_data->type.array_size != 0){
-				printf("error : variable \"%s\" (defined at line %d) is array\n", 
-						var_dec_data->name, var_dec_data->line);
-				return 0;
-			}
-			node->data = malloc(sizeof(Type));
+
+			node->data = mem_alloc(sizeof(Type));
 			node_SVAR_type = (Type*)node->data;
 			node_SVAR_type->stdtype = var_dec_data->type.stdtype;
-			node_SVAR_type->array_size = 0;
+			node_SVAR_type->array_size = var_dec_data->type.array_size;
 			return 1;
 		}
 	}
@@ -805,8 +802,8 @@ int check_type(SyntaxTreeNode* node){
 		SyntaxTreeNode* node_SEXPR_1_0 = node->child->brother->child;
 		Type* type;
 
-		node->data = malloc(sizeof(Type));
-		type = (Type*) node->data;
+		node->data = mem_alloc(sizeof(Type));
+		type = (Type*)node->data;
 
 		if(!check_type(node_SSIMPLEEXPR)){
 			printf("\t in SIMPLEEXPR\n");
@@ -861,8 +858,8 @@ int check_type(SyntaxTreeNode* node){
 
 		/*printf("check_type SIMPLEEXPR %p\n", node);*/
 
-		node->data = malloc(sizeof(Type));
-		type = (Type*) node->data;
+		node->data = mem_alloc(sizeof(Type));
+		type = (Type*)node->data;
 
 		if(!check_type(node_STERM)){
 			printf("\t in TERM\n");
@@ -931,7 +928,7 @@ int check_type(SyntaxTreeNode* node){
 		SyntaxTreeNode* node_STERM_1_0 = node->child->brother->child;
 		Type* type;
 
-		node->data = malloc(sizeof(Type));
+		node->data = mem_alloc(sizeof(Type));
 		type = (Type*)node->data;
 
 		if(!check_type(node_SFACTOR)){
@@ -991,7 +988,7 @@ int check_type(SyntaxTreeNode* node){
 				continue;
 			}
 			if(child->s_elem_it == SCONST){
-				node->data = malloc(sizeof(Type));
+				node->data = mem_alloc(sizeof(Type));
 				((Type*)node->data)->stdtype = ((ConstData*)child->data)->type.stdtype;
 				((Type*)node->data)->array_size = ((ConstData*)child->data)->type.array_size;
 			}
@@ -1000,7 +997,7 @@ int check_type(SyntaxTreeNode* node){
 					printf("\t in %s\n", SYNTAXDIC[child->s_elem_it]);
 					return 0;
 				}
-				node->data = malloc(sizeof(Type));
+				node->data = mem_alloc(sizeof(Type));
 				((Type*)node->data)->stdtype = ((Type*)child->data)->stdtype;
 				((Type*)node->data)->array_size = ((Type*)child->data)->array_size;
 			}
@@ -1016,7 +1013,7 @@ int check_type(SyntaxTreeNode* node){
 		 */
 		SyntaxTreeNode* child = node->child->brother;
 		if(check_type(child)){
-			node->data = malloc(sizeof(Type));
+			node->data = mem_alloc(sizeof(Type));
 			((Type*)node->data)->stdtype = ((Type*)child->data)->stdtype;
 			((Type*)node->data)->array_size = ((Type*)child->data)->array_size;
 			return 1;
@@ -1033,7 +1030,7 @@ int check_type(SyntaxTreeNode* node){
 		SyntaxTreeNode* child = node->child->brother;
 		if(check_type(child)){
 			Type* type;
-			node->data = malloc(sizeof(Type));
+			node->data = mem_alloc(sizeof(Type));
 			type = (Type*)node->data;
 			type->stdtype = ((Type*)child->data)->stdtype;
 			type->array_size = ((Type*)child->data)->array_size;
@@ -1063,7 +1060,7 @@ int check_type(SyntaxTreeNode* node){
 		}
 		node_SEXPR_type = (Type*)node_SEXPR->data;
 
-		node->data = malloc(sizeof(Type));
+		node->data = mem_alloc(sizeof(Type));
 		type = (Type*)node->data;
 
 		if(node_SEXPR_type->array_size != 0){
@@ -1146,7 +1143,7 @@ int check_type(SyntaxTreeNode* node){
 
 		node_SEXPR_type = (Type*) node_SEXPR->data;
 		if(node_SEXPR_type->array_size != 0){
-			printf("error line %d augment type of write statement is must be not array\n",
+			printf("error line %d augment type of write statement is must not be an array\n",
 					node->child->line_num);
 			return 0;
 		}

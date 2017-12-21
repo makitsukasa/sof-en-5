@@ -10,13 +10,13 @@ typedef struct Lines_{
 	int linenum;
 	struct Lines_ *next;
 } Lines;
-
+/*
 typedef struct VarData_{
-	int is_declaration;
 	void* data;
+	int is_declaration;
 	struct VarData_ *next;
 }VarData;
-
+*/
 typedef struct VarDecData_{
 	char name[MAXSTRSIZE];
 	Type type;

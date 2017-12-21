@@ -1,7 +1,13 @@
 #include "cross-referencer.h"
 
 void* mem_alloc(size_t size){
-	return calloc(1, size);
+	void* mem;
+	mem = calloc(1, size);
+	if(mem == NULL){
+		printf("error i could not malloc\n");
+		exit(-1);
+	}
+	return mem;
 }
 
 CrossRefRecord* list_cross_referencer(SyntaxTreeNode* node, CrossRefRecord* record_tail){
@@ -45,9 +51,17 @@ CrossRefRecord* list_cross_referencer(SyntaxTreeNode* node, CrossRefRecord* reco
 				param_data_loop->is_declaration == 1 &&
 				((VarDecData*)param_data_loop->data)->is_param == 1;
 				param_data_loop = param_data_loop->next){
-			sprintf(new_record->type, "%s%s,",
-					new_record->type,
-					SYNTAXDIC[((VarDecData*)param_data_loop->data)->type.stdtype]);
+			if(((VarDecData*)param_data_loop->data)->type.array_size == 0){
+				sprintf(new_record->type, "%s%s,",
+						new_record->type,
+						SYNTAXDIC[((VarDecData*)param_data_loop->data)->type.stdtype]);
+			}
+			else{
+				sprintf(new_record->type, "%sarray[%d] of %s,",
+						new_record->type,
+						((VarDecData*)param_data_loop->data)->type.array_size,
+						SYNTAXDIC[((VarDecData*)param_data_loop->data)->type.stdtype]);
+			}
 		}
 		if(new_record->type[strlen(new_record->type) - 1] == '('){
 			new_record->type[strlen(new_record->type) - 1] = '\0';
@@ -95,7 +109,14 @@ CrossRefRecord* list_cross_referencer(SyntaxTreeNode* node, CrossRefRecord* reco
 
 		strcpy(new_record->name, var_dec_data->name);
 
-		strcpy(new_record->type, SYNTAXDIC[var_dec_data->type.stdtype]);
+		if(var_dec_data->type.array_size == 0){
+			strcpy(new_record->type, SYNTAXDIC[var_dec_data->type.stdtype]);
+		}
+		else{
+			sprintf(new_record->type, "array[%d] of %s", 
+				var_dec_data->type.array_size,
+				SYNTAXDIC[var_dec_data->type.stdtype]);	
+		}
 
 		sprintf(buf, "%d", var_dec_data->line);
 		strcpy(new_record->def, buf);
@@ -153,6 +174,13 @@ void print_cross_referencer(CrossRefRecord* record){
 	print_cross_referencer(record->next);
 }
 
+
+void free_cross_referencer(CrossRefRecord* record){
+	if(record == NULL) return;
+	free_cross_referencer(record->next);
+	free(record);
+}
+
 int main(int nc, char *np[]){
 	SyntaxTreeNode *node_SPROGRAM;
 	CrossRefRecord *record_head;
@@ -208,8 +236,12 @@ int main(int nc, char *np[]){
 
 	print_cross_referencer(record_head);
 
+	free_cross_referencer(record_head);
+
+
 	free_tree(node_SPROGRAM);
 	end_scan();
+
 
 	return 0;
 }

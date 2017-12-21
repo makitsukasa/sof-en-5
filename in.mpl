@@ -21,12 +21,16 @@ procedure proc1(c : char);
 		read(c, i);
 		writeln;
 		writeln('asfadf');
-		writeln(c:3, i);
+		writeln(c:3);
 	end;
 
 procedure proc2(c1, c2, c3 : char);
 	begin
-		if not (boolean(c2)) then writeln(c3);
+		if not (boolean(c1)) then writeln(c1);
+	end;
+
+procedure proca(a : array[100] of char);
+	begin
 	end;
 
 begin
@@ -36,4 +40,5 @@ begin
 	call proc0;
 	call proc1(c);
 	call proc2(a[1], a[i], a[1 + 3 * 3]);
+	call proca(a);
 end.

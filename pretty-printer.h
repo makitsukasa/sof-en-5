@@ -109,6 +109,12 @@ typedef struct SyntaxTreeNode_{
 	struct SyntaxTreeNode_* child;
 } SyntaxTreeNode;
 
+typedef struct VarData_{
+	void* data;
+	int is_declaration;
+	struct VarData_ *next;
+}VarData;
+
 #define SELEMOP_ALL_OF			1
 #define SELEMOP_ONE_OF			2
 #define SELEMOP_ZERO_OR_MORE	3

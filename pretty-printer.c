@@ -37,6 +37,7 @@ SyntaxTreeNode* malloc_tree_node(){
 	node->brother = NULL;
 	node->child = NULL;
 
+
 	return node;
 }
 
@@ -44,6 +45,10 @@ void free_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
 	if(node->data != NULL){
+		if(node->s_elem_it == SVARNAME && ((VarData*)node->data)->data != NULL){
+			free(((VarData*)node->data)->data);
+		}
+
 		free(node->data);
 	}
 
@@ -51,8 +56,8 @@ void free_tree(SyntaxTreeNode* node){
 	free_tree(node->brother);
 
 	free(node);
-	node = NULL;
 }
+
 #if 1
 void print_tree_node(SyntaxTreeNode* node){
 	printf("%9p ", node);
