@@ -1,4 +1,5 @@
 #include "pretty-printer.h"
+#include <stddef.h>
 
 typedef struct Type_{
 	int stdtype; /* TINTEGER or TSTRING or TBOOLEAN */
@@ -22,6 +23,7 @@ typedef struct VarDecData_{
 	int is_param;
 	int line;
 	int line_pretty_printed;
+	struct ProcedureData_* namespace;
 	struct VarData_* ref_head;
 	struct VarData_* ref_tail;
 }VarDecData;
@@ -34,6 +36,7 @@ typedef struct VarRefData_{
 typedef struct ProcCallData_{
 	struct ProcedureData_* proc_data;
 	int line;
+	struct ProcCallData_* next;
 } ProcCallData;
 
 typedef struct ConstData_{
@@ -42,32 +45,14 @@ typedef struct ConstData_{
 	int val;
 } ConstData;
 
-/*
-typedef struct VarData_{
-	char name[MAXSTRSIZE];
-	Type type;
-	int is_param;
-	int defined_line;
-	Lines *referenced_line_head;
-	Lines *referenced_line_tail;
-	struct VarRef_* ref_head;
-	struct VarRef_* ref_tail;
-	struct VarData_ *next;
-} VarData;
-
-typedef struct VarRef_{
-	VarData* var_data;
-	int linenum;
-} VarRef;
-
-*/
-
 typedef struct ProcedureData_{
 	char name[MAXSTRSIZE];
 	int defined_line;
 	int define_finished_line_pretty_printed;
 	VarData *var_data_head;
 	VarData *var_data_tail;
+	ProcCallData *ref_head;
+	ProcCallData *ref_tail;
 	struct ProcedureData_ *next;
 } ProcData;
 
@@ -80,8 +65,19 @@ typedef struct ProgramData_{
 	ProcData *proc_data_tail;
 } ProgData;
 
+typedef struct CrossRefRecord_{
+	int is_head;
+	char namespace[MAXSTRSIZE];
+	char name[MAXSTRSIZE];
+	char type[MAXSTRSIZE];
+	char def[MAXSTRSIZE];
+	char ref[MAXSTRSIZE];
+	struct CrossRefRecord_* next;
+} CrossRefRecord;
+
+extern void* mem_alloc(size_t size);
 
 /* nodedata.c */
-void fill_node_data_prepare(SyntaxTreeNode* node);
-int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNode* global);
-int check_type(SyntaxTreeNode* node);
+extern void fill_node_data_prepare(SyntaxTreeNode* node);
+extern int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNode* global);
+extern int check_type(SyntaxTreeNode* node);

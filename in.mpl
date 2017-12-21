@@ -1,23 +1,39 @@
-program sample31p;
-var a : integer;
-procedure p(a : char);
+program test;
+var
+	i : integer;
+	a : array[100] of char;
+	c : char;
+	b, b2 : boolean;
+
+procedure proc0;
+	var x, y : integer;
+	begin
+		if x = 1 then a := 'a';
+		if x > 2 then a := 'b' else a := 'c';
+		if true or false and true then a := 'd';
+		while x > 0 do x := x - 1
+	end;
+
+procedure proc1(c : char);
+	begin
+		readln;
+		read(c);
+		read(c, i);
+		writeln;
+		writeln('asfadf');
+		writeln(c:3, i);
+	end;
+
+procedure proc2(c1, c2, c3 : char);
+	begin
+		if not (boolean(c2)) then writeln(c3);
+	end;
+
 begin
-	writeln('proc of p');
-	a := 'a'
-end;
-var b : char;
-procedure q(b:integer);
-  var a : boolean;
-      q : integer;
-begin
-	writeln('proc of q');
-	readln(q);
-	a := b = q;
-	if a then writeln('true') else writeln('false')
-end;
-var c : integer;
-begin
-	a := 1;		b := 'b';
-	call p(b);
-	call q(a);call q(2*a+1)
+	call proc0;
+	call proc0;
+	call proc0;
+	call proc0;
+	call proc1(c);
+	call proc2(a[1], a[i], a[1 + 3 * 3]);
 end.

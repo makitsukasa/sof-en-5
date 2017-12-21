@@ -1,5 +1,5 @@
 IN=in.mpl
-F=scan
+F=nodedata
 
 all: a.out
 

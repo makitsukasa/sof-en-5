@@ -222,12 +222,13 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 
 						if(var_dec_data->ref_head == NULL){
 							var_dec_data->ref_head = (VarData*)node->data;
-							var_dec_data->ref_tail = var_dec_data->ref_head;
+							var_dec_data->ref_tail = (VarData*)node->data;
 						}
 						else{
 							var_dec_data->ref_tail->next = (VarData*)node->data;
-							var_dec_data->ref_tail = var_dec_data->ref_tail->next;
+							var_dec_data->ref_tail = (VarData*)node->data;
 						}
+
 						break;
 					}
 					var_data = var_data->next;
@@ -260,6 +261,15 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 						var_ref_data = ((VarData*)node->data)->data;
 						var_ref_data->line = node->child->line_num;
 						var_ref_data->data = var_data;
+						
+						if(var_dec_data->ref_head == NULL){
+							var_dec_data->ref_head = (VarData*)node->data;
+							var_dec_data->ref_tail = (VarData*)node->data;
+						}
+						else{
+							var_dec_data->ref_tail->next = (VarData*)node->data;
+							var_dec_data->ref_tail = (VarData*)node->data;
+						}
 
 						break;
 					}
@@ -282,6 +292,7 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 		else{
 			VarData *var_data;
 			VarData *var_data_tail;
+			VarDecData* var_dec_data = (VarDecData*)((VarData*)node->data)->data;
 			if(namespace->s_elem_it == SPROGRAM){
 				ProgData *prog_data = (ProgData*)namespace->data;
 				if(prog_data->var_data_tail == NULL){
@@ -294,6 +305,8 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 				}
 				var_data = prog_data->var_data_head;
 				var_data_tail = prog_data->var_data_tail;
+
+				var_dec_data->namespace = NULL;
 			}
 			else/* if(namespace->s_elem_it == SSUBPROGDEC) */{
 				ProcData *proc_data = (ProcData*)namespace->data;
@@ -307,6 +320,8 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 				}
 				var_data = proc_data->var_data_head;
 				var_data_tail = proc_data->var_data_tail;
+
+				var_dec_data->namespace = proc_data;
 			}
 
 			while(var_data != NULL && var_data != var_data_tail){
@@ -373,6 +388,14 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 		}
 
 		call_data->proc_data = proc_data;
+		if(proc_data->ref_head == NULL){
+			proc_data->ref_head = call_data;
+			proc_data->ref_tail = call_data;
+		}
+		else{
+			proc_data->ref_tail->next = call_data;
+			proc_data->ref_tail = call_data;
+		}
 
 		node_SCALLSTAT_2 = node->child->brother->brother;
 		if(node_SCALLSTAT_2->parse_result == PARSERESULT_EMPTY){
@@ -534,6 +557,7 @@ void debug_variable(SyntaxTreeNode* node){
 	}
 	debug_variable(node->child);
 	debug_variable(node->brother);
+
 }
 
 int check_type(SyntaxTreeNode* node){
@@ -809,8 +833,8 @@ int check_type(SyntaxTreeNode* node){
 				printf("error : line %d operand type of operator \"%s\"\n",
 						node->line_num,
 						SYNTAXDIC[node_rel_op->s_elem_it]);
-				printf("%d-%d %d-%d\n", type->stdtype, type->array_size,
-					node_SSIMPLEEXPR_type->stdtype, node_SSIMPLEEXPR_type->array_size);
+				/*printf("%d-%d %d-%d\n", type->stdtype, type->array_size,
+					node_SSIMPLEEXPR_type->stdtype, node_SSIMPLEEXPR_type->array_size);*/
 				return 0;
 			}
 
@@ -861,7 +885,7 @@ int check_type(SyntaxTreeNode* node){
 			while(node_add_op->parse_result != PARSERESULT_MATCH){
 				node_add_op = node_add_op->brother;
 			}
-			if(node_add_op->s_elem_it == TAND){
+			if(node_add_op->s_elem_it == TOR){
 				required_type = TBOOLEAN;
 			}
 			/*
@@ -874,18 +898,18 @@ int check_type(SyntaxTreeNode* node){
 			*/
 			node_SFACTOR_type = (Type*)node_SSIMPLEEXPR_2_0->child->brother->data;
 
-			node_SFACTOR_type = (Type*)node_SSIMPLEEXPR_2_0->child->brother->data;
-			if(type->stdtype != required_type || type-> array_size != 0){
+			if(type->stdtype != required_type || type->array_size != 0){
 				printf("error : left operand type of operator \"%s\"\n",
 						SYNTAXDIC[node_add_op->s_elem_it]);
-				fflush(stdout);
+				printf("%s\n", SYNTAXDIC[type->stdtype]);
+				printf("%d\n", type->array_size);
+				printf("%s\n", SYNTAXDIC[required_type]);
 				return 0;
 			}
 			if(node_SFACTOR_type->stdtype != required_type ||
-					node_SFACTOR_type-> array_size != 0){
+					node_SFACTOR_type->array_size != 0){
 				printf("error : right operand type of operator \"%s\"\n",
 						SYNTAXDIC[node_add_op->s_elem_it]);
-				fflush(stdout);
 				return 0;
 			}
 
