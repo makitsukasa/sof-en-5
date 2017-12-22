@@ -26,8 +26,8 @@ void fill_node_data_prepare(SyntaxTreeNode* node){
 		
 		((ProcData*)node->data)->defined_line = node->line_num;
 		/* TPROCEDURE, SPROCEDURENAME, SSUBPROGDEC_2, TSEMI, SSUBPROGDEC_4, SCOMPSTAT, TSEMI*/
-		((ProcData*)node->data)->define_finished_line_pretty_printed =
-			node->child->brother->brother->brother->brother->brother->brother->line_num_pretty_printed;
+		/*((ProcData*)node->data)->define_finished_line_pretty_printed =
+			node->child->brother->brother->brother->brother->brother->brother->line_num_pretty_printed;*/
 		strcpy(((ProcData*)node->data)->name, node->child->brother->child->string_attr);
 
 		fill_node_data_prepare(node->child);
@@ -69,7 +69,7 @@ void fill_node_data_prepare(SyntaxTreeNode* node){
 		strcpy(var_dec_data->name, node_SVARNAME->child->string_attr);
 		var_dec_data->is_param = is_param;
 		var_dec_data->line = node_SVARNAME->line_num;
-		var_dec_data->line_pretty_printed = node_SVARNAME->line_num_pretty_printed;
+		/*var_dec_data->line_pretty_printed = node_SVARNAME->line_num_pretty_printed;*/
 		var_dec_data->type.stdtype = ((Type*) type)->stdtype;
 		var_dec_data->type.array_size = ((Type*) type)->array_size;
 
@@ -91,7 +91,7 @@ void fill_node_data_prepare(SyntaxTreeNode* node){
 			strcpy(var_dec_data->name, node_SVARNAME->child->string_attr);
 			var_dec_data->is_param = is_param;
 			var_dec_data->line = node_SVARNAME->line_num;
-			var_dec_data->line_pretty_printed = node_SVARNAME->line_num_pretty_printed;
+			/*var_dec_data->line_pretty_printed = node_SVARNAME->line_num_pretty_printed;*/
 			var_dec_data->type.stdtype = ((Type*) type)->stdtype;
 			var_dec_data->type.array_size = ((Type*) type)->array_size;
 		}
@@ -207,11 +207,11 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 						VarRefData* var_ref_data;
 						/*printf("namespace : procedure %s\n", ((ProcData*)namespace->data)->name);*/
 
-						if(node->line_num_pretty_printed < var_dec_data->line_pretty_printed){
+						/*if(node->line_num_pretty_printed < var_dec_data->line_pretty_printed){
 							printf("error : line %d reference to %s before declare\n", 
 									node->line_num, var_name);
 							return 0;
-						}
+						}*/
 
 						node->data = mem_alloc(sizeof(VarData));
 						((VarData*)node->data)->is_declaration = 0;
@@ -249,11 +249,11 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 						VarRefData* var_ref_data;
 						/*printf("namespace : global\n");*/
 
-						if(node->line_num_pretty_printed < var_dec_data->line_pretty_printed){
+						/*if(node->line_num_pretty_printed < var_dec_data->line_pretty_printed){
 							printf("error : line %d reference to %s before declare\n", 
 									node->line_num, var_name);
 							return 0;
-						}
+						}*/
 						
 						node->data = mem_alloc(sizeof(VarData));
 						((VarData*)node->data)->is_declaration = 0;
@@ -381,11 +381,11 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 			return 0;
 		}
 
-		if(node->line_num_pretty_printed < proc_data->define_finished_line_pretty_printed){
+		/*if(node->line_num_pretty_printed < proc_data->define_finished_line_pretty_printed){
 			printf("error : line %d reference to procedure \"%s\" before declare\n", 
 					node->line_num, call_name);
 			return 0;
-		}
+		}*/
 
 		call_data->proc_data = proc_data;
 		if(proc_data->ref_head == NULL){
@@ -443,10 +443,10 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 			const_data->val = 1;
 			break;
 		case TSTRING:
-			if(strlen(child->string_attr) > 1){
+			/*if(strlen(child->string_attr) > 1){
 				printf("string of const stat has just one character\n");
 				return 0;
-			}
+			}*/
 			/* const_data->type.stdtype = TSTRING; */
 			const_data->type.stdtype = TCHAR;
 			const_data->val = child->string_attr[0];
@@ -695,10 +695,17 @@ int check_type(SyntaxTreeNode* node){
 
 			while(node_SEXPRS_1_0 != NULL && node_SEXPRS_1_0->parse_result == PARSERESULT_MATCH){
 				param_data = param_data->next;
+
+				if(param_data == NULL){
+					printf("error : line %d call statement has too many arguments\n", 
+							call_data->line);
+					return 0;
+				}
+
 				param_dec_data = (VarDecData*)param_data->data;
 				node_SEXPR = node_SEXPRS_1_0->child->brother;
-				if(param_data == NULL || param_dec_data->is_param == 0){
-					printf("error : line %d call statement has too few arguments\n", 
+				if(param_dec_data->is_param == 0){
+					printf("error : line %d call statement has too many arguments\n", 
 							call_data->line);
 					return 0;
 				}
@@ -863,7 +870,6 @@ int check_type(SyntaxTreeNode* node){
 
 		if(!check_type(node_STERM)){
 			printf("\t in TERM\n");
-			fflush(stdout);
 			return 0;
 		}
 		type->stdtype = ((Type*)node_STERM->data)->stdtype;
@@ -876,7 +882,6 @@ int check_type(SyntaxTreeNode* node){
 
 			if(!check_type(node_SSIMPLEEXPR_2_0->child->brother)){
 				printf("\t in TERM_1_0\n");
-				fflush(stdout);
 				return 0;
 			}
 			while(node_add_op->parse_result != PARSERESULT_MATCH){
@@ -898,9 +903,6 @@ int check_type(SyntaxTreeNode* node){
 			if(type->stdtype != required_type || type->array_size != 0){
 				printf("error : left operand type of operator \"%s\"\n",
 						SYNTAXDIC[node_add_op->s_elem_it]);
-				printf("%s\n", SYNTAXDIC[type->stdtype]);
-				printf("%d\n", type->array_size);
-				printf("%s\n", SYNTAXDIC[required_type]);
 				return 0;
 			}
 			if(node_SFACTOR_type->stdtype != required_type ||

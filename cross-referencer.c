@@ -91,11 +91,11 @@ CrossRefRecord* list_cross_referencer(SyntaxTreeNode* node, CrossRefRecord* reco
 		VarData* var_data = (VarData*)node->data;
 		VarDecData* var_dec_data;
 		VarData* var_data_loop;
-		if(!var_data->is_declaration){
+		/*if(!var_data->is_declaration){
 			returned_record = list_cross_referencer(node->child, record_tail);
 			returned_record = list_cross_referencer(node->brother, returned_record);
 			return returned_record;
-		}
+		}*/
 
 		new_record = malloc(sizeof(CrossRefRecord));
 		record_tail->next = new_record;
@@ -139,7 +139,7 @@ CrossRefRecord* list_cross_referencer(SyntaxTreeNode* node, CrossRefRecord* reco
 
 	case SCOMPSTAT:{
 		/* no decleration between "begin" and "end" */
-		/* COMPSTAT has many node */
+		/* COMPSTAT has var ref,var  ref is ignored in cross referencer */
 		return record_tail;
 	}
 
@@ -208,7 +208,7 @@ int main(int nc, char *np[]){
 		return -1;
 	}
 
-	decide_printed_line_num_tree(node_SPROGRAM);
+	/*decide_printed_line_num_tree(node_SPROGRAM);*/
 
 	fill_node_data_prepare(node_SPROGRAM);
 

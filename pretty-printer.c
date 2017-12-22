@@ -225,6 +225,7 @@ void preformat_tree(SyntaxTreeNode* parent, SyntaxTreeNode* this, int indent_dep
 }
 #endif
 
+#if 0
 void decide_printed_line_num_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;
 
@@ -264,6 +265,8 @@ void decide_printed_line_num_tree(SyntaxTreeNode* node){
 	decide_printed_line_num_tree(node->child);
 	decide_printed_line_num_tree(node->brother);
 }
+#endif
+
 #if 0
 void print_tree(SyntaxTreeNode* node){
 	if(node == NULL) return;

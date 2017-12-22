@@ -22,7 +22,7 @@ typedef struct VarDecData_{
 	Type type;
 	int is_param;
 	int line;
-	int line_pretty_printed;
+	/*int line_pretty_printed;*/
 	struct ProcedureData_* namespace;
 	struct VarData_* ref_head;
 	struct VarData_* ref_tail;
@@ -48,7 +48,7 @@ typedef struct ConstData_{
 typedef struct ProcedureData_{
 	char name[MAXSTRSIZE];
 	int defined_line;
-	int define_finished_line_pretty_printed;
+	/*int define_finished_line_pretty_printed;*/
 	VarData *var_data_head;
 	VarData *var_data_tail;
 	ProcCallData *ref_head;
