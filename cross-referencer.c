@@ -181,7 +181,7 @@ void free_cross_referencer(CrossRefRecord* record){
 	free(record);
 }
 
-int main(int nc, char *np[]){
+int cross_referencer_main(int nc, char *np[]){
 	SyntaxTreeNode *node_SPROGRAM;
 	CrossRefRecord *record_head;
 

@@ -1,10 +1,13 @@
 IN=in.mpl
 F=nodedata
 
+.PHONY:
+	all run clean
+
 all: a.out
 
 a.out: *.c *.h
-	@gcc *.c -Wall -Wextra -std=c89 -o a.out
+	@gcc *.c -Wall -Wextra -std=c89 -o a.out -Wno-unused-parameter
 
 run: a.out
 	@./a.out ${IN}

@@ -38,7 +38,6 @@ void fill_node_data_prepare(SyntaxTreeNode* node){
 	case SVARDEC_5_0:
 	case SFORMPARAM:
 	case SFORMPARAM_4_0:{
-		/* i know what it means and i know it works */
 		SyntaxTreeNode* node_SVARNAME;
 		SyntaxTreeNode* node_SVARNAMES_1_0;
 		VarDecData* var_dec_data;

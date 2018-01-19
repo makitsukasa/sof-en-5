@@ -11,6 +11,7 @@ typedef struct Lines_{
 	struct Lines_ *next;
 } Lines;
 /*
+defined in pretty-printer.h
 typedef struct VarData_{
 	void* data;
 	int is_declaration;
