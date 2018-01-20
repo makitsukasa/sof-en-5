@@ -347,11 +347,7 @@ void generate_assm(SyntaxTreeNode* node){
 		 */		
 		if(node->child->parse_result == PARSERESULT_MATCH){
 			/* SOUTFORM_0 is matched */
-			SyntaxTreeNode* node_SEXPR = node->child->child;
-			iw_DC_str	(get_label(node_TSTRING), node_TSTRING->string_attr);
-			iw_LAD		("", "gr1", get_label(node_TSTRING));
-			iw_LD		("", "gr2", "gr0");
-			iw_CALL		("", "WRITESTR");			
+		
 		}
 		else{
 			/* TSTRING is matched */
