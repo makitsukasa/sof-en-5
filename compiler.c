@@ -2,8 +2,9 @@
 
 
 char* get_label(SyntaxTreeNode* node){
+	char* hoge;
 	if(node->s_elem_it == SVARNAME){
-		char* hoge = calloc(sizeof(char), MAXSTRSIZE * 2 + 10);
+		hoge = calloc(sizeof(char), MAXSTRSIZE * 2 + 10);
 		VarData* var_data = (VarData*)node->data;
 		VarDecData* var_dec_data = (VarDecData*)var_data->data;
 		if(var_data->is_declaration == 0){
@@ -19,24 +20,29 @@ char* get_label(SyntaxTreeNode* node){
 			sprintf(hoge, "%%%s$%s",
 					var_dec_data->namespace->name, var_dec_data->name);
 		}
-		return hoge;
+	}
+	else if(node->s_elem_it == SSUBPROGDEC){
+		hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
+		sprintf(hoge, "%s%s", SYNTAXDIC[SSUBPROGDEC], ((ProcData*)node->data)->name);
 	}
 	else{
-		char* hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
+		hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
 		sprintf(hoge, "$%s%p", SYNTAXDIC[node->s_elem_it], node);
-		return hoge;
 	}
+	return hoge;
 }
 
 void generate_assm(SyntaxTreeNode* node){
 
 	if(node == NULL) return;
 
-	if(node->parse_result != PARSERESULT_MATCH) {
+	if(node->parse_result != PARSERESULT_MATCH){
+		generate_assm(node->child);
+		generate_assm(node->brother);
 		return;
 	}
 
-	/*printf("gen assm %s\n", SYNTAXDIC[node->s_elem_it]);*/
+	/*printf("\t\tgen assm %s\n", SYNTAXDIC[node->s_elem_it]);*/
 
 	switch(node->s_elem_it){
 	case SPROGRAM:{
@@ -71,11 +77,11 @@ void generate_assm(SyntaxTreeNode* node){
 			int size = var_dec_data->type.array_size;
 			if(size == 0) size = 1;
 
-			iw_DC		(get_label(node), size);
+			iw_DS		(get_label(node), size);
 		}
 		else{
 			/*VarRefData var_ref_data = (VarRefData*)var_data->data;*/
-
+			
 		}
 		break;
 	}
@@ -85,6 +91,15 @@ void generate_assm(SyntaxTreeNode* node){
 		 *  L>TPROCEDURE->SPROCEDURENAME->SSUBPROGDEC_2->TSEMI->SSUBPROGDEC_4->SCOMPSTAT->TSEMI
 		 *                                 L> SFORMPARAM         L> SVARDEC
 		 */
+
+		SyntaxTreeNode* node_SSUBPROGDEC_2 = node->child->brother->brother;
+		SyntaxTreeNode* node_SSUBPROGDEC_4 = node_SSUBPROGDEC_2->brother->brother;
+		SyntaxTreeNode* node_SCOMPSTAT = node_SSUBPROGDEC_4->brother;
+		generate_assm(node_SSUBPROGDEC_2);
+		generate_assm(node_SSUBPROGDEC_4);
+		iw_label(get_label(node));
+		generate_assm(node_SCOMPSTAT);
+		break;
 	}
 
 	case SCONDSTAT:{
@@ -93,12 +108,18 @@ void generate_assm(SyntaxTreeNode* node){
 		 *	                                         L> SCONDSTAT_4_0
 		 *                                               L> TELSE -> SSTAT
 		 */
+		break;
 	}
 
 	case SITERSTAT:{
 		/* SITERSTAT
 		 *  L> TWHILE -> (*)SEXPR -> TDO -> SSTAT
 		 */
+		break;
+	}
+
+	case SEXITSTAT:{
+		break;
 	}
 
 	case SCALLSTAT:{
@@ -125,6 +146,18 @@ void generate_assm(SyntaxTreeNode* node){
 
 	}
 
+	case SEXPRS:{
+		break;
+	}
+
+	case SRETSTAT:{
+		break;
+	}
+
+	case SASSIGNSTAT:{
+		break;
+	}
+
 	case SVAR:{
 		/* pattern 1 hoge[piyo] */
 		/* SVAR
@@ -147,6 +180,7 @@ void generate_assm(SyntaxTreeNode* node){
 		/*else*//* if(node->child->brother->child->parse_result == PARSERESULT_EMPTY) */{
 
 		}
+		break;
 	}
 
 
@@ -158,6 +192,7 @@ void generate_assm(SyntaxTreeNode* node){
 		 */
 		/* operator has left-to-right associativity */
 
+		break;
 	}
 
 	case SSIMPLEEXPR:{
@@ -169,6 +204,7 @@ void generate_assm(SyntaxTreeNode* node){
 		 *                                    L> SADDOP -> STERM
 		 */	
 
+		break;
 	}
 
 	case STERM:{
@@ -186,6 +222,7 @@ void generate_assm(SyntaxTreeNode* node){
 		 *  L> SVAR -> SCONST -> SFACTOR_2 -> SFACTOR_3 -> SFACTOR_4
 		 */
 
+		break;
 	}
 
 	case SFACTOR_2:{
@@ -193,6 +230,7 @@ void generate_assm(SyntaxTreeNode* node){
 		 *  L> TLPAREN -> SEXPR -> TRPAREN
 		 */
 
+		break;
 	}
 
 	case SFACTOR_3:{
@@ -200,6 +238,7 @@ void generate_assm(SyntaxTreeNode* node){
 		 *  L> TNOT -> SFACTOR
 		 */
 
+		break;
 	}
 
 	case SFACTOR_4:{
@@ -207,6 +246,7 @@ void generate_assm(SyntaxTreeNode* node){
 		 *  L> SSTDTYPE -> TLPAREN -> SEXPR -> TRPAREN
 		 */
 
+		break;
 	}
 
 	case SINSTAT_1_0:{
@@ -215,7 +255,7 @@ void generate_assm(SyntaxTreeNode* node){
 		 *                            L> SINSTAT_1_0_2_0
 		 *                                L> TCOMMA -> (*)SVAR
 		 */
-
+		break;
 	}
 
 	case SOUTFORM:{
@@ -226,6 +266,7 @@ void generate_assm(SyntaxTreeNode* node){
 		 *                          L> TCOLON -> TNUMBER
 		 */
 
+		break;
 	}
 
 	default:{
@@ -287,6 +328,7 @@ int main(int nc, char *np[]){
 		end_scan();
 		return -1;
 	}
+	debug_tree(node_SPROGRAM);
 
 	fp = stdout;
 

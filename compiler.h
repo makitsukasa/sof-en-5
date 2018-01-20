@@ -3,6 +3,7 @@
 extern FILE* fp;
 
 /* instruction_words.c */
+/*
 void iw_LD		(char* label, char* r1, char* r2 );
 void iw_ST		(char* label, char* r1, char* r2 );
 void iw_LAD		(char* label, char* r1, char* r2 );
@@ -47,3 +48,4 @@ void iw_IN		(char* label, char* r , char* adr);
 void iw_OUT		(char* label, char* r , char* adr);
 void iw_RPUSH	(char* label);
 void iw_RPOP	(char* label);
+*/

@@ -7,7 +7,7 @@ F=nodedata
 all: a.out
 
 a.out: *.c *.h
-	@gcc *.c -Wall -Wextra -std=c89 -o a.out -Wno-unused-parameter
+	@gcc *.c -Wall -Wextra -std=c89 -o a.out -Wno-unused-parameter -Wno-implicit-function-declaration
 
 run: a.out
 	@./a.out ${IN}

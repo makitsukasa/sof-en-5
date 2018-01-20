@@ -1,44 +1,28 @@
-program test;
-var
-	i : integer;
-	a : array[100] of char;
-	c : char;
-	b, b2 : boolean;
-
-procedure proc0;
-	var x, y : integer;
-	begin
-		if x = 1 then a := 'a';
-		if x > 2 then a := 'b' else a := 'c';
-		if true or false and true then a := 'd';
-		while x > 0 do x := x - 1
-	end;
-
-procedure proc1(c : char);
-	begin
-		readln;
-		read(c);
-		read(c, i);
-		writeln;
-		writeln('asfadf');
-		writeln(c:3);
-	end;
-
-procedure proc2(c1, c2, c3 : char);
-	begin
-		if not (boolean(c1)) then writeln(c1);
-	end;
-
-procedure proca(a : array[100] of char);
-	begin
-	end;
-
+program sample11pp;
+procedure kazuyomikomi(n : integer);
 begin
-	call proc0;
-	call proc0;
-	call proc0;
-	call proc0;
-	call proc1(c);
-	call proc2(a[1], a[i], a[1 + 3 * 3]);
-	call proca(a);
+	writeln('input the number of data');
+	readln(n)
+end;
+var sum : integer;
+procedure wakakidasi;
+begin
+	writeln('Sum of data = ', sum)
+end;
+var data : integer;
+procedure goukei(n, s : integer);
+	var data : integer;
+begin
+	s := 0;
+	while n > 0 do begin
+		readln(data);
+		s := s + data;
+		n := n - 1
+	end
+end;
+var n : integer;
+begin
+	call kazuyomikomi(n);
+	call goukei(n * 2, sum);
+	call wakakidasi
 end.
