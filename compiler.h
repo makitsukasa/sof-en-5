@@ -41,8 +41,8 @@ void iw_NOP		(char* label);
 
 void iw_START	(char* label);
 void iw_END		(char* label);
-void iw_DS		(char* label, char* n);
-void iw_DC		(char* label, char* n);
+void iw_DS		(char* label, int  n);
+void iw_DC		(char* label, int n);
 void iw_IN		(char* label, char* r , char* adr);
 void iw_OUT		(char* label, char* r , char* adr);
 void iw_RPUSH	(char* label);

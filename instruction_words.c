@@ -48,8 +48,10 @@ void iw_START	(char* label){
 	fprintf(fp, "%s\tSTART\n", label);
 }
 void iw_END		(char* label){}
-void iw_DS		(char* label, char* n){}
-void iw_DC		(char* label, char* n){}
+void iw_DS		(char* label, int n){}
+void iw_DC		(char* label, int n){
+	fprintf(fp, "%s\tDC\t%d\n", label, n);
+}
 void iw_IN		(char* label, char* r , char* adr){}
 void iw_OUT		(char* label, char* r , char* adr){}
 void iw_RPUSH	(char* label){}

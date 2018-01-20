@@ -2,9 +2,30 @@
 
 
 char* get_label(SyntaxTreeNode* node){
-	char* hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
-	sprintf(hoge, "$%s%p", SYNTAXDIC[node->s_elem_it], node);
-	return hoge;
+	if(node->s_elem_it == SVARNAME){
+		char* hoge = calloc(sizeof(char), MAXSTRSIZE * 2 + 10);
+		VarData* var_data = (VarData*)node->data;
+		VarDecData* var_dec_data = (VarDecData*)var_data->data;
+		if(var_data->is_declaration == 0){
+			VarRefData* var_ref_data = (VarRefData*)var_data->data;
+			VarData* var_data = (VarData*)var_ref_data->data;
+			var_dec_data = (VarDecData*)var_data->data;
+		}
+		if(var_dec_data->namespace->name == NULL){
+			sprintf(hoge, "%%%s$%s",
+					"%%grobal%%", var_dec_data->name);
+		}
+		else{
+			sprintf(hoge, "%%%s$%s",
+					var_dec_data->namespace->name, var_dec_data->name);
+		}
+		return hoge;
+	}
+	else{
+		char* hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
+		sprintf(hoge, "$%s%p", SYNTAXDIC[node->s_elem_it], node);
+		return hoge;
+	}
 }
 
 void generate_assm(SyntaxTreeNode* node){
@@ -14,6 +35,8 @@ void generate_assm(SyntaxTreeNode* node){
 	if(node->parse_result != PARSERESULT_MATCH) {
 		return;
 	}
+
+	/*printf("gen assm %s\n", SYNTAXDIC[node->s_elem_it]);*/
 
 	switch(node->s_elem_it){
 	case SPROGRAM:{
@@ -28,14 +51,14 @@ void generate_assm(SyntaxTreeNode* node){
 		iw_CALL		("", "FLUSH");
 		iw_SVC		("", "0");
 
-		node_SBLOCK->string_attr;
 		generate_assm(node_SBLOCK);
+		break;
 	}
 
 	case SVARNAME:{
 		VarData* var_data = (VarData*)node->data;
 		if(var_data->is_declaration){
-			/*VarDecData var_dec_data = (VarDecData*)var_data->data;*/
+			VarDecData* var_dec_data = (VarDecData*)var_data->data;
 				/*
 				char name[MAXSTRSIZE];
 				Type type;
@@ -45,12 +68,16 @@ void generate_assm(SyntaxTreeNode* node){
 				struct VarData_* ref_head;
 				struct VarData_* ref_tail;
 				*/
-			iw_DC		(get_label(node), "0");
+			int size = var_dec_data->type.array_size;
+			if(size == 0) size = 1;
+
+			iw_DC		(get_label(node), size);
 		}
 		else{
 			/*VarRefData var_ref_data = (VarRefData*)var_data->data;*/
 
 		}
+		break;
 	}
 
 	case SSUBPROGDEC:{
