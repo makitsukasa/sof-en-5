@@ -1133,7 +1133,8 @@ int check_type(SyntaxTreeNode* node){
 
 		if(node->child->parse_result != PARSERESULT_MATCH){
 			/* SOUTFORM_0 is empty but TSTRING is matched */
-			return 1;
+			result_brother = check_type(node->brother);
+			break;
 		}
 		node_SEXPR = node->child->child;
 
@@ -1149,6 +1150,8 @@ int check_type(SyntaxTreeNode* node){
 			return 0;
 		}
 
+		result_brother = check_type(node->brother);
+		break;
 	}
 
 	default:{

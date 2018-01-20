@@ -7,7 +7,7 @@ end;
 var sum : integer;
 procedure wakakidasi;
 begin
-	writeln('Sum of data = ', sum)
+	writeln('Sum of data = ', sum:4)
 end;
 var data : integer;
 procedure goukei(n, s : integer);

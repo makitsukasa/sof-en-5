@@ -78,7 +78,7 @@
 #define SOUTSTAT_1			119	/* zero or one	SOUTSTAT_1_0                                             */
 #define SOUTSTAT_1_0		120	/* all of		TLPAREN SOUTFORM SOUTSTAT_1_0_2 TRPAREN                  */
 #define SOUTSTAT_1_0_2		121	/* zero or more	SOUTSTAT_1_0_2_0                                         */
-#define SOUTSTAT_1_0_2_0	122	/* all of		TCOMMA TOURFORM                                          */
+#define SOUTSTAT_1_0_2_0	122	/* all of		TCOMMA SOURFORM                                          */
 #define SOUTFORM			123	/* one of		SOUTFORM_0 TSTRING                                       */
 #define SOUTFORM_0			124	/* all of		SEXPR SOUTFORM_0_1                                       */
 #define SOUTFORM_0_1		125	/* zero or one	SOUTFORM_0_1_0                                           */

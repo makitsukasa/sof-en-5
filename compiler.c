@@ -328,14 +328,14 @@ void generate_assm(SyntaxTreeNode* node){
 		SyntaxTreeNode* node_SOUTSTAT_1 = node->child->brother;
 		SyntaxTreeNode* node_TWRITE = node->child->child;
 
-		iw_comment	("start SOUTSTAT STRING");
+		iw_comment	("start SOUTSTAT");
 		generate_assm(node_SOUTSTAT_1);
 		if(node_TWRITE->parse_result != PARSERESULT_MATCH){
 			/* no write yes writeln */
 			iw_CALL	("", "WRITENEWLINE");
 		}
-		iw_comment	("end   SOUTSTAT STRING");
-
+		iw_comment	("end   SOUTSTAT");
+		break;
 	}
 
 	case SOUTFORM:{
@@ -347,7 +347,29 @@ void generate_assm(SyntaxTreeNode* node){
 		 */		
 		if(node->child->parse_result == PARSERESULT_MATCH){
 			/* SOUTFORM_0 is matched */
-		
+			SyntaxTreeNode* node_SEXPR = node->child->child;
+			SyntaxTreeNode* node_SOUTFORM_0_1 = node_SEXPR->brother;
+			Type* type_node_SEXPR = (Type*)node_SEXPR->data;
+			generate_assm(node_SEXPR);
+			if(node_SOUTFORM_0_1->parse_result == PARSERESULT_MATCH){
+				SyntaxTreeNode* node_TNUMBER = node_SOUTFORM_0_1->child->child->brother;
+				printf("%s\n", node_TNUMBER->string_attr);
+				iw_LAD	("", "gr2", node_TNUMBER->string_attr);
+			}
+			else{
+				iw_LD	("", "gr2", "gr0");
+			}
+			switch(type_node_SEXPR->stdtype){
+			case TINTEGER:
+				iw_CALL	("", "WRITEINT");
+				break;
+			case TSTRING:
+				iw_CALL	("", "WRITECHAR");
+				break;
+			case TBOOLEAN:
+				iw_CALL	("", "WRITEBOOL");
+				break;
+			}
 		}
 		else{
 			/* TSTRING is matched */
@@ -357,6 +379,7 @@ void generate_assm(SyntaxTreeNode* node){
 			iw_LD		("", "gr2", "gr0");
 			iw_CALL		("", "WRITESTR");
 		}
+		generate_assm(node->brother);
 		break;
 	}
 
@@ -420,7 +443,7 @@ int main(int nc, char *np[]){
 		return -1;
 	}
 
-	debug_tree(node_SPROGRAM);
+	/*debug_tree(node_SPROGRAM);*/
 
 	fp = stdout;
 
