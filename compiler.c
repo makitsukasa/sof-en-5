@@ -353,7 +353,6 @@ void generate_assm(SyntaxTreeNode* node){
 			generate_assm(node_SEXPR);
 			if(node_SOUTFORM_0_1->parse_result == PARSERESULT_MATCH){
 				SyntaxTreeNode* node_TNUMBER = node_SOUTFORM_0_1->child->child->brother;
-				printf("%s\n", node_TNUMBER->string_attr);
 				iw_LAD	("", "gr2", node_TNUMBER->string_attr);
 			}
 			else{
