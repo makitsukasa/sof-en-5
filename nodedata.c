@@ -802,6 +802,7 @@ int check_type(SyntaxTreeNode* node){
 		 *  L> SSIMPLEEXPR -> SEXPR_1
 		 *                     L> SEXPR_1_0
 		 *                         L> SRELATOP -> SSIMPLEEXPR
+		 *                             L>TEQUAL->TNOTEQ->TLE->TLEEQ->TGR->TGREQ
 		 */
 		/* operator has left-to-right associativity */
 		SyntaxTreeNode* node_SSIMPLEEXPR = node->child;
@@ -859,6 +860,7 @@ int check_type(SyntaxTreeNode* node){
 		 *                                    L> SADDOP -> STERM
 		 */	
 		SyntaxTreeNode* node_STERM = node->child->brother;
+		SyntaxTreeNode* node_SSIMPLEEXPR_0_0 = node->child->child;
 		SyntaxTreeNode* node_SSIMPLEEXPR_2_0 = node->child->brother->brother->child;
 		Type* type;
 
@@ -873,6 +875,13 @@ int check_type(SyntaxTreeNode* node){
 		}
 		type->stdtype = ((Type*)node_STERM->data)->stdtype;
 		type->array_size = ((Type*)node_STERM->data)->array_size;
+
+		if(node_SSIMPLEEXPR_0_0->parse_result == PARSERESULT_MATCH){
+			if(type->stdtype != TINTEGER || type->array_size != 0){
+				printf("error : right operand type of unary operator\n");
+				return 0;
+			}
+		}
 
 		while(node_SSIMPLEEXPR_2_0->parse_result != PARSERESULT_DIFFERENCE){
 			SyntaxTreeNode* node_add_op = node_SSIMPLEEXPR_2_0->child->child;
@@ -890,7 +899,6 @@ int check_type(SyntaxTreeNode* node){
 				required_type = TBOOLEAN;
 			}
 			/*
-			printf("koko\n");
 			printf("%p %s\n", node_SSIMPLEEXPR_2_0, SYNTAXDIC[node_SSIMPLEEXPR_2_0->s_elem_it]);
 			printf("%p %s\n", node_SSIMPLEEXPR_2_0->child,
 						SYNTAXDIC[node_SSIMPLEEXPR_2_0->child->s_elem_it]);

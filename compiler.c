@@ -56,7 +56,7 @@ void generate_assm(SyntaxTreeNode* node){
 
 		iw_comment	("start SPROGRAM");
 		iw_START	(get_label(node));
-		iw_LAD		("", "gr0", "0");
+		iw_LAD		("", "gr0", "ZERO");
 		iw_CALL		("", get_label(node_SBLOCK));
 		iw_CALL		("", "FLUSH");
 		iw_SVC		("", "0");
@@ -159,6 +159,7 @@ void generate_assm(SyntaxTreeNode* node){
 	}
 
 	case SRETSTAT:{
+		iw_RET("");
 		break;
 	}
 
@@ -180,13 +181,19 @@ void generate_assm(SyntaxTreeNode* node){
 		 *                  L> SVAR_1_0(EMPTY)
 		 */
 
+		SyntaxTreeNode* node_SVARNAME = node->child;
+		SyntaxTreeNode* node_SVAR_1_0 = node->child->brother->child;
+
 		/* pattern 1 */
-		/*if(node->child->brother->child->parse_result == PARSERESULT_MATCH){
-
-		}*/
+		if(node_SVAR_1_0->parse_result == PARSERESULT_MATCH){
+			SyntaxTreeNode* node_SEXPR = node_SVAR_1_0->child->brother;
+			generate_assm	(node_SEXPR);		/* gr1 = ans */
+			iw_LAD			("", "gr2", "gr1");	/* gr2 = gr1 */
+			iw_LAD_3		("", "gr1", get_label(node_SVARNAME), "gr2");
+		}
 		/* pattern 2 */
-		/*else*//* if(node->child->brother->child->parse_result == PARSERESULT_EMPTY) */{
-
+		else/* if(node_SVAR_1_0->parse_result == PARSERESULT_EMPTY) */{
+			iw_LAD			("", "gr1", get_label(node_SVARNAME));
 		}
 		break;
 	}
@@ -197,9 +204,40 @@ void generate_assm(SyntaxTreeNode* node){
 		 *  L> SSIMPLEEXPR -> SEXPR_1
 		 *                     L> SEXPR_1_0
 		 *                         L> SRELATOP -> SSIMPLEEXPR
+		 *                             L>TEQUAL->TNOTEQ->TLE->TLEEQ->TGR->TGREQ
 		 */
-		/* operator has left-to-right associativity */
 
+		SyntaxTreeNode* node_SSIMPLEEXPR = node->child;
+		SyntaxTreeNode* node_SEXPR_1_0 = node->child->brother->child;
+
+		generate_assm(node_SSIMPLEEXPR); /* gr1 = ans */
+
+		while(node_SEXPR_1_0->parse_result != PARSERESULT_DIFFERENCE){
+			SyntaxTreeNode* node_rel_op = node_SEXPR_1_0->child->child;
+			node_SSIMPLEEXPR = node_SEXPR_1_0->child->brother;
+
+			while(node_rel_op->parse_result != PARSERESULT_MATCH){
+				node_rel_op = node_rel_op->brother;
+			}
+
+			iw_PUSH			("", "0", "gr1");	/* stack.push(gr1) */
+			generate_assm	(node_SSIMPLEEXPR);	/* gr1 = ans */
+			iw_LAD			("", "gr2", "gr1");	/* gr2 = gr1 */
+			iw_POP			("", "gr1");		/* gr1 = stack.pop() */
+			/* gr1 = calc(gr1, gr2) */
+			switch(node_rel_op->s_elem_it){
+			case TEQUAL:	break;
+			case TNOTEQ:	break;
+			case TLE:		break;
+			case TLEEQ:		break;
+			case TGR:		break;
+			case TGREQ:		break;
+			}
+
+			node_SEXPR_1_0 = node_SEXPR_1_0->brother;
+		}
+
+		/* now gr1 is answer */
 		break;
 	}
 
@@ -210,8 +248,49 @@ void generate_assm(SyntaxTreeNode* node){
 		 *          L> TPLUS -> TMINUS    |
 		 *                                L> SSIMPLEEXPR_2_0
 		 *                                    L> SADDOP -> STERM
-		 */	
+		 *                                        L> TPLUS->TMINUS->TOR
+		 */
 
+		SyntaxTreeNode* node_TPLUS = node->child->child->child;
+		SyntaxTreeNode* node_STERM = node->child->brother;
+		SyntaxTreeNode* node_SSIMPLEEXPR_2_0 = node_STERM->brother->child;
+
+		generate_assm(node_STERM); /* gr1 = ans */
+
+		if(node_TPLUS->parse_result != PARSERESULT_MATCH){
+			SyntaxTreeNode* node_TMINUS = node_TPLUS->brother;
+			if(node_TMINUS != NULL &&
+					node_TMINUS->parse_result == PARSERESULT_MATCH){
+				/* gr1 *= -1 */
+				iw_LAD		("", "gr2", "gr1");	/* gr2 = gr1 */
+				iw_SUBA		("", "gr1", "gr2");	/* gr1 -= gr2 (gr1 = 0) */
+				iw_SUBA		("", "gr1", "gr2");	/* gr1 -= gr2 */
+			}
+		}
+
+		while(node_SSIMPLEEXPR_2_0->parse_result != PARSERESULT_DIFFERENCE){
+			SyntaxTreeNode* node_add_op = node_SSIMPLEEXPR_2_0->child->child;
+			node_STERM = node_SSIMPLEEXPR_2_0->child->brother;
+
+			while(node_add_op->parse_result != PARSERESULT_MATCH){
+				node_add_op = node_add_op->brother;
+			}
+
+			iw_PUSH			("", "0", "gr1");	/* stack.push(gr1) */
+			generate_assm	(node_STERM);		/* gr1 = ans */
+			iw_LAD			("", "gr2", "gr1");	/* gr2 = gr1 */
+			iw_POP			("", "gr1");		/* gr1 = stack.pop() */
+			/* gr1 = calc(gr1, gr2) */
+			switch(node_add_op->s_elem_it){
+			case TPLUS:		break;
+			case TMINUS:	break;
+			case TOR:		break;
+			}
+
+			node_SSIMPLEEXPR_2_0 = node_SSIMPLEEXPR_2_0->brother;
+		}
+
+		/* now gr1 is answer */
 		break;
 	}
 
@@ -220,16 +299,49 @@ void generate_assm(SyntaxTreeNode* node){
 		 *  L> SFACTOR -> STERM_1
 		 *                 L> STERM_1_0
 		 *                     L> SMULOP -> SFACTOR
+		 *                         L> TSTAR->TDIV->TAND
 		 */
-		/* operator has left-to-right associativity */
+		SyntaxTreeNode* node_SFACTOR = node->child;
+		SyntaxTreeNode* node_STERM_1_0 = node_SFACTOR->brother->child;
 
+		generate_assm(node_SFACTOR); /* gr1 = ans */
+
+		while(node_STERM_1_0->parse_result != PARSERESULT_DIFFERENCE){
+			SyntaxTreeNode* node_add_op = node_STERM_1_0->child->child;
+			node_SFACTOR = node_STERM_1_0->child->brother;
+
+			while(node_add_op->parse_result != PARSERESULT_MATCH){
+				node_add_op = node_add_op->brother;
+			}
+
+			iw_PUSH			("", "0", "gr1");	/* stack.push(gr1) */
+			generate_assm	(node_SFACTOR);		/* gr1 = ans */
+			iw_LAD			("", "gr2", "gr1");	/* gr2 = gr1 */
+			iw_POP			("", "gr1");		/* gr1 = stack.pop() */
+			/* gr1 = calc(gr1, gr2) */
+			switch(node_add_op->s_elem_it){
+			case TSTAR:		break;
+			case TDIV:		break;
+			case TAND:		break;
+			}
+
+			node_STERM_1_0 = node_STERM_1_0->brother;
+		}
+
+		/* now gr1 is answer */
+		break;
 	}
 
 	case SFACTOR:{
 		/* SFACTOR
 		 *  L> SVAR -> SCONST -> SFACTOR_2 -> SFACTOR_3 -> SFACTOR_4
 		 */
+		SyntaxTreeNode* child = node->child;
+		while(child->parse_result != PARSERESULT_MATCH){
+			child = child->brother;
+		}
 
+		generate_assm(child);
 		break;
 	}
 
@@ -237,7 +349,7 @@ void generate_assm(SyntaxTreeNode* node){
 		/* SFACTOR_2
 		 *  L> TLPAREN -> SEXPR -> TRPAREN
 		 */
-
+		generate_assm(node->child->brother);
 		break;
 	}
 
@@ -245,7 +357,10 @@ void generate_assm(SyntaxTreeNode* node){
 		/* SFACTOR_3
 		 *  L> TNOT -> SFACTOR
 		 */
-
+		/* not A <=> A xor FALSE */
+		generate_assm	(node->child->brother);	/* gr1 = ans */
+		iw_LAD			("", "gr2", "FALSE");	/* gr2 = FALSE */
+		iw_XOR			("", "gr1", "gr2");		/* gr1 = gr1 xor gr2 */
 		break;
 	}
 
@@ -253,12 +368,14 @@ void generate_assm(SyntaxTreeNode* node){
 		/* SFACTOR_4
 		 *  L> SSTDTYPE -> TLPAREN -> SEXPR -> TRPAREN
 		 */
-
+		generate_assm	(node->child->brother->brother);	/* gr1 = ans */
 		break;
 	}
 
 	case SCONST:{
-
+		ConstData* data = (ConstData*)node->data;
+		iw_DC(get_label(node), data->val);
+		iw_LD("", "gr1", get_label(node));
 		break;
 	}
 
@@ -350,7 +467,7 @@ void generate_assm(SyntaxTreeNode* node){
 			SyntaxTreeNode* node_SEXPR = node->child->child;
 			SyntaxTreeNode* node_SOUTFORM_0_1 = node_SEXPR->brother;
 			Type* type_node_SEXPR = (Type*)node_SEXPR->data;
-			generate_assm(node_SEXPR);
+			generate_assm(node_SEXPR);	/* gr1 <-  */
 			if(node_SOUTFORM_0_1->parse_result == PARSERESULT_MATCH){
 				SyntaxTreeNode* node_TNUMBER = node_SOUTFORM_0_1->child->child->brother;
 				iw_LAD	("", "gr2", node_TNUMBER->string_attr);
@@ -703,6 +820,9 @@ READSKIPTONEWLINE\n\
 	ST gr0, INP\n\
 	ST gr0, RPBBUF\n\
 	RET\n\
+FALSE DC 0\n\
+TRUE DC 1\n\
+ZERO DC 0\n\
 ONE DC 1\n\
 SIX DC 6\n\
 TEN DC 10\n\
