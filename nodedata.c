@@ -134,15 +134,16 @@ void fill_node_data_prepare(SyntaxTreeNode* node){
 	
 }
 
-int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNode* global){
+int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace,
+					SyntaxTreeNode* global, SyntaxTreeNode* iter){
 	int result_child = 1;
 	int result_brother = 1;
 
 	if(node == NULL) return 1;
 
 	if(node->parse_result != PARSERESULT_MATCH) {
-		result_child = fill_node_data(node->child, namespace, global);
-		result_brother = fill_node_data(node->brother, namespace, global);
+		result_child = fill_node_data(node->child, namespace, global, iter);
+		result_brother = fill_node_data(node->brother, namespace, global, iter);
 		return (result_child && result_brother) ? 1 : 0;
 	}
 
@@ -150,7 +151,7 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 	case SPROGRAM:{
 		namespace = node;
 		global = node;
-		result_child = fill_node_data(node->child, namespace, global);
+		result_child = fill_node_data(node->child, namespace, global, iter);
 		break;
 	}
 
@@ -177,9 +178,26 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 		}
 
 		namespace = node;
-		result_child = fill_node_data(node->child, namespace, global);
-		result_brother = fill_node_data(node->brother, namespace, global);
+		result_child = fill_node_data(node->child, namespace, global, iter);
 		namespace = prev_namespace;
+		result_brother = fill_node_data(node->brother, namespace, global, iter);
+		break;
+	}
+
+	case SITERSTAT:{
+		SyntaxTreeNode* prev_iter = iter;
+		iter = node;
+		result_child = fill_node_data(node->child, namespace, global, iter);
+		iter = prev_iter;
+		result_brother = fill_node_data(node->brother, namespace, global, iter);
+		break;
+	}
+
+	case SEXITSTAT:{
+		ExitData* exit_data;
+		node->data = mem_alloc(sizeof(ExitData));
+		exit_data = (ExitData*) node->data;
+		exit_data->node_SITERSTAT = iter;
 		break;
 	}
 
@@ -284,7 +302,7 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 				return 0;
 			}
 
-			result_brother = fill_node_data(node->brother, namespace, global);
+			result_brother = fill_node_data(node->brother, namespace, global, iter);
 			break;
 		}
 		/* define */
@@ -334,7 +352,7 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 				var_data = var_data->next;
 			}
 
-			result_brother = fill_node_data(node->brother, namespace, global);
+			result_brother = fill_node_data(node->brother, namespace, global, iter);
 			break;
 
 		}
@@ -402,11 +420,11 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 		}
 
 		node_SEXPRS = node_SCALLSTAT_2->child->child->brother;
-		result_child = fill_node_data(node_SEXPRS->child, namespace, global);
+		result_child = fill_node_data(node_SEXPRS->child, namespace, global, iter);
 
 		node_SEXPRS_1_0 = node_SEXPRS->child->brother;
 		while(node_SEXPRS_1_0 != NULL){
-			int result_new_child = fill_node_data(node_SEXPRS_1_0->child->brother, namespace, global);
+			int result_new_child = fill_node_data(node_SEXPRS_1_0->child->brother, namespace, global, iter);
 			result_child = result_child && result_new_child ? 1 : 0;
 			node_SEXPRS_1_0 = node_SEXPRS_1_0->brother;
 		}
@@ -456,8 +474,8 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 
 
 	default:{
-		result_child = fill_node_data(node->child, namespace, global);
-		result_brother = fill_node_data(node->brother, namespace, global);
+		result_child = fill_node_data(node->child, namespace, global, iter);
+		result_brother = fill_node_data(node->brother, namespace, global, iter);
 		break;
 	}
 	}
@@ -465,7 +483,7 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNo
 	return (result_child && result_brother) ? 1 : 0;
 
 }
-#if 0
+#if 1/******************************************************************************************/
 void debug_variable(SyntaxTreeNode* node){
 
 	if(node == NULL) return;
@@ -595,6 +613,8 @@ int check_type(SyntaxTreeNode* node){
 		 *                                               L> TELSE -> SSTAT
 		 */
 		SyntaxTreeNode* node_SEXPR = node->child->brother;
+		SyntaxTreeNode* node_SSTAT = node_SEXPR->brother->brother;
+		SyntaxTreeNode* node_SCONDSTAT_4 = node_SSTAT->brother;
 		Type* type;
 		if(!check_type(node_SEXPR)){
 			printf("\t in if EXPR then \n");
@@ -605,6 +625,20 @@ int check_type(SyntaxTreeNode* node){
 			printf("error : conditional sentence of if statement is not boolean\n");
 			return 0;
 		}
+
+		if(!check_type(node_SSTAT)){
+			printf("\t in if SSTAT\n");
+			return 0;
+		}
+
+		if(node_SCONDSTAT_4->parse_result == PARSERESULT_MATCH){
+			node_SSTAT = node_SCONDSTAT_4->child->child->brother;
+			if(!check_type(node_SSTAT)){
+				printf("\t in else SSTAT\n");
+				return 0;
+			}			
+		}
+
 		return 1;
 	}
 
@@ -613,6 +647,7 @@ int check_type(SyntaxTreeNode* node){
 		 *  L> TWHILE -> (*)SEXPR -> TDO -> SSTAT
 		 */
 		SyntaxTreeNode* node_SEXPR = node->child->brother;
+		SyntaxTreeNode* node_SSTAT = node_SEXPR->brother->brother;
 		Type* type;
 		if(!check_type(node_SEXPR)){
 			printf("\t in while EXPR do \n");
@@ -623,6 +658,12 @@ int check_type(SyntaxTreeNode* node){
 			printf("error : conditional sentence of while statement is not boolean\n");
 			return 0;
 		}
+
+		if(!check_type(node_SSTAT)){
+			printf("\t in iteration statement\n");
+			return 0;
+		}
+
 		return 1;
 	}
 

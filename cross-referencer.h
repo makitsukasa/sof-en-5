@@ -46,6 +46,10 @@ typedef struct ConstData_{
 	int val;
 } ConstData;
 
+typedef struct ExitData_{
+	SyntaxTreeNode* node_SITERSTAT;
+} ExitData;
+
 typedef struct ProcedureData_{
 	char name[MAXSTRSIZE];
 	int defined_line;
@@ -80,5 +84,6 @@ extern void* mem_alloc(size_t size);
 
 /* nodedata.c */
 extern void fill_node_data_prepare(SyntaxTreeNode* node);
-extern int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace, SyntaxTreeNode* global);
+extern int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace,
+							SyntaxTreeNode* global, SyntaxTreeNode* iter);
 extern int check_type(SyntaxTreeNode* node);

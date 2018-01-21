@@ -14,7 +14,9 @@ procedure goukei(n, s : integer);
 	var data : integer;
 begin
 	s := 0;
+	readln(data);
 	while n > 0 do begin
+		break;
 		readln(data);
 		s := s + data;
 		n := n - 1

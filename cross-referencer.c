@@ -212,7 +212,7 @@ int cross_referencer_main(int nc, char *np[]){
 
 	fill_node_data_prepare(node_SPROGRAM);
 
-	if(!fill_node_data(node_SPROGRAM, NULL, NULL)){
+	if(!fill_node_data(node_SPROGRAM, NULL, NULL, NULL)){
 		/*debug_tree(node_SPROGRAM);
 		debug_variable(node_SPROGRAM);*/
 		free_tree(node_SPROGRAM);

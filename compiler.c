@@ -16,7 +16,7 @@ char* get_label(SyntaxTreeNode* node){
 			var_dec_data = (VarDecData*)var_data->data;
 		}
 		if(var_dec_data->namespace->name == NULL){
-			sprintf(hoge, "$%s%%%%global%%",
+			sprintf(hoge, "$%s%%@global",
 					var_dec_data->name);
 		}
 		else{
@@ -32,6 +32,13 @@ char* get_label(SyntaxTreeNode* node){
 		hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
 		sprintf(hoge, "$%s%p", SYNTAXDIC[node->s_elem_it], node);
 	}
+	return hoge;
+}
+
+char* get_end_label(SyntaxTreeNode* node){
+	char* hoge;
+	hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
+	sprintf(hoge, "$%s%p@end", SYNTAXDIC[node->s_elem_it], node);
 	return hoge;
 }
 
@@ -96,7 +103,6 @@ void generate_assm(SyntaxTreeNode* node){
 		 *  L>TPROCEDURE->SPROCEDURENAME->SSUBPROGDEC_2->TSEMI->SSUBPROGDEC_4->SCOMPSTAT->TSEMI
 		 *                                 L> SFORMPARAM         L> SVARDEC
 		 */
-
 		SyntaxTreeNode* node_SSUBPROGDEC_2 = node->child->brother->brother;
 		SyntaxTreeNode* node_SSUBPROGDEC_4 = node_SSUBPROGDEC_2->brother->brother;
 		SyntaxTreeNode* node_SCOMPSTAT = node_SSUBPROGDEC_4->brother;
@@ -116,6 +122,33 @@ void generate_assm(SyntaxTreeNode* node){
 		 *	                                         L> SCONDSTAT_4_0
 		 *                                               L> TELSE -> SSTAT
 		 */
+
+		SyntaxTreeNode* node_SEXPR = node->child->brother;
+		SyntaxTreeNode* node_SSTAT = node_SEXPR->brother->brother;
+		SyntaxTreeNode* node_SCONDSTAT_4 = node_SSTAT->brother;
+
+		iw_comment		("start SCONDSTAT");
+		generate_assm	(node_SEXPR);
+		iw_LAD			("", "gr2", "0");
+		iw_CPA			("", "gr1", "gr2");
+		/* if then */
+		if(node_SCONDSTAT_4->parse_result != PARSERESULT_MATCH){
+			iw_JZE			("", get_end_label(node));
+			generate_assm	(node_SSTAT);
+
+		}
+		/* if then else */
+		else{
+			SyntaxTreeNode* node_TELSE = node_SCONDSTAT_4->child->child;
+			SyntaxTreeNode* node_TSTAT_in_else = node_TELSE->brother;
+			iw_JZE			("", get_label(node_TELSE));
+			generate_assm	(node_SSTAT);
+			iw_JUMP			("", get_end_label(node));
+			iw_label		(get_label(node_TELSE));
+			generate_assm	(node_TSTAT_in_else);
+		}
+		iw_label		(get_end_label(node));
+		iw_comment		("end   SCONDSTAT");
 		break;
 	}
 
@@ -123,10 +156,27 @@ void generate_assm(SyntaxTreeNode* node){
 		/* SITERSTAT
 		 *  L> TWHILE -> (*)SEXPR -> TDO -> SSTAT
 		 */
+
+		SyntaxTreeNode* node_SEXPR = node->child->brother;
+		SyntaxTreeNode* node_SSTAT = node_SEXPR->brother->brother;
+
+		iw_comment		("start SITERSTAT");
+		iw_label		(get_label(node));
+		generate_assm	(node_SEXPR);
+		iw_LAD			("", "gr2", "0");
+		iw_CPA			("", "gr1", "gr2");
+		iw_JZE			("", get_end_label(node));
+		generate_assm	(node_SSTAT);
+		iw_JUMP			("", get_label(node));
+		iw_label		(get_end_label(node));
+		iw_comment		("end   SITERSTAT");
 		break;
 	}
 
 	case SEXITSTAT:{
+		ExitData* exit_data = (ExitData*) node->data;
+		SyntaxTreeNode* node_SITERSTAT = exit_data->node_SITERSTAT;
+		iw_JUMP("", get_end_label(node_SITERSTAT));
 		break;
 	}
 
@@ -164,6 +214,10 @@ void generate_assm(SyntaxTreeNode* node){
 	}
 
 	case SASSIGNSTAT:{
+		/* SASSIGNSTAT
+		 *  L> SLEFTPART -> TASSIGN -> SEXPR
+		 *      L> SVAR
+		 */
 		break;
 	}
 
@@ -541,7 +595,7 @@ int main(int nc, char *np[]){
 
 	fill_node_data_prepare(node_SPROGRAM);
 
-	if(!fill_node_data(node_SPROGRAM, NULL, NULL)){
+	if(!fill_node_data(node_SPROGRAM, NULL, NULL, NULL)){
 		/*debug_tree(node_SPROGRAM);
 		debug_variable(node_SPROGRAM);*/
 		free_tree(node_SPROGRAM);
@@ -559,7 +613,8 @@ int main(int nc, char *np[]){
 		return -1;
 	}
 
-	/*debug_tree(node_SPROGRAM);*/
+	/*debug_tree(node_SPROGRAM);
+	debug_variable(node_SPROGRAM);*/
 
 	fp = stdout;
 

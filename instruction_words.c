@@ -38,7 +38,7 @@ void iw_PUSH	(char* label, char* adr, char* x){
 	fprintf(fp, "%s\tPUSH\t%s,%s\n", label, adr, x);
 }
 void iw_POP		(char* label, char* r){
-	fprintf(fp, "%s\tPOP\t%s\n", label, r);
+	fprintf(fp, "%s\tPOP\t\t%s\n", label, r);
 }
 
 void iw_CALL	(char* label, char* adr){
@@ -62,20 +62,20 @@ void iw_END		(char* label){
 	fprintf(fp, "%s\tEND\n", label);
 }
 void iw_DS		(char* label, int n){
-	fprintf(fp, "%s\tDS\t%d\n", label, n);
+	fprintf(fp, "%s\tDS\t\t%d\n", label, n);
 }
 
 void iw_DC		(char* label, int n){
-	fprintf(fp, "%s\tDC\t%d\n", label, n);
+	fprintf(fp, "%s\tDC\t\t%d\n", label, n);
 }
 void iw_DC_str	(char* label, char* str){
-	fprintf(fp, "%s\tDC\t'%s'\n", label, str);
+	fprintf(fp, "%s\tDC\t\t'%s'\n", label, str);
 }
 void iw_IN		(char* label, char* r , char* adr){
-	fprintf(fp, "%s\tIN\t%s,%s\n", label, r, adr);
+	fprintf(fp, "%s\tIN\t\t%s,%s\n", label, r, adr);
 }
 void iw_OUT		(char* label, char* r , char* adr){
-	fprintf(fp, "%s\tOUT\t%s,%s\n", label, r, adr);
+	fprintf(fp, "%s\tOUT\t\t%s,%s\n", label, r, adr);
 }
 /*void iw_RPUSH	(char* label){}
 void iw_RPOP	(char* label){}*/
