@@ -36,9 +36,14 @@ char* get_label(SyntaxTreeNode* node){
 }
 
 char* get_end_label(SyntaxTreeNode* node){
-	char* hoge;
-	hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
+	char* hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
 	sprintf(hoge, "$%s%p@end", SYNTAXDIC[node->s_elem_it], node);
+	return hoge;
+}
+
+char* get_proc_label(ProcData* proc_data){
+	char* hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
+	sprintf(hoge, "%%%s", proc_data->name);
 	return hoge;
 }
 
@@ -189,16 +194,21 @@ void generate_assm(SyntaxTreeNode* node){
 		 *                                                             L> SEXPRS_1_0
 		 *                                                                 L> TCOMMA -> SEXPR
 		 */
+
+		ProcCallData* call_data = (ProcCallData*) node->data;
+		SyntaxTreeNode* node_SCALLSTAT_2 = node->child->brother->brother;
 		
-		/* just 0 argument */
-		/*if(node_SCALLSTAT_2->parse_result == PARSERESULT_EMPTY){
-
-		}*/
-
 		/* 1 or more arguments */
-		/*else*/{
+		if(node_SCALLSTAT_2->parse_result == PARSERESULT_MATCH){
+			SyntaxTreeNode* node_SEXPR = node_SCALLSTAT_2->child->child->brother;
+			Type* type_node_SEXPR = (Type*) node_SEXPR->data;
+			generate_assm(node_SEXPR);
+			if(type_node_SEXPR->node_to_assign != NULL){
 
+			}
 		}
+
+		iw_CALL	("", call_data->proc_data);
 
 		break;
 
@@ -251,7 +261,6 @@ void generate_assm(SyntaxTreeNode* node){
 		}
 		break;
 	}
-
 
 	case SEXPR:{
 		/* SEXPR

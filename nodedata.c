@@ -799,7 +799,8 @@ int check_type(SyntaxTreeNode* node){
 		/* pattern 1 */
 		if(node->child->brother->child->parse_result == PARSERESULT_MATCH){
 			VarDecData* var_dec_data = 
-				(VarDecData*)((VarData*)((VarRefData*)((VarData*)node->child->data)->data)->data)->data;
+					(VarDecData*)((VarData*)((VarRefData*)
+					((VarData*)node->child->data)->data)->data)->data;
 			SyntaxTreeNode* node_SEXPR = node->child->brother->child->child->brother;
 			Type* node_SEXPR_type;
 			Type* node_SVAR_type;
@@ -821,18 +822,20 @@ int check_type(SyntaxTreeNode* node){
 			node_SVAR_type = (Type*)node->data;
 			node_SVAR_type->stdtype = var_dec_data->type.stdtype;
 			node_SVAR_type->array_size = 0;
+			node_SVAR_type->can_assign = 1;
 			return 1;
 		}
 		/* pattern 2 */
 		else/* if(node->child->brother->child->parse_result == PARSERESULT_EMPTY) */{
 			VarDecData* var_dec_data = 
-				(VarDecData*)((VarData*)((VarRefData*)((VarData*)node->child->data)->data)->data)->data;
+					(VarDecData*)((VarData*)((VarRefData*)
+					((VarData*)node->child->data)->data)->data)->data;
 			Type* node_SVAR_type;
-
 			node->data = mem_alloc(sizeof(Type));
 			node_SVAR_type = (Type*)node->data;
 			node_SVAR_type->stdtype = var_dec_data->type.stdtype;
 			node_SVAR_type->array_size = var_dec_data->type.array_size;
+			node_SVAR_type->can_assign = node_SVAR_type->array_size == 0 ? 1 : 0;
 			return 1;
 		}
 	}
@@ -859,6 +862,7 @@ int check_type(SyntaxTreeNode* node){
 		}
 		type->stdtype = ((Type*)node_SSIMPLEEXPR->data)->stdtype;
 		type->array_size = ((Type*)node_SSIMPLEEXPR->data)->array_size;
+		type->can_assign = ((Type*)node_SSIMPLEEXPR->data)->can_assign;
 
 		while(node_SEXPR_1_0->parse_result != PARSERESULT_DIFFERENCE){
 			SyntaxTreeNode* node_rel_op = node_SEXPR_1_0->child->child;
@@ -916,6 +920,7 @@ int check_type(SyntaxTreeNode* node){
 		}
 		type->stdtype = ((Type*)node_STERM->data)->stdtype;
 		type->array_size = ((Type*)node_STERM->data)->array_size;
+		type->can_assign = ((Type*)node_STERM->data)->can_assign;
 
 		if(node_SSIMPLEEXPR_0_0->parse_result == PARSERESULT_MATCH){
 			if(type->stdtype != TINTEGER || type->array_size != 0){
@@ -960,6 +965,8 @@ int check_type(SyntaxTreeNode* node){
 				return 0;
 			}
 
+			type->can_assign = 0;
+
 			node_SSIMPLEEXPR_2_0 = node_SSIMPLEEXPR_2_0->brother;
 
 		}
@@ -987,6 +994,7 @@ int check_type(SyntaxTreeNode* node){
 		}
 		type->stdtype = ((Type*)node_SFACTOR->data)->stdtype;
 		type->array_size = ((Type*)node_SFACTOR->data)->array_size;
+		type->can_assign = ((Type*)node_SFACTOR->data)->can_assign;
 
 		while(node_STERM_1_0->parse_result != PARSERESULT_DIFFERENCE){
 			SyntaxTreeNode* node_mul_op = node_STERM_1_0->child->child;
@@ -1019,6 +1027,7 @@ int check_type(SyntaxTreeNode* node){
 
 			type->stdtype = required_type;
 			type->array_size = 0;
+			type->can_assign = 0;
 
 			node_STERM_1_0 = node_STERM_1_0->brother;
 
@@ -1032,29 +1041,31 @@ int check_type(SyntaxTreeNode* node){
 		 *  L> SVAR -> SCONST -> SFACTOR_2 -> SFACTOR_3 -> SFACTOR_4
 		 */
 		SyntaxTreeNode* child = node->child;
-		while(1){
-			if(child->parse_result != PARSERESULT_MATCH){
-				child = child->brother;
-				continue;
-			}
-			if(child->s_elem_it == SCONST){
-				node->data = mem_alloc(sizeof(Type));
-				((Type*)node->data)->stdtype = ((ConstData*)child->data)->type.stdtype;
-				((Type*)node->data)->array_size = ((ConstData*)child->data)->type.array_size;
-			}
-			else{
-				if(!check_type(child)){
-					printf("\t in %s\n", SYNTAXDIC[child->s_elem_it]);
-					return 0;
-				}
-				node->data = mem_alloc(sizeof(Type));
-				((Type*)node->data)->stdtype = ((Type*)child->data)->stdtype;
-				((Type*)node->data)->array_size = ((Type*)child->data)->array_size;
-			}
-			return 1;
+		Type* type;
+		while(child->parse_result != PARSERESULT_MATCH){
+			child = child->brother;
 		}
-		printf("nobody can come here just for debug\n");
-		return 0;
+		node->data = mem_alloc(sizeof(Type));
+		type = (Type*) node->data;
+		if(child->s_elem_it == SCONST){
+			type->stdtype = ((ConstData*)child->data)->type.stdtype;
+			type->array_size = ((ConstData*)child->data)->type.array_size;
+		}
+		else{
+			if(!check_type(child)){
+				printf("\t in %s\n", SYNTAXDIC[child->s_elem_it]);
+				return 0;
+			}
+			type->stdtype = ((Type*)child->data)->stdtype;
+			type->array_size = ((Type*)child->data)->array_size;
+		}
+		if(child->s_elem_it == SVAR){
+			type->can_assign = ((Type*)child->data)->can_assign;
+		}
+		else{
+			type->can_assign = 0;	
+		}
+		return 1;
 	}
 
 	case SFACTOR_2:{
@@ -1066,6 +1077,7 @@ int check_type(SyntaxTreeNode* node){
 			node->data = mem_alloc(sizeof(Type));
 			((Type*)node->data)->stdtype = ((Type*)child->data)->stdtype;
 			((Type*)node->data)->array_size = ((Type*)child->data)->array_size;
+			((Type*)node->data)->can_assign = 0;
 			return 1;
 		}
 
@@ -1084,6 +1096,7 @@ int check_type(SyntaxTreeNode* node){
 			type = (Type*)node->data;
 			type->stdtype = ((Type*)child->data)->stdtype;
 			type->array_size = ((Type*)child->data)->array_size;
+			type->can_assign = 0;
 			if(type->stdtype == TBOOLEAN && type->array_size == 0){
 				return 1;
 			}
@@ -1125,6 +1138,7 @@ int check_type(SyntaxTreeNode* node){
 
 		type->stdtype = node_Tstdtype->s_elem_it;
 		type->array_size = 0;
+		type->can_assign = 0;
 
 		return 1;
 
