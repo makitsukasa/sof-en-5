@@ -4,8 +4,7 @@
 typedef struct Type_{
 	int stdtype; /* TINTEGER or TSTRING or TBOOLEAN */
 	int array_size;
-	SyntaxTreeNode* node_to_assign;
-	int array_index;
+	int can_assign;
 } Type;
 
 typedef struct Lines_{

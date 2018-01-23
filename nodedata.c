@@ -822,8 +822,7 @@ int check_type(SyntaxTreeNode* node){
 			node_SVAR_type = (Type*)node->data;
 			node_SVAR_type->stdtype = var_dec_data->type.stdtype;
 			node_SVAR_type->array_size = 0;
-			node_SVAR_type->node_to_assign = node->child;
-			node_SVAR_type->array_index = 
+			node_SVAR_type->can_assign = 1;
 			return 1;
 		}
 		/* pattern 2 */
@@ -836,8 +835,7 @@ int check_type(SyntaxTreeNode* node){
 			node_SVAR_type = (Type*)node->data;
 			node_SVAR_type->stdtype = var_dec_data->type.stdtype;
 			node_SVAR_type->array_size = var_dec_data->type.array_size;
-			node_SVAR_type->node_to_assign = 
-					node_SVAR_type->array_size == 0 ? node->child : NULL;
+			node_SVAR_type->can_assign = node_SVAR_type->array_size == 0 ? 1 : 0;
 			return 1;
 		}
 	}

@@ -121,6 +121,25 @@ void generate_assm(SyntaxTreeNode* node){
 		break;
 	}
 
+	case SFORMPARAM:{
+		/* SFORMPARAM
+		 *  L> TLPAREN SVARNAMES TCOLON STYPE SFORMPARAM_4 TRPAREN
+		 *                                     L> SFORMPARAM_4_0
+		 *                                         L> TSEMI SVARNAMES TCOLON STYPE
+		 */
+		SyntaxTreeNode* node_SFORMPARAM_4_0 =
+				node->child->brother->brother->brother->brother->child;
+
+		generate_assm(node_SFORMPARAM_4_0);
+		break;
+	}
+
+	case SFORMPARAM_4_0:{
+
+		generate_assm(node->brother);
+		break;
+	}
+
 	case SCONDSTAT:{
 		/* SCONDSTAT
 		 *  L> TIF -> (*)SEXPR -> TTHEN -> SSTAT -> SCONDSTAT_4
@@ -194,28 +213,114 @@ void generate_assm(SyntaxTreeNode* node){
 		 *                                                             L> SEXPRS_1_0
 		 *                                                                 L> TCOMMA -> SEXPR
 		 */
+		/* call func(x, y)
+		 *
+		 *  - push(x)
+		 *  - push(y)
+		 *  - call func
+		 *  - x = pop()
+		 *  - y = pop()
+		 */
 
 		ProcCallData* call_data = (ProcCallData*) node->data;
 		SyntaxTreeNode* node_SCALLSTAT_2 = node->child->brother->brother;
+
+		iw_comment("start SCALLSTAT");
 		
 		/* 1 or more arguments */
 		if(node_SCALLSTAT_2->parse_result == PARSERESULT_MATCH){
-			SyntaxTreeNode* node_SEXPR = node_SCALLSTAT_2->child->child->brother;
-			Type* type_node_SEXPR = (Type*) node_SEXPR->data;
+			SyntaxTreeNode* node_SEXPR = node_SCALLSTAT_2->child->child->brother->child;
+			SyntaxTreeNode* node_SEXPRS_1_0 = node_SEXPR->brother->child;
+			Type* type_node_SEXPR = (Type*)node_SEXPR->data;
+			iw_comment("start before call 1");
 			generate_assm(node_SEXPR);
-			if(type_node_SEXPR->node_to_assign != NULL){
 
+			if(type_node_SEXPR->can_assign){
+				SyntaxTreeNode* node_SVAR =
+						node_SEXPR->child->child->brother->child->child;
+				iw_PUSH	("", get_label(node_SVAR), "0");
 			}
+			else{
+				iw_DC	(get_label(node_SEXPR), 0);
+				iw_ST	("", "gr1", get_label(node_SEXPR));
+				iw_PUSH	("", get_label(node_SEXPR), "0");
+			}
+			iw_comment("end   before call 1");
+
+			if(node_SEXPR->brother->parse_result == PARSERESULT_MATCH){
+				iw_comment("start before call 2");
+				generate_assm(node_SEXPR);
+				while(node_SEXPRS_1_0 != NULL &&
+						node_SEXPRS_1_0->parse_result == PARSERESULT_MATCH){
+					node_SEXPR = node_SEXPRS_1_0->child->brother;
+					type_node_SEXPR = (Type*)node_SEXPR->data;
+					if(type_node_SEXPR->can_assign){
+						SyntaxTreeNode* node_SVAR =
+								node_SEXPR->child->child->brother->child->child;
+						iw_PUSH	("", get_label(node_SVAR), "0");
+					}
+					else{
+						iw_DC	(get_label(node_SEXPR), 0);
+						iw_ST	("", "gr1", get_label(node_SEXPR));
+						iw_PUSH	("", get_label(node_SEXPR), "0");
+					}
+					node_SEXPRS_1_0 = node_SEXPRS_1_0->brother;
+				}
+				iw_comment("end   before call 2");
+			}
+
 		}
 
 		iw_CALL	("", call_data->proc_data);
 
+		/* 1 or more arguments */
+		if(node_SCALLSTAT_2->parse_result == PARSERESULT_MATCH){
+			SyntaxTreeNode* node_SEXPR = node_SCALLSTAT_2->child->child->brother->child;
+			SyntaxTreeNode* node_SEXPRS_1_0 = node_SEXPR->brother->child;
+			Type* type_node_SEXPR = (Type*)node_SEXPR->data;
+			iw_comment("start after call 1");
+			generate_assm(node_SEXPR);
+
+			if(type_node_SEXPR->can_assign){
+				SyntaxTreeNode* node_SVAR =
+						node_SEXPR->child->child->brother->child->child;
+				iw_POP	("", "gr1");
+				iw_ST	("", "gr1", get_label(node_SVAR));
+			}
+			else{
+				iw_POP	("", "gr1");
+				/*iw_ST	("", "gr1", get_label(node_SEXPR));*/
+			}
+			iw_comment("end   after call 1");
+
+			if(node_SEXPR->brother->parse_result == PARSERESULT_MATCH){
+				iw_comment("start after call 2");
+				generate_assm(node_SEXPR);
+				while(node_SEXPRS_1_0 != NULL &&
+						node_SEXPRS_1_0->parse_result == PARSERESULT_MATCH){
+					node_SEXPR = node_SEXPRS_1_0->child->brother;
+					type_node_SEXPR = (Type*)node_SEXPR->data;
+					if(type_node_SEXPR->can_assign){
+						SyntaxTreeNode* node_SVAR =
+								node_SEXPR->child->child->brother->child->child;
+						iw_POP	("", "gr1");
+						iw_ST	("", "gr1", get_label(node_SVAR));
+					}
+					else{
+						iw_POP	("", "gr1");
+						/*iw_ST	("", "gr1", get_label(node_SEXPR));*/
+					}
+					node_SEXPRS_1_0 = node_SEXPRS_1_0->brother;
+				}
+				iw_comment("end   after call 2");
+			}
+
+		}
+
+		iw_comment("end   SCALLSTAT");
+
 		break;
 
-	}
-
-	case SEXPRS:{
-		break;
 	}
 
 	case SRETSTAT:{
@@ -228,6 +333,8 @@ void generate_assm(SyntaxTreeNode* node){
 		 *  L> SLEFTPART -> TASSIGN -> SEXPR
 		 *      L> SVAR
 		 */
+		SyntaxTreeNode* node_SVAR = node->child->child;
+		iw_ST	("", "gr1", get_label(node_SVAR));
 		break;
 	}
 
@@ -289,12 +396,12 @@ void generate_assm(SyntaxTreeNode* node){
 			iw_POP			("", "gr1");		/* gr1 = stack.pop() */
 			/* gr1 = calc(gr1, gr2) */
 			switch(node_rel_op->s_elem_it){
-			case TEQUAL:	break;
-			case TNOTEQ:	break;
-			case TLE:		break;
-			case TLEEQ:		break;
-			case TGR:		break;
-			case TGREQ:		break;
+			case TEQUAL:	iw_comment("\tEQUAL\t\tgr1, gr2");	break;
+			case TNOTEQ:	iw_comment("\tNOTEQ\t\tgr1, gr2");	break;
+			case TLE:		iw_comment("\tLE\t\tgr1, gr2");		break;
+			case TLEEQ:		iw_comment("\tLEEQ\t\tgr1, gr2");		break;
+			case TGR:		iw_comment("\tGR\t\tgr1, gr2");		break;
+			case TGREQ:		iw_comment("\tGREQ\t\tgr1, gr2");		break;
 			}
 
 			node_SEXPR_1_0 = node_SEXPR_1_0->brother;
@@ -345,9 +452,9 @@ void generate_assm(SyntaxTreeNode* node){
 			iw_POP			("", "gr1");		/* gr1 = stack.pop() */
 			/* gr1 = calc(gr1, gr2) */
 			switch(node_add_op->s_elem_it){
-			case TPLUS:		break;
-			case TMINUS:	break;
-			case TOR:		break;
+			case TPLUS:		iw_comment("\tPLUS\t\tgr1, gr2");		break;
+			case TMINUS:	iw_comment("\tMINUS\t\tgr1, gr2");	break;
+			case TOR:		iw_comment("\tOR\t\tgr1, gr2");		break;
 			}
 
 			node_SSIMPLEEXPR_2_0 = node_SSIMPLEEXPR_2_0->brother;
@@ -383,9 +490,9 @@ void generate_assm(SyntaxTreeNode* node){
 			iw_POP			("", "gr1");		/* gr1 = stack.pop() */
 			/* gr1 = calc(gr1, gr2) */
 			switch(node_add_op->s_elem_it){
-			case TSTAR:		break;
-			case TDIV:		break;
-			case TAND:		break;
+			case TSTAR:		iw_comment("\tMUL\t\tgr1, gr2");	break;
+			case TDIV:		iw_comment("\tDIV\t\tgr1, gr2");	break;
+			case TAND:		iw_comment("\tAND\t\tgr1, gr2");	break;
 			}
 
 			node_STERM_1_0 = node_STERM_1_0->brother;
@@ -436,8 +543,8 @@ void generate_assm(SyntaxTreeNode* node){
 	}
 
 	case SCONST:{
-		ConstData* data = (ConstData*)node->data;
-		iw_DC(get_label(node), data->val);
+		ConstData* const_data = (ConstData*)node->data;
+		iw_DC(get_label(node), const_data->val);
 		iw_LD("", "gr1", get_label(node));
 		break;
 	}

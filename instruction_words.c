@@ -3,7 +3,9 @@
 void iw_LD		(char* label, char* r1, char* r2 ){
 	fprintf(fp, "\tLD\t\t%s,%s\n", r1, r2);
 }
-void iw_ST		(char* label, char* r1, char* r2 ){}
+void iw_ST		(char* label, char* r1, char* r2 ){
+	fprintf(fp, "\tST\t\t%s,%s\n", r1, r2);
+}
 void iw_LAD		(char* label, char* r , char* adr){
 	fprintf(fp, "\tLAD\t\t%s,%s\n", r, adr);
 }
@@ -27,12 +29,24 @@ void iw_SRA		(char* label, char* r , char* adr){}
 void iw_SLL		(char* label, char* r , char* adr){}
 void iw_SRL		(char* label, char* r , char* adr){}
 
-void iw_JPL		(char* label, char* adr){}
-void iw_JMI		(char* label, char* adr){}
-void iw_JNZ		(char* label, char* adr){}
-void iw_JZE		(char* label, char* adr){}
-void iw_JOV		(char* label, char* adr){}
-void iw_JUMP	(char* label, char* adr){}
+void iw_JPL		(char* label, char* adr){
+	fprintf(fp, "%s\tJPL\t%s\n", label, adr);
+}
+void iw_JMI		(char* label, char* adr){
+	fprintf(fp, "%s\tJMI\t%s\n", label, adr);
+}
+void iw_JNZ		(char* label, char* adr){
+	fprintf(fp, "%s\tJNZ\t%s\n", label, adr);
+}
+void iw_JZE		(char* label, char* adr){
+	fprintf(fp, "%s\tJZE\t%s\n", label, adr);
+}
+void iw_JOV		(char* label, char* adr){
+	fprintf(fp, "%s\tJOV\t%s\n", label, adr);
+}
+void iw_JUMP	(char* label, char* adr){
+	fprintf(fp, "%s\tJUMP\t%s\n", label, adr);
+}
 
 void iw_PUSH	(char* label, char* adr, char* x){
 	fprintf(fp, "%s\tPUSH\t%s,%s\n", label, adr, x);
