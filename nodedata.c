@@ -314,10 +314,12 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace,
 				ProgData *prog_data = (ProgData*)namespace->data;
 				if(prog_data->var_data_tail == NULL){
 					prog_data->var_data_head = (VarData*)node->data;
+					prog_data->var_data_head->prev = NULL;
 					prog_data->var_data_tail = (VarData*)node->data;
 				}
 				else{
 					prog_data->var_data_tail->next = (VarData*)node->data;
+					prog_data->var_data_tail->next->prev = prog_data->var_data_tail;
 					prog_data->var_data_tail = (VarData*)node->data;
 				}
 				var_data = prog_data->var_data_head;
@@ -329,10 +331,12 @@ int fill_node_data(SyntaxTreeNode* node, SyntaxTreeNode* namespace,
 				ProcData *proc_data = (ProcData*)namespace->data;
 				if(proc_data->var_data_tail == NULL){
 					proc_data->var_data_head = (VarData*)node->data;
+					proc_data->var_data_head->prev = NULL;
 					proc_data->var_data_tail = (VarData*)node->data;
 				}
 				else{
 					proc_data->var_data_tail->next = (VarData*)node->data;
+					proc_data->var_data_tail->next->prev = proc_data->var_data_tail;
 					proc_data->var_data_tail = (VarData*)node->data;
 				}
 				var_data = proc_data->var_data_head;

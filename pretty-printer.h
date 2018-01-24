@@ -112,6 +112,7 @@ typedef struct SyntaxTreeNode_{
 typedef struct VarData_{
 	void* data;
 	int is_declaration;
+	struct VarData_ *prev;
 	struct VarData_ *next;
 }VarData;
 

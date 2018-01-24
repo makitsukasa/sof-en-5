@@ -1,5 +1,34 @@
 #include "compiler.h"
 
+char* get_proc_label(ProcData* proc_data){
+	char* hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
+	sprintf(hoge, "%%%s", proc_data->name);
+	return hoge;
+}
+
+char* get_var_label(VarData* var_data){
+	char* hoge;
+	if(!var_data->is_declaration){
+		VarRefData* var_ref_data = (VarRefData*)var_data->data;
+		return get_var_label((VarData*)var_ref_data->data);
+	}
+	hoge = calloc(sizeof(char), MAXSTRSIZE * 2 + 10);
+	VarDecData* var_dec_data = (VarDecData*)var_data->data;
+	if(var_data->is_declaration == 0){
+		VarRefData* var_ref_data = (VarRefData*)var_data->data;
+		VarData* var_data = (VarData*)var_ref_data->data;
+		var_dec_data = (VarDecData*)var_data->data;
+	}
+	if(var_dec_data->namespace->name == NULL){
+		sprintf(hoge, "$%s%%%%global%%",
+				var_dec_data->name);
+	}
+	else{
+		sprintf(hoge, "$%s%%%s",
+				var_dec_data->name, var_dec_data->namespace->name);
+	}
+	return hoge;
+}
 
 char* get_label(SyntaxTreeNode* node){
 	char* hoge;
@@ -7,43 +36,19 @@ char* get_label(SyntaxTreeNode* node){
 		return get_label(node->child);
 	}
 	if(node->s_elem_it == SVARNAME){
-		hoge = calloc(sizeof(char), MAXSTRSIZE * 2 + 10);
-		VarData* var_data = (VarData*)node->data;
-		VarDecData* var_dec_data = (VarDecData*)var_data->data;
-		if(var_data->is_declaration == 0){
-			VarRefData* var_ref_data = (VarRefData*)var_data->data;
-			VarData* var_data = (VarData*)var_ref_data->data;
-			var_dec_data = (VarDecData*)var_data->data;
-		}
-		if(var_dec_data->namespace->name == NULL){
-			sprintf(hoge, "$%s%%@global",
-					var_dec_data->name);
-		}
-		else{
-			sprintf(hoge, "$%s%%%s",
-					var_dec_data->name, var_dec_data->namespace->name);
-		}
+		return get_var_label((VarData*)node->data);
 	}
 	else if(node->s_elem_it == SSUBPROGDEC){
-		hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
-		sprintf(hoge, "%%%s", ((ProcData*)node->data)->name);
+		return get_proc_label((ProcData*)node->data);
 	}
-	else{
-		hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
-		sprintf(hoge, "$%s%p", SYNTAXDIC[node->s_elem_it], node);
-	}
+	hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
+	sprintf(hoge, "$%s%p", SYNTAXDIC[node->s_elem_it], node);
 	return hoge;
 }
 
 char* get_end_label(SyntaxTreeNode* node){
 	char* hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
-	sprintf(hoge, "$%s%p@end", SYNTAXDIC[node->s_elem_it], node);
-	return hoge;
-}
-
-char* get_proc_label(ProcData* proc_data){
-	char* hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
-	sprintf(hoge, "%%%s", proc_data->name);
+	sprintf(hoge, "$%s%p%%end%%", SYNTAXDIC[node->s_elem_it], node);
 	return hoge;
 }
 
@@ -68,13 +73,23 @@ void generate_assm(SyntaxTreeNode* node){
 
 		iw_comment	("start SPROGRAM");
 		iw_START	(get_label(node));
-		iw_LAD		("", "gr0", "ZERO");
+		iw_LAD		("", "gr0", "0");
 		iw_CALL		("", get_label(node_SBLOCK));
 		iw_CALL		("", "FLUSH");
 		iw_SVC		("", "0");
-		iw_comment	("end   SPROGRAM");
-
 		generate_assm(node_SBLOCK);
+		break;
+	}
+
+	case SBLOCK:{
+		/* SBLOCK
+		 *  L>SBLOCK_0->SCOMPSTAT
+		 */
+		generate_assm(node->child);
+		iw_comment	("start SCOMPSTAT under SBLOCK");
+		iw_label(get_label(node));
+		generate_assm(node->child->brother);
+		iw_comment	("end   SCOMPSTAT under SBLOCK");
 		break;
 	}
 
@@ -100,6 +115,7 @@ void generate_assm(SyntaxTreeNode* node){
 			/*VarRefData var_ref_data = (VarRefData*)var_data->data;*/
 
 		}
+		generate_assm(node->brother);
 		break;
 	}
 
@@ -111,34 +127,29 @@ void generate_assm(SyntaxTreeNode* node){
 		SyntaxTreeNode* node_SSUBPROGDEC_2 = node->child->brother->brother;
 		SyntaxTreeNode* node_SSUBPROGDEC_4 = node_SSUBPROGDEC_2->brother->brother;
 		SyntaxTreeNode* node_SCOMPSTAT = node_SSUBPROGDEC_4->brother;
-		iw_comment	("start SSUBPROGDEC");
-		generate_assm(node_SSUBPROGDEC_2->child);
-		generate_assm(node_SSUBPROGDEC_4->child);
-		iw_label(get_label(node));
-		generate_assm(node_SCOMPSTAT->child);
-		iw_RET("");
-		iw_comment	("end   SSUBPROGDEC");
+		ProcData* proc_data = (ProcData*)node->data;
+		VarData* var_data = proc_data->var_data_tail;
+
+		iw_comment		("start SSUBPROGDEC");
+		generate_assm	(node_SSUBPROGDEC_2->child);
+		generate_assm	(node_SSUBPROGDEC_4->child);
+		iw_label		(get_label(node));
+		iw_POP			("", "gr7");
+		while(var_data != NULL){
+			VarDecData* var_dec_data = (VarDecData*)var_data->data;
+			if(var_dec_data->is_param){
+				iw_POP		("", "gr1");
+				iw_ST		("", "gr1", get_var_label(var_data));
+			}
+			var_data = var_data->prev;
+		}
+		iw_PUSH_3		("", "0", "gr7");
+		generate_assm	(node_SCOMPSTAT->child);
+		iw_RET			("");
+		iw_comment		("end   SSUBPROGDEC");
 		break;
 	}
 
-	case SFORMPARAM:{
-		/* SFORMPARAM
-		 *  L> TLPAREN SVARNAMES TCOLON STYPE SFORMPARAM_4 TRPAREN
-		 *                                     L> SFORMPARAM_4_0
-		 *                                         L> TSEMI SVARNAMES TCOLON STYPE
-		 */
-		SyntaxTreeNode* node_SFORMPARAM_4_0 =
-				node->child->brother->brother->brother->brother->child;
-
-		generate_assm(node_SFORMPARAM_4_0);
-		break;
-	}
-
-	case SFORMPARAM_4_0:{
-
-		generate_assm(node->brother);
-		break;
-	}
 
 	case SCONDSTAT:{
 		/* SCONDSTAT
@@ -187,8 +198,7 @@ void generate_assm(SyntaxTreeNode* node){
 		iw_comment		("start SITERSTAT");
 		iw_label		(get_label(node));
 		generate_assm	(node_SEXPR);
-		iw_LAD			("", "gr2", "0");
-		iw_CPA			("", "gr1", "gr2");
+		iw_CPA			("", "gr1", "gr0");
 		iw_JZE			("", get_end_label(node));
 		generate_assm	(node_SSTAT);
 		iw_JUMP			("", get_label(node));
@@ -232,91 +242,46 @@ void generate_assm(SyntaxTreeNode* node){
 			SyntaxTreeNode* node_SEXPR = node_SCALLSTAT_2->child->child->brother->child;
 			SyntaxTreeNode* node_SEXPRS_1_0 = node_SEXPR->brother->child;
 			Type* type_node_SEXPR = (Type*)node_SEXPR->data;
-			iw_comment("start before call 1");
+			iw_comment("start before call 1st arg");
 			generate_assm(node_SEXPR);
 
 			if(type_node_SEXPR->can_assign){
 				SyntaxTreeNode* node_SVAR =
 						node_SEXPR->child->child->brother->child->child;
-				iw_PUSH	("", get_label(node_SVAR), "0");
+				iw_PUSH	("", get_label(node_SVAR));
 			}
 			else{
 				iw_DC	(get_label(node_SEXPR), 0);
 				iw_ST	("", "gr1", get_label(node_SEXPR));
-				iw_PUSH	("", get_label(node_SEXPR), "0");
+				iw_PUSH	("", get_label(node_SEXPR));
 			}
-			iw_comment("end   before call 1");
+			iw_comment("end   before call 1st arg");
 
 			if(node_SEXPR->brother->parse_result == PARSERESULT_MATCH){
-				iw_comment("start before call 2");
-				generate_assm(node_SEXPR);
+				iw_comment("start before call 2nd arg or after");
 				while(node_SEXPRS_1_0 != NULL &&
 						node_SEXPRS_1_0->parse_result == PARSERESULT_MATCH){
 					node_SEXPR = node_SEXPRS_1_0->child->brother;
 					type_node_SEXPR = (Type*)node_SEXPR->data;
+					generate_assm(node_SEXPR);
 					if(type_node_SEXPR->can_assign){
 						SyntaxTreeNode* node_SVAR =
 								node_SEXPR->child->child->brother->child->child;
-						iw_PUSH	("", get_label(node_SVAR), "0");
+						iw_PUSH	("", get_label(node_SVAR));
 					}
 					else{
 						iw_DC	(get_label(node_SEXPR), 0);
 						iw_ST	("", "gr1", get_label(node_SEXPR));
-						iw_PUSH	("", get_label(node_SEXPR), "0");
+						iw_PUSH	("", get_label(node_SEXPR));
 					}
 					node_SEXPRS_1_0 = node_SEXPRS_1_0->brother;
 				}
-				iw_comment("end   before call 2");
+				iw_comment("end   before call 2nd arg or after");
 			}
 
 		}
 
-		iw_CALL	("", call_data->proc_data);
-
-		/* 1 or more arguments */
-		if(node_SCALLSTAT_2->parse_result == PARSERESULT_MATCH){
-			SyntaxTreeNode* node_SEXPR = node_SCALLSTAT_2->child->child->brother->child;
-			SyntaxTreeNode* node_SEXPRS_1_0 = node_SEXPR->brother->child;
-			Type* type_node_SEXPR = (Type*)node_SEXPR->data;
-			iw_comment("start after call 1");
-			generate_assm(node_SEXPR);
-
-			if(type_node_SEXPR->can_assign){
-				SyntaxTreeNode* node_SVAR =
-						node_SEXPR->child->child->brother->child->child;
-				iw_POP	("", "gr1");
-				iw_ST	("", "gr1", get_label(node_SVAR));
-			}
-			else{
-				iw_POP	("", "gr1");
-				/*iw_ST	("", "gr1", get_label(node_SEXPR));*/
-			}
-			iw_comment("end   after call 1");
-
-			if(node_SEXPR->brother->parse_result == PARSERESULT_MATCH){
-				iw_comment("start after call 2");
-				generate_assm(node_SEXPR);
-				while(node_SEXPRS_1_0 != NULL &&
-						node_SEXPRS_1_0->parse_result == PARSERESULT_MATCH){
-					node_SEXPR = node_SEXPRS_1_0->child->brother;
-					type_node_SEXPR = (Type*)node_SEXPR->data;
-					if(type_node_SEXPR->can_assign){
-						SyntaxTreeNode* node_SVAR =
-								node_SEXPR->child->child->brother->child->child;
-						iw_POP	("", "gr1");
-						iw_ST	("", "gr1", get_label(node_SVAR));
-					}
-					else{
-						iw_POP	("", "gr1");
-						/*iw_ST	("", "gr1", get_label(node_SEXPR));*/
-					}
-					node_SEXPRS_1_0 = node_SEXPRS_1_0->brother;
-				}
-				iw_comment("end   after call 2");
-			}
-
-		}
-
+		iw_CALL	("", get_proc_label(call_data->proc_data));
 		iw_comment("end   SCALLSTAT");
 
 		break;
@@ -334,7 +299,9 @@ void generate_assm(SyntaxTreeNode* node){
 		 *      L> SVAR
 		 */
 		SyntaxTreeNode* node_SVAR = node->child->child;
-		iw_ST	("", "gr1", get_label(node_SVAR));
+		SyntaxTreeNode* node_SEXPR = node->child->brother->brother;
+		generate_assm	(node_SEXPR);
+		iw_ST			("", "gr1", get_label(node_SVAR));
 		break;
 	}
 
@@ -360,6 +327,7 @@ void generate_assm(SyntaxTreeNode* node){
 			SyntaxTreeNode* node_SEXPR = node_SVAR_1_0->child->brother;
 			generate_assm	(node_SEXPR);		/* gr1 = ans */
 			iw_LAD			("", "gr2", "gr1");	/* gr2 = gr1 */
+			/* if gr2 > array_size then jump EOVF */
 			iw_LAD_3		("", "gr1", get_label(node_SVARNAME), "gr2");
 		}
 		/* pattern 2 */
@@ -390,9 +358,9 @@ void generate_assm(SyntaxTreeNode* node){
 				node_rel_op = node_rel_op->brother;
 			}
 
-			iw_PUSH			("", "0", "gr1");	/* stack.push(gr1) */
+			iw_PUSH_3		("", "0", "gr1");	/* stack.push(gr1) */
 			generate_assm	(node_SSIMPLEEXPR);	/* gr1 = ans */
-			iw_LAD			("", "gr2", "gr1");	/* gr2 = gr1 */
+			iw_LD			("", "gr2", "gr1");	/* gr2 = gr1 */
 			iw_POP			("", "gr1");		/* gr1 = stack.pop() */
 			/* gr1 = calc(gr1, gr2) */
 			switch(node_rel_op->s_elem_it){
@@ -432,7 +400,7 @@ void generate_assm(SyntaxTreeNode* node){
 			if(node_TMINUS != NULL &&
 					node_TMINUS->parse_result == PARSERESULT_MATCH){
 				/* gr1 *= -1 */
-				iw_LAD		("", "gr2", "gr1");	/* gr2 = gr1 */
+				iw_LD		("", "gr2", "gr1");	/* gr2 = gr1 */
 				iw_SUBA		("", "gr1", "gr2");	/* gr1 -= gr2 (gr1 = 0) */
 				iw_SUBA		("", "gr1", "gr2");	/* gr1 -= gr2 */
 			}
@@ -446,15 +414,15 @@ void generate_assm(SyntaxTreeNode* node){
 				node_add_op = node_add_op->brother;
 			}
 
-			iw_PUSH			("", "0", "gr1");	/* stack.push(gr1) */
+			iw_PUSH_3		("", "0", "gr1");	/* stack.push(gr1) */
 			generate_assm	(node_STERM);		/* gr1 = ans */
-			iw_LAD			("", "gr2", "gr1");	/* gr2 = gr1 */
+			iw_LD			("", "gr2", "gr1");	/* gr2 = gr1 */
 			iw_POP			("", "gr1");		/* gr1 = stack.pop() */
 			/* gr1 = calc(gr1, gr2) */
 			switch(node_add_op->s_elem_it){
-			case TPLUS:		iw_comment("\tPLUS\t\tgr1, gr2");		break;
-			case TMINUS:	iw_comment("\tMINUS\t\tgr1, gr2");	break;
-			case TOR:		iw_comment("\tOR\t\tgr1, gr2");		break;
+			case TPLUS:		iw_ADDA	("", "gr1", "gr2");	break;
+			case TMINUS:	iw_SUBA	("", "gr1", "gr2");	break;
+			case TOR:		iw_OR	("", "gr1", "gr2");	break;
 			}
 
 			node_SSIMPLEEXPR_2_0 = node_SSIMPLEEXPR_2_0->brother;
@@ -484,15 +452,15 @@ void generate_assm(SyntaxTreeNode* node){
 				node_add_op = node_add_op->brother;
 			}
 
-			iw_PUSH			("", "0", "gr1");	/* stack.push(gr1) */
+			iw_PUSH_3		("", "0", "gr1");	/* stack.push(gr1) */
 			generate_assm	(node_SFACTOR);		/* gr1 = ans */
-			iw_LAD			("", "gr2", "gr1");	/* gr2 = gr1 */
+			iw_LD			("", "gr2", "gr1");	/* gr2 = gr1 */
 			iw_POP			("", "gr1");		/* gr1 = stack.pop() */
 			/* gr1 = calc(gr1, gr2) */
 			switch(node_add_op->s_elem_it){
-			case TSTAR:		iw_comment("\tMUL\t\tgr1, gr2");	break;
-			case TDIV:		iw_comment("\tDIV\t\tgr1, gr2");	break;
-			case TAND:		iw_comment("\tAND\t\tgr1, gr2");	break;
+			case TSTAR:		iw_MULA	("", "gr1", "gr2");	break;
+			case TDIV:		iw_DIVA	("", "gr1", "gr2");	break;
+			case TAND:		iw_AND	("", "gr1", "gr2");	break;
 			}
 
 			node_STERM_1_0 = node_STERM_1_0->brother;
@@ -577,7 +545,7 @@ void generate_assm(SyntaxTreeNode* node){
 		Type* type_node_SVAR = (Type*)node_SVAR->data;
 		SyntaxTreeNode* node_SINSTAT_1_0_2_0 = node_SVAR->brother->child;
 
-		iw_LD	("", "gr1", get_label(node_SVAR));
+		iw_LAD	("", "gr1", get_label(node_SVAR));
 		if(type_node_SVAR->stdtype == TINTEGER){
 			iw_CALL("", "READINT");
 		}
@@ -637,7 +605,7 @@ void generate_assm(SyntaxTreeNode* node){
 			SyntaxTreeNode* node_SEXPR = node->child->child;
 			SyntaxTreeNode* node_SOUTFORM_0_1 = node_SEXPR->brother;
 			Type* type_node_SEXPR = (Type*)node_SEXPR->data;
-			generate_assm(node_SEXPR);	/* gr1 <-  */
+			generate_assm(node_SEXPR);	/* gr1 <- expr */
 			if(node_SOUTFORM_0_1->parse_result == PARSERESULT_MATCH){
 				SyntaxTreeNode* node_TNUMBER = node_SOUTFORM_0_1->child->child->brother;
 				iw_LAD	("", "gr2", node_TNUMBER->string_attr);
@@ -682,15 +650,45 @@ void generate_assm(SyntaxTreeNode* node){
 
 int main(int nc, char *np[]){
 	SyntaxTreeNode *node_SPROGRAM;
+	int strlen_np1;
+	char output_file_name[MAXSTRSIZE];
 	/*CrossRefRecord *record_head;*/
 
-	if(nc < 2) {
-		printf("File name id not given.\n");
+	if(nc < 2){
+		printf("Input file name is needed.\n");
 		exit(-1);
 	}
 
-	if(init_scan(np[1]) < 0) {
-		printf("File %s can not open.\n", np[1]);
+	strlen_np1 = strlen(np[1]);
+
+	if(strlen_np1 >= MAXSTRSIZE){
+		printf("Input file name is too long.\n");
+		exit(-1);
+	}
+
+	if(	np[1][strlen_np1 - 4] != '.' || 
+		np[1][strlen_np1 - 3] != 'm' || 
+		np[1][strlen_np1 - 2] != 'p' || 
+		np[1][strlen_np1 - 1] != 'l'){
+		printf("Input file has invalid extension.\n");
+		exit(-1);
+	}
+
+	if(init_scan(np[1]) < 0){
+		printf("Input file %s can not open.\n", np[1]);
+		exit(-1);
+	}
+
+	/*output_file = stdout;*/
+	
+	strcpy(output_file_name, np[1]);
+	output_file_name[strlen(output_file_name) - 4] = '.';
+	output_file_name[strlen(output_file_name) - 3] = 'c';
+	output_file_name[strlen(output_file_name) - 2] = 's';
+	output_file_name[strlen(output_file_name) - 1] = 'l';
+	output_file = fopen(output_file_name, "w");
+	if(output_file == NULL){
+		printf("Output file can not open.\n");
 		exit(-1);
 	}
 
@@ -732,35 +730,33 @@ int main(int nc, char *np[]){
 	/*debug_tree(node_SPROGRAM);
 	debug_variable(node_SPROGRAM);*/
 
-	fp = stdout;
-
 	generate_assm(node_SPROGRAM);
 
-	if(0){
-		fprintf(fp, "\n\
+#if 1
+	fprintf(output_file, "\n\
 EOVF\n\
-	CALL WRITELINE\n\
+	CALL WRITENEWLINE\n\
 	LAD gr1, EOVF1\n\
 	LD gr2, gr0\n\
 	CALL WRITESTR\n\
-	CALL WRITELINE\n\
+	CALL WRITENEWLINE\n\
 	SVC 1 ; overflow error stop\n\
 EOVF1 DC '***** Run-Time Error : Overflow *****'\n\
 E0DIV\n\
 	JNZ EOVF\n\
-	CALL WRITELINE\n\
+	CALL WRITENEWLINE\n\
 	LAD gr1, E0DIV1\n\
 	LD gr2, gr0\n\
 	CALL WRITESTR\n\
-	CALL WRITELINE\n\
+	CALL WRITENEWLINE\n\
 	SVC 2 ; 0-divide error stop\n\
 E0DIV1 DC '***** Run-Time Error : Zero-Divide *****'\n\
 EROV\n\
-	CALL WRITELINE\n\
+	CALL WRITENEWLINE\n\
 	LAD gr1, EROV1\n\
 	LD gr2, gr0\n\
 	CALL WRITESTR\n\
-	CALL WRITELINE\n\
+	CALL WRITENEWLINE\n\
 	SVC 3 ; range-over error stop\n\
 EROV1 DC '***** Run-Time Error : Range-Over in ArrayIndex *****'\n\
 WRITECHAR\n\
@@ -817,7 +813,7 @@ BOVFCHECK\n\
 	ADDA gr7, ONE\n\
 	CPA gr7, BOVFLEVEL\n\
 	JMI BOVF1\n\
-	CALL WRITELINE\n\
+	CALL WRITENEWLINE\n\
 	LD gr7, OBUFSIZE\n\
 BOVF1\n\
 	RET\n\
@@ -910,7 +906,7 @@ FLUSH\n\
 	RPUSH\n\
 	LD gr7, OBUFSIZE\n\
 	JZE FL1\n\
-	CALL WRITELINE\n\
+	CALL WRITENEWLINE\n\
 FL1\n\
 	RPOP\n\
 	RET\n\
@@ -993,7 +989,6 @@ READSKIPTONEWLINE\n\
 	RET\n\
 FALSE DC 0\n\
 TRUE DC 1\n\
-ZERO DC 0\n\
 ONE DC 1\n\
 SIX DC 6\n\
 TEN DC 10\n\
@@ -1011,7 +1006,7 @@ OBUF DS 257\n\
 IBUF DS 257\n\
 RPBBUF DC 0\n\
 	END\n");
-	}
+#endif
 
 	free_tree(node_SPROGRAM);
 	end_scan();

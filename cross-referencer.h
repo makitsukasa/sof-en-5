@@ -16,6 +16,7 @@ defined in pretty-printer.h
 typedef struct VarData_{
 	void* data;
 	int is_declaration;
+	struct VarData_ *prev;
 	struct VarData_ *next;
 }VarData;
 */
