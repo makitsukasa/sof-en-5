@@ -2,6 +2,15 @@
 
 FILE* output_file;
 
+typedef struct DCSpace_{
+	char label[9];
+	char* str;
+	int num;
+	struct DCSpace_* next;
+}DCSpace;
+DCSpace* dc_space_head;
+DCSpace* dc_space_tail;
+
 void iw_LD		(char* label, char* r1, char* r2 );
 void iw_ST		(char* label, char* r1, char* r2 );
 void iw_LAD		(char* label, char* r , char* adr);

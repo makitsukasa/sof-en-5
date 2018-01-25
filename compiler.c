@@ -1,9 +1,30 @@
 #include "compiler.h"
 
+void allocate_dc_space_num(DCSpace* dc_space_tail, char* label, int num){
+	DCSpace* hoge = malloc(sizeof(DCSpace));
+	strcpy(dc_space_tail->label, label);
+	dc_space_tail->str = NULL;
+	hoge->num = num;
+	dc_space_tail->next = hoge;
+	dc_space_tail = hoge;
+}
+void allocate_dc_space_str(DCSpace* dc_space_tail, char* label, char* str){
+	allocate_dc_space_num(dc_space_tail, label, 0);
+	dc_space_tail->str = calloc( strlen(str), sizeof(char));
+	strcpy(dc_space_tail->str, str);
+}
+
 char* get_proc_label(ProcData* proc_data){
 	char* hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
-	sprintf(hoge, "%%%s", proc_data->name);
+	fprintf(output_file, "; %lx %s %s\n",
+			(unsigned long)proc_data, "procedure", proc_data->name);
+	sprintf(hoge, "$%07lx", (unsigned long)proc_data);
 	return hoge;
+	/*
+	char* hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
+	sprintf(hoge, "%%%7s", proc_data->name);
+	return hoge;
+	*/
 }
 
 char* get_var_label(VarData* var_data){
@@ -19,16 +40,22 @@ char* get_var_label(VarData* var_data){
 		VarData* var_data = (VarData*)var_ref_data->data;
 		var_dec_data = (VarDecData*)var_data->data;
 	}
+	/*
 	if(var_dec_data->namespace->name == NULL){
-		sprintf(hoge, "$%s%%%%global%%",
+		sprintf(hoge, "$%4s%%%%g%%",
 				var_dec_data->name);
 	}
 	else{
-		sprintf(hoge, "$%s%%%s",
+		sprintf(hoge, "$%3s%%%3s",
 				var_dec_data->name, var_dec_data->namespace->name);
 	}
+	*/
+	fprintf(output_file, "; %lx %s %s\n",
+			(unsigned long)var_data, "var", var_dec_data->name);
+	sprintf(hoge, "$%07lx", (unsigned long)var_data);
 	return hoge;
 }
+
 
 char* get_label(SyntaxTreeNode* node){
 	char* hoge;
@@ -42,13 +69,16 @@ char* get_label(SyntaxTreeNode* node){
 		return get_proc_label((ProcData*)node->data);
 	}
 	hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
-	sprintf(hoge, "$%s%p", SYNTAXDIC[node->s_elem_it], node);
+	fprintf(output_file, "; %lx %s %s\n",
+			(unsigned long)node, SYNTAXDIC[node->s_elem_it], node->string_attr);
+	hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
+	sprintf(hoge, "$%07lx", (unsigned long)node);
 	return hoge;
 }
 
 char* get_end_label(SyntaxTreeNode* node){
 	char* hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
-	sprintf(hoge, "$%s%p%%end%%", SYNTAXDIC[node->s_elem_it], node);
+	sprintf(hoge, "$e%06lx", (unsigned long)node);
 	return hoge;
 }
 
@@ -87,9 +117,15 @@ void generate_assm(SyntaxTreeNode* node){
 		 */
 		generate_assm(node->child);
 		iw_comment	("start SCOMPSTAT under SBLOCK");
-		iw_label(get_label(node));
+		iw_label	(get_label(node));
 		generate_assm(node->child->brother);
+		iw_RET		("");
 		iw_comment	("end   SCOMPSTAT under SBLOCK");
+		break;
+	}
+
+	case SBLOCK_0:{
+		generate_assm(node->child);
 		break;
 	}
 
@@ -545,7 +581,7 @@ void generate_assm(SyntaxTreeNode* node){
 		Type* type_node_SVAR = (Type*)node_SVAR->data;
 		SyntaxTreeNode* node_SINSTAT_1_0_2_0 = node_SVAR->brother->child;
 
-		iw_LAD	("", "gr1", get_label(node_SVAR));
+		iw_LD	("", "gr1", get_label(node_SVAR));
 		if(type_node_SVAR->stdtype == TINTEGER){
 			iw_CALL("", "READINT");
 		}
@@ -645,7 +681,6 @@ void generate_assm(SyntaxTreeNode* node){
 	}
 
 	return;
-
 }
 
 int main(int nc, char *np[]){
@@ -733,7 +768,7 @@ int main(int nc, char *np[]){
 	generate_assm(node_SPROGRAM);
 
 #if 1
-	fprintf(output_file, "\n\
+	fprintf(output_file, "\
 EOVF\n\
 	CALL WRITENEWLINE\n\
 	LAD gr1, EOVF1\n\

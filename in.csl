@@ -1,164 +1,185 @@
 ; start SPROGRAM
-$SPROGRAM0x2318480	START
+; 2079480 SPROGRAM 
+$2079480	START
 	LAD		gr0,0
-	CALL	$SBLOCK0x2319580
+; 207a580 SBLOCK 
+	CALL	$207a580
 	CALL	FLUSH
 	SVC		0
 ; start SSUBPROGDEC
-$n%kazuyomikomi	DS		1
-%kazuyomikomi
+; 2156d10 var n
+$2156d10	DS		1
+; 21568b0 procedure kazuyomikomi
+$21568b0
 	POP		gr7
 	POP		gr1
-	ST		gr1,$n%kazuyomikomi
+; 2156d10 var n
+	ST		gr1,$2156d10
 	PUSH	0,gr7
 ; start SOUTSTAT
-$STRING0x23298c0	DC		'input the number of data * 1/2'
-	LAD		gr1,$STRING0x23298c0
+; 208a8c0 STRING input the number of data * 1/2
+$208a8c0	DC		'input the number of data * 1/2'
+; 208a8c0 STRING input the number of data * 1/2
+	LAD		gr1,$208a8c0
 	LD		gr2,gr0
 	CALL	WRITESTR
 	CALL	WRITENEWLINE
 ; end   SOUTSTAT
 ; start SINSTAT
-	LAD		gr1,$n%kazuyomikomi
+; 2156d10 var n
+	LD		gr1,$2156d10
 	CALL	READINT
 	CALL	READSKIPTONEWLINE
 ; end   SINSTAT
 	RET
 ; end   SSUBPROGDEC
-$sum%%global%	DS		1
+; 21571c0 var sum
+$21571c0	DS		1
 ; start SSUBPROGDEC
-%wakakidasi
+; 2157650 procedure wakakidasi
+$2157650
 	POP		gr7
 	PUSH	0,gr7
 ; start SOUTSTAT
-$STRING0x2346800	DC		'Sum of data = '
-	LAD		gr1,$STRING0x2346800
+; 20a7800 STRING Sum of data = 
+$20a7800	DC		'Sum of data = '
+; 20a7800 STRING Sum of data = 
+	LAD		gr1,$20a7800
 	LD		gr2,gr0
 	CALL	WRITESTR
-	LAD		gr1,$sum%%global%
+; 21571c0 var sum
+	LAD		gr1,$21571c0
 	LD		gr2,gr0
 	CALL	WRITEINT
 	CALL	WRITENEWLINE
 ; end   SOUTSTAT
 	RET
 ; end   SSUBPROGDEC
-$data%%global%	DS		1
+; 2157ab0 var data
+$2157ab0	DS		1
 ; start SSUBPROGDEC
-$n%goukei	DS		1
-$s%goukei	DS		1
-$data%goukei	DS		1
-%goukei
+; 21583a0 var n
+$21583a0	DS		1
+; 2158810 var s
+$2158810	DS		1
+; 2158cc0 var data
+$2158cc0	DS		1
+; 2157f40 procedure goukei
+$2157f40
 	POP		gr7
 	POP		gr1
-	ST		gr1,$s%goukei
+; 2158810 var s
+	ST		gr1,$2158810
 	POP		gr1
-	ST		gr1,$n%goukei
+; 21583a0 var n
+	ST		gr1,$21583a0
 	PUSH	0,gr7
-$SCONST0x236c380	DC		0
-	LD		gr1,$SCONST0x236c380
-	ST		gr1,$s%goukei
+; 20cd380 SCONST 
+$20cd380	DC		0
+; 20cd380 SCONST 
+	LD		gr1,$20cd380
+; 2158810 var s
+	ST		gr1,$2158810
 ; start SITERSTAT
-$SITERSTAT0x2375400
-	LAD		gr1,$n%goukei
+; 20d6400 SITERSTAT 
+$20d6400
+; 21583a0 var n
+	LAD		gr1,$21583a0
 	PUSH	0,gr1
-$SCONST0x2381780	DC		0
-	LD		gr1,$SCONST0x2381780
+; 20e2780 SCONST 
+$20e2780	DC		0
+; 20e2780 SCONST 
+	LD		gr1,$20e2780
 	LD		gr2,gr1
 	POP		gr1
 ; 	GR		gr1, gr2
-	JZE		$SITERSTAT0x2375400%end%
+	JZE		$e20d6400
 ; start SINSTAT
-	LAD		gr1,$data%goukei
+; 2158cc0 var data
+	LD		gr1,$2158cc0
 	CALL	READINT
 	CALL	READSKIPTONEWLINE
 ; end   SINSTAT
-	LAD		gr1,$s%goukei
+; 2158810 var s
+	LAD		gr1,$2158810
 	PUSH	0,gr1
-	LAD		gr1,$data%goukei
+; 2158cc0 var data
+	LAD		gr1,$2158cc0
 	LD		gr2,gr1
 	POP		gr1
 	ADDA	gr1,gr2
 	JOV		EOVF
-	ST		gr1,$s%goukei
-	LAD		gr1,$n%goukei
+; 2158810 var s
+	ST		gr1,$2158810
+; 21583a0 var n
+	LAD		gr1,$21583a0
 	PUSH	0,gr1
-$SCONST0x23b3ac0	DC		1
-	LD		gr1,$SCONST0x23b3ac0
+; 2114ac0 SCONST 
+$2114ac0	DC		1
+; 2114ac0 SCONST 
+	LD		gr1,$2114ac0
 	LD		gr2,gr1
 	POP		gr1
 	SUBA	gr1,gr2
 	JOV		EOVF
-	ST		gr1,$n%goukei
-	JUMP	$SITERSTAT0x2375400
-$SITERSTAT0x2375400%end%
+; 21583a0 var n
+	ST		gr1,$21583a0
+; 20d6400 SITERSTAT 
+	JUMP	$20d6400
+$e20d6400
 ; end   SITERSTAT
 	RET
 ; end   SSUBPROGDEC
-$n%%global%	DS		1
-; start SCALLSTAT
-; start before call 1st arg
-	LAD		gr1,$n%%global%
-	PUSH	$n%%global%
-; end   before call 1st arg
-	CALL	%kazuyomikomi
-; end   SCALLSTAT
-; start SCALLSTAT
-; start before call 1st arg
-	LAD		gr1,$n%%global%
-	PUSH	0,gr1
-$SCONST0x23dde80	DC		2
-	LD		gr1,$SCONST0x23dde80
-	LD		gr2,gr1
-	POP		gr1
-	MULA	gr1,gr2
-	JOV		EOVF
-$SEXPR0x23d8100	DC		0
-	ST		gr1,$SEXPR0x23d8100
-	PUSH	$SEXPR0x23d8100
-; end   before call 1st arg
-; start before call 2nd arg or after
-	LAD		gr1,$sum%%global%
-	PUSH	$sum%%global%
-; end   before call 2nd arg or after
-	CALL	%goukei
-; end   SCALLSTAT
-; start SCALLSTAT
-	CALL	%wakakidasi
-; end   SCALLSTAT
+; 2159170 var n
+$2159170	DS		1
 ; start SCOMPSTAT under SBLOCK
-$SBLOCK0x2319580
+; 207a580 SBLOCK 
+$207a580
 ; start SCALLSTAT
 ; start before call 1st arg
-	LAD		gr1,$n%%global%
-	PUSH	$n%%global%
+; 2159170 var n
+	LAD		gr1,$2159170
+; 2159170 var n
+	PUSH	$2159170
 ; end   before call 1st arg
-	CALL	%kazuyomikomi
+; 21568b0 procedure kazuyomikomi
+	CALL	$21568b0
 ; end   SCALLSTAT
 ; start SCALLSTAT
 ; start before call 1st arg
-	LAD		gr1,$n%%global%
+; 2159170 var n
+	LAD		gr1,$2159170
 	PUSH	0,gr1
-$SCONST0x23dde80	DC		2
-	LD		gr1,$SCONST0x23dde80
+; 213ee80 SCONST 
+$213ee80	DC		2
+; 213ee80 SCONST 
+	LD		gr1,$213ee80
 	LD		gr2,gr1
 	POP		gr1
 	MULA	gr1,gr2
 	JOV		EOVF
-$SEXPR0x23d8100	DC		0
-	ST		gr1,$SEXPR0x23d8100
-	PUSH	$SEXPR0x23d8100
+; 2139100 SEXPR 
+$2139100	DC		0
+; 2139100 SEXPR 
+	ST		gr1,$2139100
+; 2139100 SEXPR 
+	PUSH	$2139100
 ; end   before call 1st arg
 ; start before call 2nd arg or after
-	LAD		gr1,$sum%%global%
-	PUSH	$sum%%global%
+; 21571c0 var sum
+	LAD		gr1,$21571c0
+; 21571c0 var sum
+	PUSH	$21571c0
 ; end   before call 2nd arg or after
-	CALL	%goukei
+; 2157f40 procedure goukei
+	CALL	$2157f40
 ; end   SCALLSTAT
 ; start SCALLSTAT
-	CALL	%wakakidasi
+; 2157650 procedure wakakidasi
+	CALL	$2157650
 ; end   SCALLSTAT
+	RET
 ; end   SCOMPSTAT under SBLOCK
-
 EOVF
 	CALL WRITENEWLINE
 	LAD gr1, EOVF1
