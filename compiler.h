@@ -2,14 +2,15 @@
 
 FILE* output_file;
 
-typedef struct DCSpace_{
-	char label[9];
+typedef struct DCData_{
+	char label[10];
+	int is_ds;
 	char* str;
 	int num;
-	struct DCSpace_* next;
-}DCSpace;
-DCSpace* dc_space_head;
-DCSpace* dc_space_tail;
+	struct DCData_* next;
+}DCData;
+DCData* dc_data_head;
+DCData* dc_data_tail;
 
 void iw_LD		(char* label, char* r1, char* r2 );
 void iw_ST		(char* label, char* r1, char* r2 );
@@ -33,6 +34,7 @@ void iw_JUMP	(char* label, char* adr);
 
 void iw_PUSH	(char* label, char* adr);
 void iw_PUSH_3	(char* label, char* adr, char* x);
+void iw_PUSH_by_label	(char* label, char* label_to_push);
 void iw_POP		(char* label, char* r);
 
 void iw_CALL	(char* label, char* adr);
@@ -53,3 +55,11 @@ void iw_OUT		(char* label, char* r, char* adr);
 void iw_label	(char* label);
 void iw_comment	(char* str);
 
+DCData* add_footer_dc_num(char* label, int num);
+DCData* add_footer_dc_str(char* label, char* str);
+void print_footer_dc();
+
+char* get_proc_label(ProcData* proc_data);
+char* get_var_label(VarData* var_data);
+char* get_label(SyntaxTreeNode* node);
+char* get_end_label(SyntaxTreeNode* node);

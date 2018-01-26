@@ -30,7 +30,7 @@
 #define SCOMPSTAT_2			 72	/* zero or more	SCOMPSTAT_2_0                                            */
 #define SCOMPSTAT_2_0		 73	/* all of		TSEMI SSTAT                                              */
 #define SSTAT				 74	/* one of		SASSIGNSTAT SCONDSTAT SITERSTAT SEXITSTAT SCALLSTAT
-													SRETSTAT SINPUTSTAT SOUTPUTSTAT SCOMPSTAT SEMPTYSTAT */
+													SRETSTAT SINSTAT SOUTSTAT SCOMPSTAT SEMPTYSTAT */
 #define SCONDSTAT			 75	/* all of		TIF SEXPR TTHEN SSTAT SCONDSTAT_4                        */
 #define SCONDSTAT_4			 76	/* zero or one	SCONDSTAT_4_0                                            */
 #define SCONDSTAT_4_0		 77	/* all of		TELSE SSTAT                                              */

@@ -2,11 +2,11 @@
 
 /* keyword list */
 Key keyword[KEYWORDSIZE] = {
-	{"and", 	TAND	},
+	{"and",		TAND	},
 	{"array",	TARRAY	},
 	{"begin",	TBEGIN	},
 	{"boolean",	TBOOLEAN},
-	{"break",	TBREAK  },
+	{"break",	TBREAK	},
 	{"call",	TCALL	},
 	{"char",	TCHAR	},
 	{"div",		TDIV	},
@@ -22,19 +22,19 @@ Key keyword[KEYWORDSIZE] = {
 	{"procedure", TPROCEDURE},
 	{"program",	TPROGRAM},
 	{"read",	TREAD	},
-	{"readln",	TREADLN },
-	{"return", 	TRETURN },
+	{"readln",	TREADLN	},
+	{"return",	TRETURN	},
 	{"then",	TTHEN	},
 	{"true",	TTRUE	},
 	{"var",		TVAR	},
 	{"while",	TWHILE	},
-	{"write",	TWRITE  },
+	{"write",	TWRITE	},
 	{"writeln",	TWRITELN}
 };
 
 /* symbol list */
 Key symbol1[SYMBOL1SIZE] = {
-	{"+", 	TPLUS	},
+	{"+",	TPLUS	},
 	{"-",	TMINUS	},
 	{"*",	TSTAR	},
 	{"=",	TEQUAL	},

@@ -1,28 +1,18 @@
-program sample11pp;
-procedure kazuyomikomi(n : integer);
+program typeconv;
+ var i : integer; b : boolean; c : char;
 begin
-	writeln('input the number of data * 1/2');
-	readln(n)
-end;
-var sum : integer;
-procedure wakakidasi;
-begin
-	writeln('Sum of data = ', sum)
-end;
-var data : integer;
-procedure goukei(n, s : integer);
-	var data : integer;
-begin
-	s := 0;
-	while n > 0 do begin
-		readln(data);
-		s := s + data;
-		n := n - 1
-	end
-end;
-var n : integer;
-begin
-	call kazuyomikomi(n);
-	call goukei(n * 2, sum);
-	call wakakidasi
+  i := integer(false);
+  while i <= integer(true) do begin
+    writeln( boolean(i), ' : ', i);
+    i := i + 1;
+  end;
+  i := integer(' ');
+  while i < 127 do begin
+    if i div 16 * 16 = i then writeln;
+    write(i:3, ':');
+    write(char(i), '  ');
+    i := i + 1;
+  end;
+  writeln
 end.
+  
