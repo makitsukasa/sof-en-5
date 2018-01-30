@@ -15,42 +15,55 @@ void iw_ST_3	(char* label, char* r , char* adr, char* x ){
 void iw_LAD		(char* label, char* r , char* adr){
 	fprintf(output_file, "%s\tLAD\t\t%s,%s\n", label, r, adr);
 }
+void iw_LAD_num	(char* label, char* r , int num){
+	fprintf(output_file, "%s\tLAD\t\t%s,%d\n", label, r, num);
+}
+/*
 void iw_LAD_3	(char* label, char* r , char* adr, char* x){
 	fprintf(output_file, "%s\tLAD\t\t%s,%s,%s\n", label, r, adr, x);
 }
+*/
 
 void iw_ADDA	(char* label, char* r1, char* r2 ){
 	fprintf(output_file, "%s\tADDA\t%s,%s\n", label, r1, r2);
 	iw_JOV("", "EOVF");
 }
+/*
 void iw_ADDL	(char* label, char* r1, char* r2 ){
 	fprintf(output_file, "%s\tADDL\t%s,%s\n", label, r1, r2);
 	iw_JOV("", "EOVF");
 }
+*/
 void iw_SUBA	(char* label, char* r1, char* r2 ){
 	fprintf(output_file, "%s\tSUBA\t%s,%s\n", label, r1, r2);
 	iw_JOV("", "EOVF");
 }
+/*
 void iw_SUBL	(char* label, char* r1, char* r2 ){
 	fprintf(output_file, "%s\tSUBL\t%s,%s\n", label, r1, r2);
 	iw_JOV("", "EOVF");
 }
+*/
 void iw_MULA	(char* label, char* r1, char* r2 ){
 	fprintf(output_file, "%s\tMULA\t%s,%s\n", label, r1, r2);
 	iw_JOV("", "EOVF");
 }
+/*
 void iw_MULL	(char* label, char* r1, char* r2 ){
 	fprintf(output_file, "%s\tMULL\t%s,%s\n", label, r1, r2);
 	iw_JOV("", "EOVF");
 }
+*/
 void iw_DIVA	(char* label, char* r1, char* r2 ){
 	fprintf(output_file, "%s\tDIVA\t%s,%s\n", label, r1, r2);
-	iw_JOV("", "EOVF");
+	iw_JOV("", "E0DIV");
 }
+/*
 void iw_DIVL	(char* label, char* r1, char* r2 ){
 	fprintf(output_file, "%s\tDIVL\t%s,%s\n", label, r1, r2);
-	iw_JOV("", "EOVF");
+	iw_JOV("", "E0DIV");
 }
+*/
 void iw_AND		(char* label, char* r1, char* r2 ){
 	fprintf(output_file, "%s\tAND\t\t%s,%s\n", label, r1, r2);
 }
@@ -64,14 +77,18 @@ void iw_XOR		(char* label, char* r1, char* r2 ){
 void iw_CPA		(char* label, char* adr, char* x ){
 	fprintf(output_file, "%s\tCPA\t\t%s,%s\n", label, adr, x);
 }
+/*
 void iw_CPL		(char* label, char* adr, char* x ){
 	fprintf(output_file, "%s\tCPL\t\t%s,%s\n", label, adr, x);
 }
+*/
 
+/*
 void iw_SLA		(char* label, char* r , char* adr){}
 void iw_SRA		(char* label, char* r , char* adr){}
 void iw_SLL		(char* label, char* r , char* adr){}
 void iw_SRL		(char* label, char* r , char* adr){}
+*/
 
 void iw_JPL		(char* label, char* adr){
 	fprintf(output_file, "%s\tJPL\t\t%s\n", label, adr);
@@ -99,8 +116,11 @@ void iw_PUSH_3	(char* label, char* adr, char* x){
 	fprintf(output_file, "%s\tPUSH\t%s,%s\n", label, adr, x);
 }
 void iw_PUSH_by_label(char* label, char* label_to_push){
-	iw_LAD		(label, "gr1", label_to_push);
-	iw_PUSH_3	("", "0", "gr1");
+	iw_PUSH		(label, label_to_push);
+}
+void iw_PUSH_by_indexed_label(char* label, char* label_to_push, char* x){
+	iw_LAD		(label, gr1, label_to_push);
+	iw_PUSH_3	("", label_to_push, x);
 }
 void iw_POP		(char* label, char* r){
 	fprintf(output_file, "%s\tPOP\t\t%s\n", label, r);
@@ -114,7 +134,7 @@ void iw_RET		(char* label){
 }
 
 void iw_SVC		(char* label, char* adr){
-	fprintf(output_file, "\tSVC\t\t%s\n", adr);
+	fprintf(output_file, "%s\tSVC\t\t%s\n", label, adr);
 }
 void iw_NOP		(char* label){
 	fprintf(output_file, "%s\tNOP\n", label);
@@ -136,14 +156,19 @@ void iw_DC		(char* label, int n){
 void iw_DC_str	(char* label, char* str){
 	fprintf(output_file, "%s\tDC\t\t'%s'\n", label, str);
 }
+/*
 void iw_IN		(char* label, char* r , char* adr){
 	fprintf(output_file, "%s\tIN\t\t%s,%s\n", label, r, adr);
 }
 void iw_OUT		(char* label, char* r , char* adr){
 	fprintf(output_file, "%s\tOUT\t\t%s,%s\n", label, r, adr);
 }
-/*void iw_RPUSH	(char* label){}
-void iw_RPOP	(char* label){}*/
+*/
+
+/*
+void iw_RPUSH	(char* label){}
+void iw_RPOP	(char* label){}
+*/
 
 void iw_label	(char* label){
 	fprintf(output_file, "%s\n", label);
@@ -154,61 +179,61 @@ void iw_comment	(char* str){
 
 /* gr1 <- ( (gr1) = (gr2) ? TRUE : FALSE ) */
 void iw_EQUAL	(char* label, char* end_label){
-	iw_comment	("GRA");
-	iw_LD	("", "gr3", "TRUE");
-	iw_CPA	("", "gr1", "gr2");
+	iw_comment	("EQUAL");
+	iw_LD	(label, gr3, "TRUE");
+	iw_CPA	("", gr1, gr2);
 	iw_JZE	("", end_label);
-	iw_LD	("", "gr3", "FALSE");
-	iw_LD	(end_label, "gr1", "gr3");
+	iw_LD	("", gr3, "FALSE");
+	iw_LD	(end_label, gr1, gr3);
 }
-/* gr1 <- ( (gr1) != (gr2) ? TRUE : FALSE ) */
+/* gr1 <- ( (gr1) <> (gr2) ? TRUE : FALSE ) */
 void iw_NOTEQ	(char* label, char* end_label){
-	iw_comment	("GRA");
-	iw_LD	("", "gr3", "TRUE");
-	iw_CPA	("", "gr1", "gr2");
+	iw_comment	("NOTEQ");
+	iw_LD	(label, gr3, "TRUE");
+	iw_CPA	("", gr1, gr2);
 	iw_JNZ	("", end_label);
-	iw_LD	("", "gr3", "FALSE");
-	iw_LD	(end_label, "gr1", "gr3");
+	iw_LD	("", gr3, "FALSE");
+	iw_LD	(end_label, gr1, gr3);
 }
 /* gr1 <- ( (gr1) < (gr2) ? TRUE : FALSE ) */
 void iw_LEA		(char* label, char* end_label){
-	iw_comment	("GRA");
-	iw_LD	("", "gr3", "TRUE");
-	iw_CPA	("", "gr1", "gr2");
+	iw_comment	("LEA");
+	iw_LD	(label, gr3, "TRUE");
+	iw_CPA	("", gr1, gr2);
 	iw_JMI	("", end_label);
-	iw_LD	("", "gr3", "FALSE");
-	iw_LD	(end_label, "gr1", "gr3");
+	iw_LD	("", gr3, "FALSE");
+	iw_LD	(end_label, gr1, gr3);
 }
 /* gr1 <- ( (gr1) <= (gr2) ? TRUE : FALSE ) */
 void iw_LEEQA	(char* label, char* end_label){
-	iw_comment	("GRA");
-	iw_LD	("", "gr3", "FALSE");
-	iw_CPA	("", "gr1", "gr2");
+	iw_comment	("LEEQA");
+	iw_LD	(label, gr3, "FALSE");
+	iw_CPA	("", gr1, gr2);
 	iw_JPL	("", end_label);
-	iw_LD	("", "gr3", "TRUE");
-	iw_LD	(end_label, "gr1", "gr3");
+	iw_LD	("", gr3, "TRUE");
+	iw_LD	(end_label, gr1, gr3);
 }
 /* gr1 <- ( (gr1) > (gr2) ? TRUE : FALSE ) */
 void iw_GRA		(char* label, char* end_label){
 	iw_comment	("GRA");
-	iw_LD	("", "gr3", "TRUE");
-	iw_CPA	("", "gr1", "gr2");
+	iw_LD	(label, gr3, "TRUE");
+	iw_CPA	("", gr1, gr2);
 	iw_JPL	("", end_label);
-	iw_LD	("", "gr3", "FALSE");
-	iw_LD	(end_label, "gr1", "gr3");
+	iw_LD	("", gr3, "FALSE");
+	iw_LD	(end_label, gr1, gr3);
 }
 /* gr1 <- ( (gr1) >= (gr2) ? TRUE : FALSE ) */
 void iw_GREQA	(char* label, char* end_label){
-	iw_comment	("GRA");
-	iw_LD	("", "gr3", "FALSE");
-	iw_CPA	("", "gr1", "gr2");
+	iw_comment	("GREQA");
+	iw_LD	(label, gr3, "FALSE");
+	iw_CPA	("", gr1, gr2);
 	iw_JMI	("", end_label);
-	iw_LD	("", "gr3", "TRUE");
-	iw_LD	(end_label, "gr1", "gr3");
+	iw_LD	("", gr3, "TRUE");
+	iw_LD	(end_label, gr1, gr3);
 }
 
-DCData* add_footer_dc_num(char* label, int num){
-	DCData* hoge = malloc(sizeof(DCData));
+void add_footer_dc_num(char* label, int num){
+	DCData* hoge = mem_alloc(sizeof(DCData) * 10);
 	strcpy(hoge->label, label);
 	hoge->str = NULL;
 	hoge->is_ds = 0;
@@ -221,20 +246,20 @@ DCData* add_footer_dc_num(char* label, int num){
 		dc_data_tail->next = hoge;
 		dc_data_tail = hoge;
 	}
-	return dc_data_tail;
+	return;
 }
 
-DCData* add_footer_dc_str(char* label, char* str){
+void add_footer_dc_str(char* label, char* str){
 	add_footer_dc_num(label, 0);
-	dc_data_tail->str = calloc(strlen(str), sizeof(char));
+	dc_data_tail->str = mem_alloc(strlen(str) + 2* sizeof(char));
 	strcpy(dc_data_tail->str, str);
-	return dc_data_tail;
+	return;
 }
 
-DCData* add_footer_ds(char* label, int size){
+void add_footer_ds(char* label, int size){
 	add_footer_dc_num(label, size);
 	dc_data_tail->is_ds = 1;
-	return dc_data_tail;
+	return;
 }
 
 
@@ -255,7 +280,7 @@ void print_footer_dc(){
 }
 
 char* get_proc_label(ProcData* proc_data){
-	char* hoge = calloc(sizeof(char), 10);
+	char* hoge = mem_alloc(sizeof(char) * 10);
 	fprintf(output_file, "; %7.7lx %s %s\n",
 			(unsigned long)proc_data, "procedure", proc_data->name);
 	sprintf(hoge, "$%7.7lx", (unsigned long)proc_data);
@@ -273,27 +298,12 @@ char* get_var_label(VarData* var_data){
 		VarRefData* var_ref_data = (VarRefData*)var_data->data;
 		return get_var_label((VarData*)var_ref_data->data);
 	}
-	hoge = calloc(sizeof(char), 10);
+	hoge = mem_alloc(sizeof(char) * 10);
 	VarDecData* var_dec_data = (VarDecData*)var_data->data;
-	if(var_data->is_declaration == 0){
-		VarRefData* var_ref_data = (VarRefData*)var_data->data;
-		VarData* var_data = (VarData*)var_ref_data->data;
-		var_dec_data = (VarDecData*)var_data->data;
-	}
-	/*
-	if(var_dec_data->namespace->name == NULL){
-		sprintf(hoge, "$%4s%%%%g%%",
-				var_dec_data->name);
-	}
-	else{
-		sprintf(hoge, "$%3s%%%3s",
-				var_dec_data->name, var_dec_data->namespace->name);
-	}
-	*/
 	fprintf(output_file, "; %7.7lx %s %s %% %s\n",
 			(unsigned long)var_data, "var", var_dec_data->name,
-			(var_dec_data->namespace->name != NULL ?
-					var_dec_data->namespace->name : "%%grobal%%"));
+			(var_dec_data->namespace->name !=
+					NULL ? var_dec_data->namespace->name : "%%global%%"));
 	sprintf(hoge, "$%7.7lx", (unsigned long)var_data);
 	return hoge;
 }
@@ -311,13 +321,13 @@ char* get_label(SyntaxTreeNode* node){
 	}
 	fprintf(output_file, "; %7.7lx %s %s\n",
 			(unsigned long)node, SYNTAXDIC[node->s_elem_it], node->string_attr);
-	hoge = calloc(sizeof(char), 10);
+	hoge = mem_alloc(sizeof(char) * 10);
 	sprintf(hoge, "$%7.7lx", (unsigned long)node);
 	return hoge;
 }
 
 char* get_end_label(SyntaxTreeNode* node){
-	char* hoge = calloc(sizeof(char), MAXSTRSIZE + 10);
+	char* hoge = mem_alloc(sizeof(char) * 10);
 	sprintf(hoge, ".%7.7lx", (unsigned long)node);
 	return hoge;
 }

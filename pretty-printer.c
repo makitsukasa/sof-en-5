@@ -27,16 +27,11 @@ int is_head_of_line;
 int line_num_pretty_printed;
 
 SyntaxTreeNode* malloc_tree_node(){
-	SyntaxTreeNode *node = malloc(sizeof(SyntaxTreeNode));
+	SyntaxTreeNode *node = calloc(1, sizeof(SyntaxTreeNode));
 	if(node == NULL){
 		printf("error i could not malloc\n");
 		exit(-1);
 	}
-	node->data = NULL;
-	node->parent = NULL;
-	node->brother = NULL;
-	node->child = NULL;
-
 
 	return node;
 }

@@ -1,204 +1,143 @@
 ; start SPROGRAM
-; 1ebe480 SPROGRAM 
-$1ebe480	START
+; 25a9480 SPROGRAM 
+$25a9480	START
 	LAD		gr0,0
-; 1ebf580 SBLOCK 
-	CALL	$1ebf580
+; 25aa580 SBLOCK 
+	CALL	$25aa580
 	CALL	FLUSH
 	SVC		0
-; 200c3b0 var i % %%grobal%%
-; 200c860 var b % %%grobal%%
-; 200cd10 var c % %%grobal%%
+; 266aed0 var x % %%global%%
+; 266b340 var y % %%global%%
 ; start SCOMPSTAT under SBLOCK
-; 1ebf580 SBLOCK 
-$1ebf580
+; 25aa580 SBLOCK 
+$25aa580
 ; start assign
-; 1ed9e80 SCONST 
-; 1ed9e80 SCONST 
-	LD		gr1,$1ed9e80
-; 200c3b0 var i % %%grobal%%
-	ST		gr1,$200c3b0
+; 25b86c0 SCONST 
+; 25b86c0 SCONST 
+	LD		gr1,$25b86c0
+; 266aed0 var x % %%global%%
+	ST		gr1,$266aed0
+; end   assign
+; start assign
+; 25c4e80 SCONST 
+; 25c4e80 SCONST 
+	LD		gr1,$25c4e80
+; 266b340 var y % %%global%%
+	ST		gr1,$266b340
 ; end   assign
 ; start SITERSTAT
-; 1ee90c0 SITERSTAT 
-$1ee90c0
-; 200c3b0 var i % %%grobal%%
-	LD		gr1,$200c3b0
+; 25cdac0 SITERSTAT 
+$25cdac0
+; 25d1200 SCONST 
+; 25d1200 SCONST 
+	LD		gr1,$25d1200
+	CPA		gr1,gr0
+	JZE		.25cdac0
+; start SOUTSTAT
+; 266aed0 var x % %%global%%
+	LD		gr1,$266aed0
+	LD		gr2,gr0
+	CALL	WRITEINT
+; 25f4fc0 SCONST 
+; 25f4fc0 SCONST 
+	LD		gr1,$25f4fc0
+	LD		gr2,gr0
+	CALL	WRITECHAR
+; 266b340 var y % %%global%%
+	LD		gr1,$266b340
+	LD		gr2,gr0
+	CALL	WRITEINT
+; 260bd40 SCONST 
+; 260bd40 SCONST 
+	LD		gr1,$260bd40
+	LD		gr2,gr0
+	CALL	WRITECHAR
+; 266aed0 var x % %%global%%
+	LD		gr1,$266aed0
 	PUSH	0,gr1
-; 1efb600 SCONST 
-; 1efb600 SCONST 
-	LD		gr1,$1efb600
+; 266b340 var y % %%global%%
+	LD		gr1,$266b340
 	LD		gr2,gr1
 	POP		gr1
-; GRA
-	LD		gr3,FALSE
-	CPA		gr1,gr2
-	JPL		.1ee9940
-	LD		gr3,TRUE
-.1ee9940	LD		gr1,gr3
-	CPA		gr1,gr0
-	JZE		.1ee90c0
-; start SOUTSTAT
-; 200c3b0 var i % %%grobal%%
-	LD		gr1,$200c3b0
-	LD		gr2,gr0
-	CALL	WRITEBOOL
-; 1f2e600 STRING  : 
-; 1f2e600 STRING  : 
-	LAD		gr1,$1f2e600
-	LD		gr2,gr0
-	CALL	WRITESTR
-; 200c3b0 var i % %%grobal%%
-	LD		gr1,$200c3b0
+	DIVA	gr1,gr2
+	JOV		E0DIV
 	LD		gr2,gr0
 	CALL	WRITEINT
 	CALL	WRITENEWLINE
 ; end   SOUTSTAT
 ; start assign
-; 200c3b0 var i % %%grobal%%
-	LD		gr1,$200c3b0
+; 2628c80 SCONST 
+; 2628c80 SCONST 
+	LD		gr1,$2628c80
 	PUSH	0,gr1
-; 1f45c00 SCONST 
-; 1f45c00 SCONST 
-	LD		gr1,$1f45c00
+; 2630380 SCONST 
+; 2630380 SCONST 
+	LD		gr1,$2630380
 	LD		gr2,gr1
-	POP		gr1
-	ADDA	gr1,gr2
+	SUBA	gr1,gr2
 	JOV		EOVF
-; 200c3b0 var i % %%grobal%%
-	ST		gr1,$200c3b0
-; end   assign
-; 1ee90c0 SITERSTAT 
-	JUMP	$1ee90c0
-.1ee90c0
-; end   SITERSTAT
-; start assign
-; 1f60940 SCONST 
-; 1f60940 SCONST 
-	LD		gr1,$1f60940
-; 200c3b0 var i % %%grobal%%
-	ST		gr1,$200c3b0
-; end   assign
-; start SITERSTAT
-; 1f6ffc0 SITERSTAT 
-$1f6ffc0
-; 200c3b0 var i % %%grobal%%
-	LD		gr1,$200c3b0
-	PUSH	0,gr1
-; 1f7bac0 SCONST 
-; 1f7bac0 SCONST 
-	LD		gr1,$1f7bac0
-	LD		gr2,gr1
-	POP		gr1
-; GRA
-	LD		gr3,TRUE
-	CPA		gr1,gr2
-	JMI		.1f70840
-	LD		gr3,FALSE
-.1f70840	LD		gr1,gr3
-	CPA		gr1,gr0
-	JZE		.1f6ffc0
-; start SCONDSTAT
-; 200c3b0 var i % %%grobal%%
-	LD		gr1,$200c3b0
-	PUSH	0,gr1
-; 1f90ec0 SCONST 
-; 1f90ec0 SCONST 
-	LD		gr1,$1f90ec0
-	LD		gr2,gr1
-	POP		gr1
-	DIVA	gr1,gr2
+	SUBA	gr1,gr2
 	JOV		EOVF
-	PUSH	0,gr1
-; 1f93500 SCONST 
-; 1f93500 SCONST 
-	LD		gr1,$1f93500
 	LD		gr2,gr1
 	POP		gr1
 	MULA	gr1,gr2
 	JOV		EOVF
 	PUSH	0,gr1
-; 200c3b0 var i % %%grobal%%
-	LD		gr1,$200c3b0
+; 266aed0 var x % %%global%%
+	LD		gr1,$266aed0
 	LD		gr2,gr1
 	POP		gr1
-; GRA
-	LD		gr3,TRUE
-	CPA		gr1,gr2
-	JZE		.1f8ad00
-	LD		gr3,FALSE
-.1f8ad00	LD		gr1,gr3
-	CPA		gr1,gr0
-	JZE		.1f8a480
-; start SOUTSTAT
-	CALL	WRITENEWLINE
-; end   SOUTSTAT
-.1f8a480
-; end   SCONDSTAT
-; start SOUTSTAT
-; 200c3b0 var i % %%grobal%%
-	LD		gr1,$200c3b0
-	LAD		gr2,3
-	CALL	WRITEINT
-; 1fbfac0 SCONST 
-; 1fbfac0 SCONST 
-	LD		gr1,$1fbfac0
-	LD		gr2,gr0
-	CALL	WRITECHAR
-; end   SOUTSTAT
-; start SOUTSTAT
-; 200c3b0 var i % %%grobal%%
-	LD		gr1,$200c3b0
-	LD		gr2,gr0
-	CALL	WRITECHAR
-; 1fe8500 STRING   
-; 1fe8500 STRING   
-	LAD		gr1,$1fe8500
-	LD		gr2,gr0
-	CALL	WRITESTR
-; end   SOUTSTAT
-; start assign
-; 200c3b0 var i % %%grobal%%
-	LD		gr1,$200c3b0
-	PUSH	0,gr1
-; 1ff4440 SCONST 
-; 1ff4440 SCONST 
-	LD		gr1,$1ff4440
-	LD		gr2,gr1
-	POP		gr1
-	ADDA	gr1,gr2
+	MULA	gr1,gr2
 	JOV		EOVF
-; 200c3b0 var i % %%grobal%%
-	ST		gr1,$200c3b0
+	LD		gr2,gr1
+	SUBA	gr1,gr2
+	JOV		EOVF
+	SUBA	gr1,gr2
+	JOV		EOVF
+; 266aed0 var x % %%global%%
+	ST		gr1,$266aed0
 ; end   assign
-; 1f6ffc0 SITERSTAT 
-	JUMP	$1f6ffc0
-.1f6ffc0
+; start assign
+; 2649740 SCONST 
+; 2649740 SCONST 
+	LD		gr1,$2649740
+	PUSH	0,gr1
+; 264e3c0 SCONST 
+; 264e3c0 SCONST 
+	LD		gr1,$264e3c0
+	LD		gr2,gr1
+	POP		gr1
+	SUBA	gr1,gr2
+	JOV		EOVF
+	PUSH	0,gr1
+; 266b340 var y % %%global%%
+	LD		gr1,$266b340
+	LD		gr2,gr1
+	POP		gr1
+	MULA	gr1,gr2
+	JOV		EOVF
+	LD		gr2,gr1
+	SUBA	gr1,gr2
+	JOV		EOVF
+	SUBA	gr1,gr2
+	JOV		EOVF
+	PUSH	0,gr1
+; 265b400 SCONST 
+; 265b400 SCONST 
+	LD		gr1,$265b400
+	LD		gr2,gr1
+	POP		gr1
+	SUBA	gr1,gr2
+	JOV		EOVF
+; 266b340 var y % %%global%%
+	ST		gr1,$266b340
+; end   assign
+; 25cdac0 SITERSTAT 
+	JUMP	$25cdac0
+.25cdac0
 ; end   SITERSTAT
-; start SOUTSTAT
-	CALL	WRITENEWLINE
-; end   SOUTSTAT
 	RET
 ; end   SCOMPSTAT under SBLOCK
-$200c3b0	DS		1
-$200c860	DS		1
-$200cd10	DS		1
-$1ed9e80	DC		0
-$1efb600	DC		1
-$1f2e600	DC		' : '
-$1f45c00	DC		1
-$1f60940	DC		32
-$1f7bac0	DC		127
-$1f90ec0	DC		16
-$1f93500	DC		16
-$1fbfac0	DC		58
-$1fe8500	DC		'  '
-$1ff4440	DC		1
-	NOP
-	NOP
-	NOP
-	NOP
-	NOP
 EOVF
 	CALL WRITENEWLINE
 	LAD gr1, EOVF1
@@ -470,4 +409,16 @@ INP DC 0
 OBUF DS 257
 IBUF DS 257
 RPBBUF DC 0
-	end
+$266aed0	DS		1
+$266b340	DS		1
+$25b86c0	DC		1
+$25c4e80	DC		10
+$25d1200	DC		1
+$25f4fc0	DC		47
+$260bd40	DC		61
+$2628c80	DC		2
+$2630380	DC		1
+$2649740	DC		0
+$264e3c0	DC		1
+$265b400	DC		1
+	END

@@ -1,5 +1,5 @@
 IN=in.mpl
-F=nodedata
+F=compiler instruction-words
 
 .PHONY:
 	all run clean
@@ -7,7 +7,7 @@ F=nodedata
 all: a.out
 
 a.out: *.c *.h
-	@gcc *.c -Wall -Wextra -std=c89 -o a.out -Wno-unused-parameter -Wno-implicit-function-declaration
+	gcc *.c -Wall -Wextra -std=c89 -o a.out
 
 run: a.out
 	@./a.out ${IN}
@@ -25,9 +25,10 @@ gcovinit:
 	gcc *.c -Wall -Wextra -std=c89 -o a.out -O0 -coverage
 
 gcovrun:
-	-./a.out ${IN} > ${IN}.txt
-	-gcov ${F}.gcda
-	cat ${F}.c.gcov > out.txt
+	#-./a.out ${IN} > ${IN}.txt
+	-./a.out ${IN}
+	#-gcov ${F}.gcda
+	-gcov -b ${F}.gcda
 
 #gcovall:
 #	$(foreach VAR,$(wildcard in_*.mpl),$(make gcovrun IN=${VAR}))

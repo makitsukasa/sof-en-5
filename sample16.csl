@@ -1,0 +1,562 @@
+; start SPROGRAM
+; 23e9480 SPROGRAM 
+$23e9480	START
+	LAD		gr0,0
+; 23ea580 SBLOCK 
+	CALL	$23ea580
+	CALL	FLUSH
+	SVC		0
+; 25447f0 var furui % %%global%%
+; 2544ca0 var i % %%global%%
+; 2545110 var j % %%global%%
+; start SCOMPSTAT under SBLOCK
+; 23ea580 SBLOCK 
+$23ea580
+; start assign
+; 23fe880 SCONST 
+; 23fe880 SCONST 
+	LD		gr1,$23fe880
+; 2544ca0 var i % %%global%%
+	ST		gr1,$2544ca0
+; end   assign
+; start SITERSTAT
+; 2407900 SITERSTAT 
+$2407900
+; 2544ca0 var i % %%global%%
+	LD		gr1,$2544ca0
+	PUSH	0,gr1
+; 2413400 SCONST 
+; 2413400 SCONST 
+	LD		gr1,$2413400
+	LD		gr2,gr1
+	POP		gr1
+; LEA
+	LD		gr3,TRUE
+	CPA		gr1,gr2
+	JMI		.2408180
+	LD		gr3,FALSE
+.2408180	LD		gr1,gr3
+	CPA		gr1,gr0
+	JZE		.2407900
+; start assign
+; 242f680 SCONST 
+; 242f680 SCONST 
+	LD		gr1,$242f680
+	PUSH	0,gr1
+; 2544ca0 var i % %%global%%
+	LD		gr1,$2544ca0
+	LD		gr3,gr1
+	JOV		EOVF
+	LAD		gr2,20000
+	CPA		gr3,gr2
+	JMI		.2420880
+	JUMP	EROV
+.2420880	POP		gr1
+; 25447f0 var furui % %%global%%
+	ST		gr1,$25447f0,gr3
+; 25447f0 var furui % %%global%%
+	LD		gr2,$25447f0
+; end   assign
+; start assign
+; 2544ca0 var i % %%global%%
+	LD		gr1,$2544ca0
+	PUSH	0,gr1
+; 2441340 SCONST 
+; 2441340 SCONST 
+	LD		gr1,$2441340
+	LD		gr2,gr1
+	POP		gr1
+	ADDA	gr1,gr2
+	JOV		EOVF
+; 2544ca0 var i % %%global%%
+	ST		gr1,$2544ca0
+; end   assign
+; 2407900 SITERSTAT 
+	JUMP	$2407900
+.2407900
+; end   SITERSTAT
+; start assign
+; 2457400 SCONST 
+; 2457400 SCONST 
+	LD		gr1,$2457400
+	PUSH	0,gr1
+; 244db00 SCONST 
+; 244db00 SCONST 
+	LD		gr1,$244db00
+	LD		gr3,gr1
+	JOV		EOVF
+	LAD		gr2,20000
+	CPA		gr3,gr2
+	JMI		.2448a40
+	JUMP	EROV
+.2448a40	POP		gr1
+; 25447f0 var furui % %%global%%
+	ST		gr1,$25447f0,gr3
+; 25447f0 var furui % %%global%%
+	LD		gr2,$25447f0
+; end   assign
+; start assign
+; 246d080 SCONST 
+; 246d080 SCONST 
+	LD		gr1,$246d080
+	PUSH	0,gr1
+; 2463780 SCONST 
+; 2463780 SCONST 
+	LD		gr1,$2463780
+	LD		gr3,gr1
+	JOV		EOVF
+	LAD		gr2,20000
+	CPA		gr3,gr2
+	JMI		.245e6c0
+	JUMP	EROV
+.245e6c0	POP		gr1
+; 25447f0 var furui % %%global%%
+	ST		gr1,$25447f0,gr3
+; 25447f0 var furui % %%global%%
+	LD		gr2,$25447f0
+; end   assign
+; start assign
+; 2479840 SCONST 
+; 2479840 SCONST 
+	LD		gr1,$2479840
+; 2544ca0 var i % %%global%%
+	ST		gr1,$2544ca0
+; end   assign
+; start SITERSTAT
+; 2482480 SITERSTAT 
+$2482480
+; 2544ca0 var i % %%global%%
+	LD		gr1,$2544ca0
+	PUSH	0,gr1
+; 248df80 SCONST 
+; 248df80 SCONST 
+	LD		gr1,$248df80
+	LD		gr2,gr1
+	POP		gr1
+; LEA
+	LD		gr3,TRUE
+	CPA		gr1,gr2
+	JMI		.2482d00
+	LD		gr3,FALSE
+.2482d00	LD		gr1,gr3
+	CPA		gr1,gr0
+	JZE		.2482480
+; start SCONDSTAT
+; 2544ca0 var i % %%global%%
+	LD		gr1,$2544ca0
+	LD		gr3,gr1
+	JOV		EOVF
+	LAD		gr2,20000
+	CPA		gr3,gr2
+	JMI		.249f3c0
+	JUMP	EROV
+; 25447f0 var furui % %%global%%
+.249f3c0	LD		gr1,$25447f0,gr3
+; 25447f0 var furui % %%global%%
+	LAD		gr2,$25447f0
+	CPA		gr1,gr0
+	JZE		.249c940
+; start SOUTSTAT
+; 2544ca0 var i % %%global%%
+	LD		gr1,$2544ca0
+	LD		gr2,gr0
+	CALL	WRITEINT
+; 24ca440 STRING  is a prime number
+; 24ca440 STRING  is a prime number
+	LAD		gr1,$24ca440
+	LD		gr2,gr0
+	CALL	WRITESTR
+	CALL	WRITENEWLINE
+; end   SOUTSTAT
+; start assign
+; 2544ca0 var i % %%global%%
+	LD		gr1,$2544ca0
+; 2545110 var j % %%global%%
+	ST		gr1,$2545110
+; end   assign
+; start SCONDSTAT
+; 2544ca0 var i % %%global%%
+	LD		gr1,$2544ca0
+	PUSH	0,gr1
+; 24e5e40 SCONST 
+; 24e5e40 SCONST 
+	LD		gr1,$24e5e40
+	LD		gr2,gr1
+	POP		gr1
+; LEA
+	LD		gr3,TRUE
+	CPA		gr1,gr2
+	JMI		.24dabc0
+	LD		gr3,FALSE
+.24dabc0	LD		gr1,gr3
+	CPA		gr1,gr0
+	JZE		.24da340
+; start SITERSTAT
+; 24ee200 SITERSTAT 
+$24ee200
+; 2545110 var j % %%global%%
+	LD		gr1,$2545110
+	PUSH	0,gr1
+; 24f9d00 SCONST 
+; 24f9d00 SCONST 
+	LD		gr1,$24f9d00
+	LD		gr2,gr1
+	POP		gr1
+; LEA
+	LD		gr3,TRUE
+	CPA		gr1,gr2
+	JMI		.24eea80
+	LD		gr3,FALSE
+.24eea80	LD		gr1,gr3
+	CPA		gr1,gr0
+	JZE		.24ee200
+; start assign
+; 2515f80 SCONST 
+; 2515f80 SCONST 
+	LD		gr1,$2515f80
+	PUSH	0,gr1
+; 2545110 var j % %%global%%
+	LD		gr1,$2545110
+	LD		gr3,gr1
+	JOV		EOVF
+	LAD		gr2,20000
+	CPA		gr3,gr2
+	JMI		.2507180
+	JUMP	EROV
+.2507180	POP		gr1
+; 25447f0 var furui % %%global%%
+	ST		gr1,$25447f0,gr3
+; 25447f0 var furui % %%global%%
+	LD		gr2,$25447f0
+; end   assign
+; start assign
+; 2545110 var j % %%global%%
+	LD		gr1,$2545110
+	PUSH	0,gr1
+; 2544ca0 var i % %%global%%
+	LD		gr1,$2544ca0
+	LD		gr2,gr1
+	POP		gr1
+	ADDA	gr1,gr2
+	JOV		EOVF
+; 2545110 var j % %%global%%
+	ST		gr1,$2545110
+; end   assign
+; 24ee200 SITERSTAT 
+	JUMP	$24ee200
+.24ee200
+; end   SITERSTAT
+.24da340
+; end   SCONDSTAT
+.249c940
+; end   SCONDSTAT
+; start assign
+; 2544ca0 var i % %%global%%
+	LD		gr1,$2544ca0
+	PUSH	0,gr1
+; 253bf40 SCONST 
+; 253bf40 SCONST 
+	LD		gr1,$253bf40
+	LD		gr2,gr1
+	POP		gr1
+	ADDA	gr1,gr2
+	JOV		EOVF
+; 2544ca0 var i % %%global%%
+	ST		gr1,$2544ca0
+; end   assign
+; 2482480 SITERSTAT 
+	JUMP	$2482480
+.2482480
+; end   SITERSTAT
+	RET
+; end   SCOMPSTAT under SBLOCK
+EOVF
+	CALL WRITENEWLINE
+	LAD gr1, EOVF1
+	LD gr2, gr0
+	CALL WRITESTR
+	CALL WRITENEWLINE
+	SVC 1 ; overflow error stop
+EOVF1 DC '***** Run-Time Error : Overflow *****'
+E0DIV
+	JNZ EOVF
+	CALL WRITENEWLINE
+	LAD gr1, E0DIV1
+	LD gr2, gr0
+	CALL WRITESTR
+	CALL WRITENEWLINE
+	SVC 2 ; 0-divide error stop
+E0DIV1 DC '***** Run-Time Error : Zero-Divide *****'
+EROV
+	CALL WRITENEWLINE
+	LAD gr1, EROV1
+	LD gr2, gr0
+	CALL WRITESTR
+	CALL WRITENEWLINE
+	SVC 3 ; range-over error stop
+EROV1 DC '***** Run-Time Error : Range-Over in ArrayIndex *****'
+WRITECHAR
+; gr1 の値（文字）を gr2 のけた数で出力する．
+; gr2 が 0 なら必要最小限の桁数で出力する
+	RPUSH
+	LD gr6, SPACE
+	LD gr7, OBUFSIZE
+WC1
+	SUBA gr2, ONE ; while(--c > 0) {
+	JZE WC2
+	JMI WC2
+	ST gr6, OBUF,gr7 ; *p++ = ' ';
+	CALL BOVFCHECK
+	JUMP WC1 ; }
+WC2
+	ST gr1, OBUF,gr7 ; *p++ = gr1;
+	CALL BOVFCHECK
+	ST gr7, OBUFSIZE
+	RPOP
+	RET
+WRITESTR
+; gr1 が指す文字列を gr2 のけた数で出力する．
+; gr2 が 0 なら必要最小限の桁数で出力する
+	RPUSH
+	LD gr6, gr1 ; p = gr1;
+WS1
+	LD gr4, 0,gr6 ; while(*p != '¥0') {
+	JZE WS2
+	ADDA gr6, ONE ; p++;
+	SUBA gr2, ONE ; c- ;
+	JUMP WS1 ; }
+WS2
+	LD gr7, OBUFSIZE ; q = OBUFSIZE;
+	LD gr5, SPACE
+WS3
+	SUBA gr2, ONE ; while(--c >= 0) {
+	JMI WS4
+	ST gr5, OBUF,gr7 ; *q++ = ' ';
+	CALL BOVFCHECK
+	JUMP WS3 ; }
+WS4
+	LD gr4, 0,gr1 ; while(*gr1 != '¥0') {
+	JZE WS5
+	ST gr4, OBUF,gr7 ; *q++ = *gr1++;
+	ADDA gr1, ONE
+	CALL BOVFCHECK
+	JUMP WS4 ; }
+WS5
+	ST gr7, OBUFSIZE ; OBUFSIZE = q;
+	RPOP
+	RET
+BOVFCHECK
+	ADDA gr7, ONE
+	CPA gr7, BOVFLEVEL
+	JMI BOVF1
+	CALL WRITENEWLINE
+	LD gr7, OBUFSIZE
+BOVF1
+	RET
+BOVFLEVEL DC 256
+WRITEINT
+; gr1 の値（整数）を gr2 のけた数で出力する．
+; gr2 が 0 なら必要最小限の桁数で出力する
+	RPUSH
+	LD gr7, gr0 ; flag = 0;
+	CPA gr1, gr0 ; if(gr1>=0) goto WI1;
+	JPL WI1
+	JZE WI1
+	LD gr4, gr0 ; gr1= - gr1;
+	SUBA gr4, gr1
+	CPA gr4, gr1
+	JZE WI6
+	LD gr1, gr4
+	LD gr7, ONE ; flag = 1;
+WI1
+	LD gr6, SIX ; p = INTBUF+6;
+	ST gr0, INTBUF,gr6 ; *p = '¥0';
+	SUBA gr6, ONE ; p- ;
+	CPA gr1, gr0 ; if(gr1 == 0)
+	JNZ WI2
+	LD gr4, ZERO ; *p = '0';
+	ST gr4, INTBUF,gr6
+	JUMP WI5 ; }
+WI2 ; else {
+	CPA gr1, gr0 ; while(gr1 != 0) {
+	JZE WI3
+	LD gr5, gr1 ; gr5 = gr1 - (gr1 / 10) * 10;
+	DIVA gr1, TEN ; gr1 /= 10;
+	LD gr4, gr1
+	MULA gr4, TEN
+	SUBA gr5, gr4
+	ADDA gr5, ZERO ; gr5 += '0';
+	ST gr5, INTBUF,gr6 ; *p = gr5;
+	SUBA gr6, ONE ; p- ;
+	JUMP WI2 ; }
+WI3
+	CPA gr7, gr0 ; if(flag != 0) {
+	JZE WI4
+	LD gr4, MINUS ; *p = '-';
+	ST gr4, INTBUF,gr6
+	JUMP WI5 ; }
+WI4
+	ADDA gr6, ONE ; else p++;
+	; }
+WI5
+	LAD gr1, INTBUF,gr6 ; gr1 = p;
+	CALL WRITESTR ; WRITESTR();
+	RPOP
+	RET
+WI6
+	LAD gr1, MMINT
+	CALL WRITESTR ; WRITESTR();
+	RPOP
+	RET
+MMINT DC '-32768'
+WRITEBOOL
+; gr1 の値（真理値）が 0 なら'FALSE'を
+; 0 以外なら'TRUE'を gr2 のけた数で出力する．
+; gr2 が 0 なら必要最小限の桁数で出力する
+	RPUSH
+	CPA gr1, gr0 ; if(gr1 != 0)
+	JZE WB1
+	LAD gr1, WBTRUE ; gr1 = "TRUE";
+	JUMP WB2
+WB1 ; else
+	LAD gr1, WBFALSE ; gr1 = "FALSE";
+WB2
+	CALL WRITESTR ; WRITESTR();
+	RPOP
+	RET
+WBTRUE DC 'TRUE'
+WBFALSE DC 'FALSE'
+WRITENEWLINE
+; 改行を出力する
+	RPUSH
+	LD gr7, OBUFSIZE
+	LD gr6, NEWLINE
+	ST gr6, OBUF,gr7
+	ADDA gr7, ONE
+	ST gr7, OBUFSIZE
+	OUT OBUF, OBUFSIZE
+	ST gr0, OBUFSIZE
+	RPOP
+	RET
+FLUSH
+	RPUSH
+	LD gr7, OBUFSIZE
+	JZE FL1
+	CALL WRITENEWLINE
+FL1
+	RPOP
+	RET
+READCHAR
+; gr1 が指す番地に文字一つを読み込む
+	RPUSH
+	LD gr5, RPBBUF ; if(RPBBUF != '¥0') {
+	JZE RC0
+	ST gr5, 0,gr1 ; *gr1 = RPBBUF;
+	ST gr0, RPBBUF ; RPBBUF = '¥0'
+	JUMP RC3 ; return; }
+RC0
+	LD gr7, INP ; inp = INP;
+	LD gr6, IBUFSIZE ; if(IBUFSIZE == 0) {
+	JNZ RC1
+	IN IBUF, IBUFSIZE ; IN();
+	LD gr7, gr0 ; inp = 0; }
+RC1
+	CPA gr7, IBUFSIZE ; if(inp == IBUFSIZE) {
+	JNZ RC2
+	LD gr5, NEWLINE ; *gr1 = '¥n';
+	ST gr5, 0,gr1
+	ST gr0, IBUFSIZE ; IBUFSIZE = INP = 0;
+	ST gr0, INP
+	JUMP RC3 ; }
+RC2 ; else {
+	LD gr5, IBUF,gr7 ; *gr1 = *inp++;
+	ADDA gr7, ONE
+	ST gr5, 0,gr1
+	ST gr7, INP ; INP = inp;
+RC3 ; }
+	RPOP
+	RET
+READINT
+; gr1 が指す番地に整数値一つを読み込む
+	RPUSH
+RI1 ; do {
+	CALL READCHAR ; ch = READCHAR();
+	LD gr7, 0,gr1
+	CPA gr7, SPACE ; } while(ch==' ' || ch=='¥t' || ch=='¥n');
+	JZE RI1
+	CPA gr7, TAB
+	JZE RI1
+	CPA gr7, NEWLINE
+	JZE RI1
+	LD gr5, ONE ; flag = 1
+	CPA gr7, MINUS ; if(ch == '-') {
+	JNZ RI4
+	LD gr5, gr0 ; flag = 0;
+	CALL READCHAR ; ch = READCHAR();
+	LD gr7, 0,gr1
+RI4 ; }
+	LD gr6, gr0 ; v = 0;
+RI2
+	CPA gr7, ZERO ; while('0' <= ch && ch <= '9') {
+	JMI RI3
+	CPA gr7, NINE
+	JPL RI3
+	MULA gr6, TEN ; v = v*10+ch-'0';
+	ADDA gr6, gr7
+	SUBA gr6, ZERO
+	CALL READCHAR ; ch = READSCHAR();
+	LD gr7, 0,gr1
+	JUMP RI2 ; }
+RI3
+	ST gr7, RPBBUF ; ReadPushBack();
+	ST gr6, 0,gr1 ; *gr1 = v;
+	CPA gr5, gr0 ; if(flag == 0) {
+	JNZ RI5
+	SUBA gr5, gr6 ; *gr1 = -v;
+	ST gr5, 0,gr1
+RI5 ; }
+	RPOP
+	RET
+READSKIPTONEWLINE
+; 入力を改行コードまで（改行コードも含む）読み飛ばす
+	ST gr0, IBUFSIZE
+	ST gr0, INP
+	ST gr0, RPBBUF
+	RET
+TRUE DC 1
+FALSE DC 0
+ONE DC 1
+SIX DC 6
+TEN DC 10
+SPACE DC #0020 ; ' '
+MINUS DC #002D ; '-'
+TAB DC #0009 ; '¥t'
+ZERO DC #0030 ; '0'
+NINE DC #0039 ; '9'
+NEWLINE DC #000A ; '¥n'
+INTBUF DS 8
+OBUFSIZE DC 0
+IBUFSIZE DC 0
+INP DC 0
+OBUF DS 257
+IBUF DS 257
+RPBBUF DC 0
+$25447f0	DS		20000
+$2544ca0	DS		1
+$2545110	DS		1
+$23fe880	DC		2
+$2413400	DC		20000
+$242f680	DC		1
+$2441340	DC		1
+$2457400	DC		0
+$244db00	DC		0
+$246d080	DC		0
+$2463780	DC		1
+$2479840	DC		2
+$248df80	DC		20000
+$24ca440	DC		' is a prime number'
+$24e5e40	DC		16384
+$24f9d00	DC		20000
+$2515f80	DC		0
+$253bf40	DC		1
+	END
